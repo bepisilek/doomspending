@@ -304,8 +304,6 @@
     .invite-copy{ font-size:0.9rem; color:var(--muted); text-align:left; }
     .invite-form{ display:flex; flex-direction:column; gap:12px; }
     .invite-form button{ width:100%; }
-    .invite-start{ width:100%; display:none; }
-    .invite-start.show{ display:block; }
     @media(min-width:520px){
       .invite-form{ flex-direction:row; align-items:center; }
       .invite-form input{ flex:1; }
@@ -315,6 +313,7 @@
     .invite-status[data-status="success"]{ color:var(--green); }
     .invite-status[data-status="error"]{ color:var(--red); }
     .invite-status[data-status="info"]{ color:var(--blue-600); }
+    .rotate-btn{ margin-top:-4px; }
 
     input, select{
       width:100%;
@@ -606,16 +605,16 @@
           <div class="card invite-card">
             <h3>🔑 Meghívó szükséges</h3>
             <p class="invite-copy">Add meg az invite kódodat a Munkaóra Pro élmény eléréséhez.</p>
-            <div id="inviteForm" class="invite-form">
-              <input id="inviteCodeInput" placeholder="Pl. 1234-5678-ABCD" autocomplete="one-time-code" inputmode="text" />
+            <div class="invite-form">
+              <input id="inviteCodeInput" placeholder="Pl. 1843-5092-JKLP" autocomplete="one-time-code" inputmode="text" />
               <button type="button" onclick="validateInvite()">✅ Kód ellenőrzése</button>
             </div>
-            <button id="startButton" class="invite-start" type="button" onclick="startApp()" disabled aria-disabled="true">🚀 Kezdjük</button>
             <div id="inviteStatus" class="invite-status" role="status" aria-live="polite"></div>
           </div>
 
           <div class="card" style="width:100%;">
             <div class="stack">
+              <button id="startButton" type="button" onclick="startApp()" disabled>🚀 Kezdjük el!</button>
               <p style="text-align:center;font-size:0.85rem;">Már <strong>2,847</strong> felhasználó spórolt <strong>18,392</strong> órát! 🎉</p>
             </div>
           </div>
@@ -850,15 +849,9 @@
 
     function setStartButtonState(enabled){
       const btn = document.getElementById('startButton');
-      const form = document.getElementById('inviteForm');
-      if(btn){
-        btn.disabled = !enabled;
-        btn.setAttribute('aria-disabled', String(!enabled));
-        btn.classList.toggle('show', enabled);
-      }
-      if(form){
-        form.hidden = !!enabled;
-      }
+      if(!btn) return;
+      btn.disabled = !enabled;
+      btn.setAttribute('aria-disabled', String(!enabled));
     }
 
     function updateInviteStatus(message, status = 'info'){
@@ -916,6 +909,21 @@
       input.value = '';
       updateInviteStatus('✅ Meghívó kód elfogadva. Kezdődhet a számolás!', 'success');
       track('invite_validated');
+    }
+
+    function rotateInviteCodes(){
+      if(inviteQueue.length){
+        const first = inviteQueue.shift();
+        if(first) inviteQueue.push(first);
+      } else {
+        inviteQueue = [...INVITE_CODES];
+      }
+      persistInviteQueue();
+      inviteValidated = false;
+      localStorage.removeItem(INVITE_VALID_KEY);
+      setStartButtonState(false);
+      updateInviteStatus('🔄 Új meghívó sorrend aktiválva. Add meg az aktuális kódot a folytatáshoz.', 'info');
+      track('invite_rotated');
     }
 
     function startApp(){
