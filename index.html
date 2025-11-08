@@ -4,13 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Munkaóra • Pro</title>
+  
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-G8BZPSFGGG"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-
     gtag('config', 'G-G8BZPSFGGG');
   </script>
 
@@ -131,6 +131,49 @@
     h3{font-size:1.15rem; font-weight:700; margin-bottom:12px;}
     p{color:var(--muted); line-height:1.6;}
     .caption{font-size:.72rem; text-transform:uppercase; letter-spacing:.18em; color:var(--muted);}
+
+    .hidden{
+      display:none !important;
+    }
+
+    /* Version Banner */
+    .version-banner{
+      position:fixed;
+      top:0;
+      left:50%;
+      transform:translateX(-50%);
+      background:linear-gradient(135deg, #31d69f 0%, #28d3c0 100%);
+      color:#fff;
+      padding:12px 20px;
+      border-radius:0 0 16px 16px;
+      box-shadow:0 8px 24px rgba(49,214,159,0.4);
+      z-index:100;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-size:0.9rem;
+      font-weight:600;
+      animation:slideDown 0.4s ease;
+    }
+    @keyframes slideDown{
+      from{ transform:translateX(-50%) translateY(-100%); opacity:0; }
+      to{ transform:translateX(-50%) translateY(0); opacity:1; }
+    }
+    .version-btn{
+      padding:6px 16px;
+      font-size:0.85rem;
+      background:rgba(255,255,255,0.25);
+      border:1px solid rgba(255,255,255,0.4);
+      color:#fff;
+      border-radius:8px;
+      cursor:pointer;
+      transition:all var(--fast);
+      font-weight:700;
+    }
+    .version-btn:hover{
+      background:rgba(255,255,255,0.35);
+      transform:scale(1.05);
+    }
 
     .screen-header{
       display:flex; align-items:center; justify-content:space-between;
@@ -314,7 +357,6 @@
     .invite-status[data-status="success"]{ color:var(--green); }
     .invite-status[data-status="error"]{ color:var(--red); }
     .invite-status[data-status="info"]{ color:var(--blue-600); }
-    .rotate-btn{ margin-top:-4px; }
 
     input, select{
       width:100%;
@@ -353,13 +395,6 @@
     button:hover{ transform:translateY(-2px) scale(1.01); }
     button:hover::after{ opacity:1; }
     button:active{ transform:scale(0.98); }
-    button:disabled,
-    button.disabled{
-      cursor:not-allowed;
-      opacity:0.6;
-      transform:none !important;
-      box-shadow:none;
-    }
     .btn-secondary{
       background:rgba(255,255,255,0.9);
       color:var(--blue-600);
@@ -579,7 +614,13 @@
   </style>
 </head>
 <body>
-  <div id="build-badge" style="position:fixed;left:8px;top:6px;font-size:11px;color:#5d6b85;opacity:.8;z-index:50;">v2.2 LEAN</div>
+  <!-- Version Check Banner -->
+  <div id="version-banner" class="version-banner hidden">
+    <span>🎉 Új verzió elérhető!</span>
+    <button onclick="reloadApp()" class="version-btn">Frissítés</button>
+  </div>
+  
+  <div id="build-badge" style="position:fixed;left:8px;top:6px;font-size:11px;color:#5d6b85;opacity:.8;z-index:50;">v2.4 STABLE</div>
 
   <div class="app-shell">
     <main class="screen-stack">
@@ -603,7 +644,8 @@
 
           <p class="welcome-copy">Számold ki, mennyi munkaórádba kerül egy vágyott vásárlás és érezd nagyon rosszul magad!</p>
 
-          <div class="card invite-card">
+          <!-- INVITE CARD - kezdetben látható -->
+          <div id="inviteCard" class="card invite-card">
             <h3>🔑 Meghívó szükséges</h3>
             <p class="invite-copy">Add meg az invite kódodat a Munkaóra Pro élmény eléréséhez.</p>
             <div class="invite-form">
@@ -613,9 +655,10 @@
             <div id="inviteStatus" class="invite-status" role="status" aria-live="polite"></div>
           </div>
 
-          <div class="card" style="width:100%;">
+          <!-- START CARD - kezdetben rejtett, invite után megjelenik -->
+          <div id="startCard" class="card hidden" style="width:100%;">
             <div class="stack">
-              <button id="startButton" type="button" onclick="startApp()" disabled>🚀 Kezdjük el!</button>
+              <button id="startButton" type="button" onclick="startApp()">🚀 Kezdjük el!</button>
               <p style="text-align:center;font-size:0.85rem;">Már <strong>2,847</strong> felhasználó spórolt <strong>18,392</strong> órát! 🎉</p>
             </div>
           </div>
@@ -649,7 +692,7 @@
         </div>
       </section>
 
-      <!-- 3. Kalkulátor LEAN MODE -->
+      <!-- 3. Kalkulátor -->
       <section id="screen-calculator" class="screen">
         <header class="screen-header">
           <div>
@@ -848,18 +891,21 @@
       localStorage.setItem(INVITE_QUEUE_KEY, JSON.stringify(inviteQueue));
     }
 
-    function setStartButtonState(enabled){
-      const btn = document.getElementById('startButton');
-      if(!btn) return;
-      btn.disabled = !enabled;
-      btn.setAttribute('aria-disabled', String(!enabled));
-    }
-
     function updateInviteStatus(message, status = 'info'){
       const statusEl = document.getElementById('inviteStatus');
       if(!statusEl) return;
       statusEl.textContent = message;
       statusEl.setAttribute('data-status', status);
+    }
+
+    function showStartCard(){
+      document.getElementById('inviteCard').classList.add('hidden');
+      document.getElementById('startCard').classList.remove('hidden');
+    }
+
+    function hideStartCard(){
+      document.getElementById('inviteCard').classList.remove('hidden');
+      document.getElementById('startCard').classList.add('hidden');
     }
 
     function initInviteGate(){
@@ -874,10 +920,10 @@
           }
         });
       }
-      setStartButtonState(inviteValidated);
       if(inviteValidated){
-        updateInviteStatus('✅ Meghívó kód elfogadva. Kezdődhet a számolás!', 'success');
+        showStartCard();
       } else {
+        hideStartCard();
         updateInviteStatus('Add meg az invite kódodat a kezdéshez.', 'info');
       }
     }
@@ -890,7 +936,7 @@
         updateInviteStatus('Írj be egy meghívó kódot!', 'error');
         inviteValidated = false;
         localStorage.removeItem(INVITE_VALID_KEY);
-        setStartButtonState(false);
+        hideStartCard();
         return;
       }
       const index = inviteQueue.findIndex(item => normalizeInviteCode(item) === code);
@@ -898,7 +944,7 @@
         updateInviteStatus('❌ Ez a meghívó kód nem érvényes.', 'error');
         inviteValidated = false;
         localStorage.removeItem(INVITE_VALID_KEY);
-        setStartButtonState(false);
+        hideStartCard();
         return;
       }
       const [matched] = inviteQueue.splice(index, 1);
@@ -906,31 +952,15 @@
       persistInviteQueue();
       inviteValidated = true;
       localStorage.setItem(INVITE_VALID_KEY, 'true');
-      setStartButtonState(true);
       input.value = '';
-      updateInviteStatus('✅ Meghívó kód elfogadva. Kezdődhet a számolás!', 'success');
+      showStartCard();
       track('invite_validated');
-    }
-
-    function rotateInviteCodes(){
-      if(inviteQueue.length){
-        const first = inviteQueue.shift();
-        if(first) inviteQueue.push(first);
-      } else {
-        inviteQueue = [...INVITE_CODES];
-      }
-      persistInviteQueue();
-      inviteValidated = false;
-      localStorage.removeItem(INVITE_VALID_KEY);
-      setStartButtonState(false);
-      updateInviteStatus('🔄 Új meghívó sorrend aktiválva. Add meg az aktuális kódot a folytatáshoz.', 'info');
-      track('invite_rotated');
     }
 
     function startApp(){
       if(!inviteValidated){
         updateInviteStatus('Add meg az érvényes meghívó kódot a kezdéshez.', 'error');
-        setStartButtonState(false);
+        hideStartCard();
         return;
       }
       track('start_click');
@@ -992,7 +1022,7 @@
       const data = loadData();
       const p = data.profile;
       if(!p.income || !p.hoursPerWeek){
-        alert('Előbb add meg a profilod adatait!');
+        alert('Előbb add meg a profilod adataid!');
         goTo('profile');
         return;
       }
@@ -1003,7 +1033,6 @@
         return;
       }
       
-      // Számolás: havi jövedelem / havi munkaórák = órabér
       const hourly = p.income / (p.hoursPerWeek * 4);
       const hours = (price / hourly).toFixed(1);
       
@@ -1183,7 +1212,34 @@
         document.getElementById('hours').value = d.profile.hoursPerWeek || '';
       }
       initInviteGate();
+      checkVersion();
     })();
+
+    // Version Check System
+    const CURRENT_VERSION = 'v2.4';
+    const VERSION_KEY = 'munkaora_version';
+
+    function checkVersion(){
+      try{
+        const lastVersion = localStorage.getItem(VERSION_KEY);
+        if(lastVersion && lastVersion !== CURRENT_VERSION){
+          // Van új verzió!
+          document.getElementById('version-banner').classList.remove('hidden');
+          track('new_version_available', { from: lastVersion, to: CURRENT_VERSION });
+        } else if(!lastVersion){
+          // Első indítás, mentsd el a verziót
+          localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
+        }
+      }catch(e){
+        console.error('Version check failed:', e);
+      }
+    }
+
+    function reloadApp(){
+      localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
+      track('version_updated', { version: CURRENT_VERSION });
+      window.location.reload();
+    }
   </script>
 </body>
 </html>
