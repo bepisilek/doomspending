@@ -5,12 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Munkaóra • vNEXT</title>
 
-  <!-- manifest + PWA meta -->
-  <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#2967ff" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-title" content="Munkaóra" />
-
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-G8BZPSFGGG"></script>
   <script>
@@ -20,22 +14,11 @@
     gtag('config', 'G-G8BZPSFGGG');
   </script>
 
-  <script>
-    console.log('BUILD_OK:PWA', !!navigator.serviceWorker, 'GA', typeof window.gtag === 'function');
-  </script>
-
   <style>
     /* =========================================================================
        FONTS
        ========================================================================= */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-    /* ======================================================
-   FIX: Ne lógjon rá a lebegő menü az alatta lévő tartalomra
-   ====================================================== */
-main, .screen, .stack, .card {
-  padding-bottom: 120px; /* hely a lebegő navigáció alatt */
-}
-
 
     /* =========================================================================
        TOKENS
@@ -71,7 +54,6 @@ main, .screen, .stack, .card {
        ========================================================================= */
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
     html,body{height:100%;}
-
     body{
       font-family:Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
       color:var(--text);
@@ -109,14 +91,13 @@ main, .screen, .stack, .card {
        APP SHELL
        ========================================================================= */
     .app-shell{
-  width:min(100%,480px);
-  min-height:100vh;
-  padding:clamp(24px,6vw,44px) clamp(18px,6vw,32px) 160px;
-  position:relative;
-  z-index:1;
-  display:flex;
-}
-
+      width:min(100%,480px);
+      min-height:100vh;
+      padding:clamp(24px,6vw,44px) clamp(18px,6vw,32px) 160px;
+      position:relative;
+      z-index:1;
+      display:flex;
+    }
     .screen-stack{flex:1; display:flex; position:relative;}
     .screen{
       display:none;
@@ -443,7 +424,6 @@ main, .screen, .stack, .card {
       border:1px solid rgba(255,255,255,0.6); box-shadow:var(--shadow-nav);
       display:flex; gap:10px; z-index:20;
     }
-
     nav button{
       flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
       padding:12px; border-radius:18px; background:transparent; color:var(--muted);
@@ -479,7 +459,7 @@ main, .screen, .stack, .card {
       <!-- 1. Welcome -->
       <section id="screen-welcome" class="screen active" data-theme="welcome">
         <div class="welcome-hero">
-          <div class="welcome-pill">Legyél te is szomorúbb!</div>
+          <div class="welcome-pill">Personal finance companion</div>
           <h1>Munkaóra</h1>
 
           <!-- REPLACED ORB → CLOCK -->
@@ -509,7 +489,7 @@ main, .screen, .stack, .card {
             <h2>Profilod</h2>
           </div>
           <div class="header-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M12 12.75a5.25 5.25 0 1 0-5.25-5.25A5.26 5.26 0 0 0 12 12.75Zm0 2.25c-3.486 0-7.5 1.757-7.5 4.5a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5c0-2.74[...]
+            <svg viewBox="0 0 24 24"><path d="M12 12.75a5.25 5.25 0 1 0-5.25-5.25A5.26 5.26 0 0 0 12 12.75Zm0 2.25c-3.486 0-7.5 1.757-7.5 4.5a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5c0-2.743-4.014-4.5-7.5-4.5Z"/></svg>
           </div>
         </header>
         <div class="stack">
@@ -533,7 +513,7 @@ main, .screen, .stack, .card {
             <h2>Kalkulátor</h2>
           </div>
           <div class="header-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M6 2.75h12A3.25 3.25 0 0 1 21.25 6v12A3.25 3.25 0 0 1 18 21.25H6A3.25 3.25 0 0 1 2.75 18V6A3.25 3.25 0 0 1 6 2.75Zm.5 4a.75.75 0 0 0 0 1.5h2a.75.75 0[...]
+            <svg viewBox="0 0 24 24"><path d="M6 2.75h12A3.25 3.25 0 0 1 21.25 6v12A3.25 3.25 0 0 1 18 21.25H6A3.25 3.25 0 0 1 2.75 18V6A3.25 3.25 0 0 1 6 2.75Zm.5 4a.75.75 0 0 0 0 1.5h2a.75.75 0 0 0 0-1.5h-2Zm0 4a.75.75 0 0 0 0 1.5h10a.75.75 0 0 0 0-1.5h-10Zm0 4a.75.75 0 0 0 0 1.5h10a.75.75 0 0 0 0-1.5h-10Z"/></svg>
           </div>
         </header>
         <div class="stack">
@@ -565,7 +545,7 @@ main, .screen, .stack, .card {
             <h2>Előzmények</h2>
           </div>
           <div class="header-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M12 3.75A8.25 8.25 0 1 0 20.25 12a.75.75 0 0 1 1.5 0 9.75 9.75 0 1 1-3.31-7.324l1.155-1.154a.75.75 0 1 1 1.06 1.06l-2.5 2.5a.75.75 0 0 1-1.28-.53V4.5[...]
+            <svg viewBox="0 0 24 24"><path d="M12 3.75A8.25 8.25 0 1 0 20.25 12a.75.75 0 0 1 1.5 0 9.75 9.75 0 1 1-3.31-7.324l1.155-1.154a.75.75 0 1 1 1.06 1.06l-2.5 2.5a.75.75 0 0 1-1.28-.53V4.5a.75.75 0 0 1 1.5 0v1.134A8.23 8.23 0 0 0 12 3.75Zm.75 4.5v3.44l2.845 1.705a.75.75 0 0 1-.76 1.29l-3.25-1.95A.75.75 0 0 1 11.25 12V8.25a.75.75 0 0 1 1.5 0Z"/></svg>
           </div>
         </header>
         <div class="stack">
@@ -581,7 +561,7 @@ main, .screen, .stack, .card {
             <h2>Statisztikák</h2>
           </div>
           <div class="header-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M5.75 4A1.75 1.75 0 0 1 7.5 2.25h1A1.75 1.75 0 0 1 10.25 4v15.75a2 2 0 0 1-2 2h-.75a2 2 0 0 1-2-2Zm5.5 5A1.75 1.75 0 0 1 13 7.25h1A1.75 1.75 0 0 1 15[...]
+            <svg viewBox="0 0 24 24"><path d="M5.75 4A1.75 1.75 0 0 1 7.5 2.25h1A1.75 1.75 0 0 1 10.25 4v15.75a2 2 0 0 1-2 2h-.75a2 2 0 0 1-2-2Zm5.5 5A1.75 1.75 0 0 1 13 7.25h1A1.75 1.75 0 0 1 15.75 9v10.75a2 2 0 0 1-2 2h-.75a2 2 0 0 1-2-2Zm5.5-5A1.75 1.75 0 0 1 18.5 4v15.75a2 2 0 0 1-2 2h-.75a2 2 0 0 1-2-2V4a1.75 1.75 0 0 1 1.75-1.75h1Z"/></svg>
           </div>
         </header>
         <div class="stack">
@@ -613,22 +593,22 @@ main, .screen, .stack, .card {
   <nav>
     <button id="nav-calculator" onclick="goTo('calculator')" aria-label="Kalkulátor">
       <span class="nav-glow" aria-hidden="true"></span>
-      <svg viewBox="0 0 24 24"><path d="M6.75 3A2.75 2.75 0 0 0 4 5.75v12.5A2.75 2.75 0 0 0 6.75 21h10.5A2.75 2.75 0 0 0 20 18.25V5.75A2.75 2.75 0 0 0 17.25 3Zm.75 3.5h9a.75.75 0 0 1 0 1.5h-9a.75[...]
+      <svg viewBox="0 0 24 24"><path d="M6.75 3A2.75 2.75 0 0 0 4 5.75v12.5A2.75 2.75 0 0 0 6.75 21h10.5A2.75 2.75 0 0 0 20 18.25V5.75A2.75 2.75 0 0 0 17.25 3Zm.75 3.5h9a.75.75 0 0 1 0 1.5h-9a.75.75 0 0 1 0-1.5Zm0 4h9a.75.75 0 0 1 0 1.5h-9a.75.75 0 0 1 0-1.5Zm0 4h4a.75.75 0 0 1 0 1.5h-4a.75.75 0 0 1 0-1.5Z"/></svg>
       <span>Kalkulátor</span>
     </button>
     <button id="nav-history" onclick="goTo('history')" aria-label="Előzmények">
       <span class="nav-glow" aria-hidden="true"></span>
-      <svg viewBox="0 0 24 24"><path d="M12 2.75A9.25 9.25 0 1 0 21.25 12a.75.75 0 0 1 1.5 0 10.75 10.75 0 1 1-3.694-8.076l1.288-1.288a.75.75 0 0 1 1.06 1.06l-2.75 2.75a.75.75 0 0 1-1.28-.53V4.5a[...]
+      <svg viewBox="0 0 24 24"><path d="M12 2.75A9.25 9.25 0 1 0 21.25 12a.75.75 0 0 1 1.5 0 10.75 10.75 0 1 1-3.694-8.076l1.288-1.288a.75.75 0 0 1 1.06 1.06l-2.75 2.75a.75.75 0 0 1-1.28-.53V4.5a.75.75 0 0 1 1.5 0v.792A9.23 9.23 0 0 0 12 2.75Zm.75 5.5v3.69l3.095 1.855a.75.75 0 0 1-.75 1.29l-3.5-2.1A.75.75 0 0 1 11.25 12V8.25a.75.75 0 0 1 1.5 0Z"/></svg>
       <span>Előzmények</span>
     </button>
     <button id="nav-stats" onclick="goTo('stats')" aria-label="Statisztikák">
       <span class="nav-glow" aria-hidden="true"></span>
-      <svg viewBox="0 0 24 24"><path d="M6.75 4A1.75 1.75 0 0 1 8.5 2.25h1A1.75 1.75 0 0 1 11.25 4v15.75a2 2 0 0 1-2 2h-.75a2 2 0 0 1-2-2Zm5.5 5A1.75 1.75 0 0 1 14 7.25h1A1.75 1.75 0 0 1 16.75 9v[...]
+      <svg viewBox="0 0 24 24"><path d="M6.75 4A1.75 1.75 0 0 1 8.5 2.25h1A1.75 1.75 0 0 1 11.25 4v15.75a2 2 0 0 1-2 2h-.75a2 2 0 0 1-2-2Zm5.5 5A1.75 1.75 0 0 1 14 7.25h1A1.75 1.75 0 0 1 16.75 9v10.75a2 2 0 0 1-2 2h-.75a2 2 0 0 1-2-2Zm5.5-5A1.75 1.75 0 0 1 19.5 4v15.75a2 2 0 0 1-2 2h-.75a2 2 0 0 1-2-2V4a1.75 1.75 0 0 1 1.75-1.75h1Z"/></svg>
       <span>Statisztikák</span>
     </button>
     <button id="nav-profile" onclick="goTo('profile')" aria-label="Profil">
       <span class="nav-glow" aria-hidden="true"></span>
-      <svg viewBox="0 0 24 24"><path d="M12 12.75a5.25 5.25 0 1 0-5.25-5.25A5.26 5.26 0 0 0 12 12.75Zm0 2.25c-3.486 0-7.5 1.757-7.5 4.5a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5c0-2.743-4.01[...]
+      <svg viewBox="0 0 24 24"><path d="M12 12.75a5.25 5.25 0 1 0-5.25-5.25A5.26 5.26 0 0 0 12 12.75Zm0 2.25c-3.486 0-7.5 1.757-7.5 4.5a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5c0-2.743-4.014-4.5-7.5-4.5Z"/></svg>
       <span>Profil</span>
     </button>
   </nav>
@@ -825,49 +805,7 @@ main, .screen, .stack, .card {
         .replaceAll("'",'&#039;');
     }
   </script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js')
-          .then(r => console.log('✅ Munkaóra PWA ready', r.scope))
-          .catch(e => console.warn('SW registration failed:', e));
-      });
-    }
-
-    let deferredMunkaoraPrompt = null;
-    window.addEventListener('beforeinstallprompt', event => {
-      event.preventDefault();
-      deferredMunkaoraPrompt = event;
-
-      const promptInstall = () => {
-        if (!deferredMunkaoraPrompt) return;
-        deferredMunkaoraPrompt.prompt();
-        deferredMunkaoraPrompt.userChoice.then(choice => {
-          console.log('Munkaóra install prompt choice', choice.outcome);
-        }).catch(() => {});
-        deferredMunkaoraPrompt = null;
-        window.removeEventListener('click', promptInstall);
-      };
-
-      window.addEventListener('click', promptInstall, { once: true });
-    });
-  </script>
-
-  <!-- PWA registration + install prompt handler required by the task -->
-  <script>
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker
-          .register("/service-worker.js")
-          .then(r => console.log("✅ PWA active:", r.scope))
-          .catch(e => console.error("SW failed", e));
-      });
-    }
-
-    window.addEventListener("beforeinstallprompt", (e) => {
-      console.log("📱 Install prompt ready");
-      window.deferredPrompt = e;
-    });
-  </script>
 </body>
 </html>
+
+
