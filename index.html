@@ -88,12 +88,12 @@
     }
 
     /* =========================================================================
-       APP SHELL
+       APP SHELL - FIXED PADDING
        ========================================================================= */
     .app-shell{
       width:min(100%,480px);
       min-height:100vh;
-      padding:clamp(24px,6vw,44px) clamp(18px,6vw,32px) 160px;
+      padding:clamp(24px,6vw,44px) clamp(18px,6vw,32px) 220px; /* ✅ NÖVELVE: 160px → 220px */
       position:relative;
       z-index:1;
       display:flex;
@@ -415,7 +415,7 @@
     .stats-card strong{ font-size:1.6rem; color:var(--text); }
 
     /* =========================================================================
-       FLOATING NAV (glass, centered, floating above bottom)
+       FLOATING NAV - FIXED ✅
        ========================================================================= */
     nav{
       position:fixed; left:50%; bottom:36px; transform:translateX(-50%);
@@ -423,12 +423,14 @@
       background:rgba(255,255,255,0.30); backdrop-filter:blur(28px);
       border:1px solid rgba(255,255,255,0.6); box-shadow:var(--shadow-nav);
       display:flex; gap:10px; z-index:20;
+      pointer-events:none; /* ✅ NAV NEM BLOKKOLJA AZ ALATTA LÉVŐ TARTALMAT */
     }
     nav button{
       flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
       padding:12px; border-radius:18px; background:transparent; color:var(--muted);
       font-size:.74rem; font-weight:700; letter-spacing:.01em; transition:background var(--fast), color var(--fast), transform var(--fast);
       border:none;
+      pointer-events:auto; /* ✅ DE A GOMBOK KLIKKELHETŐK */
     }
     nav button svg{ width:22px; height:22px; fill:currentColor; transition:transform var(--fast); }
     nav button span{ font-size:.72rem; }
@@ -446,12 +448,14 @@
     }
     nav button.active .nav-glow{ opacity:1; }
 
-    @media(min-width:520px){ nav{ bottom:46px; } }
+    @media(min-width:520px){ 
+      nav{ bottom:46px; }
+      .app-shell{ padding-bottom:240px; } /* ✅ nagyobb képernyőkön több tér */
+    }
   </style>
 </head>
 <body>
-  <!-- ✅ hero-clock + nav-profile present -->
-  <div id="build-badge" style="position:fixed;left:8px;top:6px;font-size:12px;color:#5d6b85;opacity:.9;z-index:50;">build: vNEXT</div>
+  <div id="build-badge" style="position:fixed;left:8px;top:6px;font-size:12px;color:#5d6b85;opacity:.9;z-index:50;">build: vNEXT-fixed</div>
 
   <div class="app-shell">
     <main class="screen-stack">
@@ -462,7 +466,6 @@
           <div class="welcome-pill">Personal finance companion</div>
           <h1>Munkaóra</h1>
 
-          <!-- REPLACED ORB → CLOCK -->
           <div class="hero-clock" role="img" aria-label="Alarm clock">
             <div class="clock-body">
               <div class="clock-hand hour"></div>
@@ -489,323 +492,4 @@
             <h2>Profilod</h2>
           </div>
           <div class="header-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M12 12.75a5.25 5.25 0 1 0-5.25-5.25A5.26 5.26 0 0 0 12 12.75Zm0 2.25c-3.486 0-7.5 1.757-7.5 4.5a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5c0-2.743-4.014-4.5-7.5-4.5Z"/></svg>
-          </div>
-        </header>
-        <div class="stack">
-          <div class="card stack">
-            <p>Add meg az alapadataidat, hogy pontosan lássuk, mennyi időt dolgozol egy termékért.</p>
-            <input id="name" placeholder="Név" />
-            <input id="age" placeholder="Életkor" type="number" />
-            <input id="city" placeholder="Település" />
-            <input id="income" placeholder="Havi nettó jövedelem (Ft)" type="number" />
-            <input id="hours" placeholder="Heti munkaóra" type="number" />
-            <button onclick="saveProfile()">Mentés és továbblépés</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- 3. Kalkulátor -->
-      <section id="screen-calculator" class="screen" data-theme="calculator">
-        <header class="screen-header">
-          <div>
-            <span class="caption">Munkaóra</span>
-            <h2>Kalkulátor</h2>
-          </div>
-          <div class="header-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M6 2.75h12A3.25 3.25 0 0 1 21.25 6v12A3.25 3.25 0 0 1 18 21.25H6A3.25 3.25 0 0 1 2.75 18V6A3.25 3.25 0 0 1 6 2.75Zm.5 4a.75.75 0 0 0 0 1.5h2a.75.75 0 0 0 0-1.5h-2Zm0 4a.75.75 0 0 0 0 1.5h10a.75.75 0 0 0 0-1.5h-10Zm0 4a.75.75 0 0 0 0 1.5h10a.75.75 0 0 0 0-1.5h-10Z"/></svg>
-          </div>
-        </header>
-        <div class="stack">
-          <div class="card">
-            <div class="stack">
-              <p>Írd be a terméket és az árát, és azonnal megmutatjuk, mennyi munkaidődbe kerülne.</p>
-              <input id="product" placeholder="Terméknév" />
-              <input id="price" placeholder="Ár (Ft)" type="number" />
-              <button onclick="calculate()">Számolás</button>
-
-              <div id="result-box" class="result-box">
-                <div class="hours" id="hoursResult">0</div>
-                <p>munkaórádba kerülne</p>
-                <div class="decision-buttons">
-                  <button class="save" onclick="saveDecision('megsporolom')">Megspórolom</button>
-                  <button class="buy" onclick="saveDecision('megveszem')">Megveszem</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 4. Előzmények -->
-      <section id="screen-history" class="screen" data-theme="history">
-        <header class="screen-header">
-          <div>
-            <span class="caption">Munkaóra</span>
-            <h2>Előzmények</h2>
-          </div>
-          <div class="header-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M12 3.75A8.25 8.25 0 1 0 20.25 12a.75.75 0 0 1 1.5 0 9.75 9.75 0 1 1-3.31-7.324l1.155-1.154a.75.75 0 1 1 1.06 1.06l-2.5 2.5a.75.75 0 0 1-1.28-.53V4.5a.75.75 0 0 1 1.5 0v1.134A8.23 8.23 0 0 0 12 3.75Zm.75 4.5v3.44l2.845 1.705a.75.75 0 0 1-.76 1.29l-3.25-1.95A.75.75 0 0 1 11.25 12V8.25a.75.75 0 0 1 1.5 0Z"/></svg>
-          </div>
-        </header>
-        <div class="stack">
-          <div id="history-list"></div>
-        </div>
-      </section>
-
-      <!-- 5. Statisztikák -->
-      <section id="screen-stats" class="screen" data-theme="stats">
-        <header class="screen-header">
-          <div>
-            <span class="caption">Munkaóra</span>
-            <h2>Statisztikák</h2>
-          </div>
-          <div class="header-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M5.75 4A1.75 1.75 0 0 1 7.5 2.25h1A1.75 1.75 0 0 1 10.25 4v15.75a2 2 0 0 1-2 2h-.75a2 2 0 0 1-2-2Zm5.5 5A1.75 1.75 0 0 1 13 7.25h1A1.75 1.75 0 0 1 15.75 9v10.75a2 2 0 0 1-2 2h-.75a2 2 0 0 1-2-2Zm5.5-5A1.75 1.75 0 0 1 18.5 4v15.75a2 2 0 0 1-2 2h-.75a2 2 0 0 1-2-2V4a1.75 1.75 0 0 1 1.75-1.75h1Z"/></svg>
-          </div>
-        </header>
-        <div class="stack">
-          <div class="stats-grid">
-            <div class="progress-shell">
-              <div class="progress-ring" id="ratioCircle">
-                <span id="ratio">0%</span>
-              </div>
-              <p>Spórolási arány</p>
-            </div>
-            <div class="stats-cards">
-              <div class="stats-card">
-                <p><strong id="savedHours">0</strong> óra megspórolva</p>
-              </div>
-              <div class="stats-card">
-                <p><strong id="spentHours">0</strong> óra elköltve</p>
-              </div>
-            </div>
-          </div>
-          <div class="card" style="display:flex;justify-content:center;align-items:center;">
-            <button onclick="goTo('calculator')">Új kalkuláció</button>
-          </div>
-        </div>
-      </section>
-    </main>
-  </div>
-
-  <!-- Lebegő, üveges nav (középen, emelve) -->
-  <nav>
-    <button id="nav-calculator" onclick="goTo('calculator')" aria-label="Kalkulátor">
-      <span class="nav-glow" aria-hidden="true"></span>
-      <svg viewBox="0 0 24 24"><path d="M6.75 3A2.75 2.75 0 0 0 4 5.75v12.5A2.75 2.75 0 0 0 6.75 21h10.5A2.75 2.75 0 0 0 20 18.25V5.75A2.75 2.75 0 0 0 17.25 3Zm.75 3.5h9a.75.75 0 0 1 0 1.5h-9a.75.75 0 0 1 0-1.5Zm0 4h9a.75.75 0 0 1 0 1.5h-9a.75.75 0 0 1 0-1.5Zm0 4h4a.75.75 0 0 1 0 1.5h-4a.75.75 0 0 1 0-1.5Z"/></svg>
-      <span>Kalkulátor</span>
-    </button>
-    <button id="nav-history" onclick="goTo('history')" aria-label="Előzmények">
-      <span class="nav-glow" aria-hidden="true"></span>
-      <svg viewBox="0 0 24 24"><path d="M12 2.75A9.25 9.25 0 1 0 21.25 12a.75.75 0 0 1 1.5 0 10.75 10.75 0 1 1-3.694-8.076l1.288-1.288a.75.75 0 0 1 1.06 1.06l-2.75 2.75a.75.75 0 0 1-1.28-.53V4.5a.75.75 0 0 1 1.5 0v.792A9.23 9.23 0 0 0 12 2.75Zm.75 5.5v3.69l3.095 1.855a.75.75 0 0 1-.75 1.29l-3.5-2.1A.75.75 0 0 1 11.25 12V8.25a.75.75 0 0 1 1.5 0Z"/></svg>
-      <span>Előzmények</span>
-    </button>
-    <button id="nav-stats" onclick="goTo('stats')" aria-label="Statisztikák">
-      <span class="nav-glow" aria-hidden="true"></span>
-      <svg viewBox="0 0 24 24"><path d="M6.75 4A1.75 1.75 0 0 1 8.5 2.25h1A1.75 1.75 0 0 1 11.25 4v15.75a2 2 0 0 1-2 2h-.75a2 2 0 0 1-2-2Zm5.5 5A1.75 1.75 0 0 1 14 7.25h1A1.75 1.75 0 0 1 16.75 9v10.75a2 2 0 0 1-2 2h-.75a2 2 0 0 1-2-2Zm5.5-5A1.75 1.75 0 0 1 19.5 4v15.75a2 2 0 0 1-2 2h-.75a2 2 0 0 1-2-2V4a1.75 1.75 0 0 1 1.75-1.75h1Z"/></svg>
-      <span>Statisztikák</span>
-    </button>
-    <button id="nav-profile" onclick="goTo('profile')" aria-label="Profil">
-      <span class="nav-glow" aria-hidden="true"></span>
-      <svg viewBox="0 0 24 24"><path d="M12 12.75a5.25 5.25 0 1 0-5.25-5.25A5.26 5.26 0 0 0 12 12.75Zm0 2.25c-3.486 0-7.5 1.757-7.5 4.5a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5c0-2.743-4.014-4.5-7.5-4.5Z"/></svg>
-      <span>Profil</span>
-    </button>
-  </nav>
-
-  <script>
-    /* ======================================================
-       GA event helper
-       ====================================================== */
-    function track(name, params = {}) {
-      if (window.gtag) window.gtag('event', name, params);
-    }
-
-    /* ======================================================
-       Navigation
-       ====================================================== */
-    function goTo(screen) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById(`screen-${screen}`).classList.add('active');
-
-      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-      const nb = document.getElementById(`nav-${screen}`);
-      if (nb) nb.classList.add('active');
-
-      track('view_' + screen);
-
-      if (screen === 'history') loadHistory();
-      if (screen === 'stats') loadStats();
-    }
-
-    /* ======================================================
-       Storage
-       ====================================================== */
-    const STORE_KEY = 'munkaora_data';
-    function loadData(){
-      try{ return JSON.parse(localStorage.getItem(STORE_KEY)) || { profile:{}, history:[] }; }
-      catch(e){ return { profile:{}, history:[] }; }
-    }
-    function saveData(data){ localStorage.setItem(STORE_KEY, JSON.stringify(data)); }
-
-    /* ======================================================
-       Profile
-       ====================================================== */
-    function saveProfile(){
-      const data = loadData();
-      data.profile = {
-        name: document.getElementById('name').value,
-        age: +document.getElementById('age').value,
-        city: document.getElementById('city').value,
-        income: +document.getElementById('income').value,
-        hoursPerWeek: +document.getElementById('hours').value
-      };
-      saveData(data);
-      track('profile_saved');
-      goTo('calculator');
-    }
-
-    /* ======================================================
-       Calculator
-       ====================================================== */
-    let currentProduct = null;
-    let currentPrice = 0;
-    let currentHours = 0;
-
-    function calculate(){
-      const data = loadData();
-      const p = data.profile;
-
-      if(!p.income || !p.hoursPerWeek){
-        alert('Előbb add meg a profilod adatait!');
-        goTo('profile');
-        return;
-      }
-
-      const product = document.getElementById('product').value.trim();
-      const price = +document.getElementById('price').value;
-
-      if(!product || !price){
-        alert('Add meg a termék nevét és árát!');
-        return;
-      }
-
-      const hourly = p.income / (p.hoursPerWeek * 4);
-      const hours = (price / hourly).toFixed(1);
-
-      document.getElementById('result-box').style.display = 'block';
-      document.getElementById('hoursResult').innerText = hours;
-
-      currentProduct = product;
-      currentPrice = price;
-      currentHours = hours;
-
-      track('calculation_done', { product, price });
-    }
-
-    /* ======================================================
-       Decision
-       ====================================================== */
-    function saveDecision(type){
-      if(!currentProduct){ alert('Előbb számoljunk!'); return; }
-
-      const data = loadData();
-      data.history.push({
-        id: Date.now(),
-        product: currentProduct,
-        price: currentPrice,
-        hours: currentHours,
-        decision: type,
-        ts: new Date().toISOString()
-      });
-      saveData(data);
-
-      track('decision_click', { decision: type, product: currentProduct, price: currentPrice });
-
-      document.getElementById('result-box').style.display = 'none';
-      document.getElementById('product').value = '';
-      document.getElementById('price').value = '';
-
-      goTo('history');
-    }
-
-    /* ======================================================
-       History
-       ====================================================== */
-    function loadHistory(){
-      const list = document.getElementById('history-list');
-      list.innerHTML = '';
-      const data = loadData();
-
-      if(data.history.length === 0){
-        list.innerHTML = '<div class="card" style="text-align:center;"><p>Még nincs adatod.</p><button class="btn-secondary" onclick="goTo(\'calculator\')">Indíts kalkulációt</button></div>';
-        track('history_empty_view');
-        return;
-      }
-
-      [...data.history].reverse().forEach(item=>{
-        const el = document.createElement('div');
-        el.className = 'history-item ' + (item.decision === 'megsporolom' ? 'green' : 'red');
-        el.innerHTML =
-          '<strong>' + escapeHtml(item.product) + '</strong>' +
-          '<span>' + Number(item.price).toLocaleString('hu-HU') + ' Ft</span><br>' +
-          '<small>' + item.hours + ' óra • ' + new Date(item.ts).toLocaleDateString('hu-HU') + '</small>';
-        list.appendChild(el);
-      });
-      track('history_loaded', { count: data.history.length });
-    }
-
-    /* ======================================================
-       Stats
-       ====================================================== */
-    function loadStats(){
-      const data = loadData();
-      const saved = data.history.filter(i => i.decision === 'megsporolom');
-      const spent = data.history.filter(i => i.decision === 'megveszem');
-
-      const total = data.history.length;
-      const ratio = total ? Math.round((saved.length / total) * 100) : 0;
-
-      const ratioEl = document.getElementById('ratio');
-      ratioEl.innerText = ratio + '%';
-      ratioEl.classList.remove('pulse'); void ratioEl.offsetWidth; ratioEl.classList.add('pulse');
-
-      const ratioCircle = document.getElementById('ratioCircle');
-      if(ratioCircle){ ratioCircle.style.setProperty('--progress', (ratio * 3.6) + 'deg'); }
-
-      const savedHours = saved.reduce((sum,i)=> sum + Number(i.hours), 0);
-      const spentHours = spent.reduce((sum,i)=> sum + Number(i.hours), 0);
-
-      document.getElementById('savedHours').innerText = savedHours.toFixed(1);
-      document.getElementById('spentHours').innerText = spentHours.toFixed(1);
-
-      track('stats_loaded', { total, ratio, savedHours, spentHours });
-    }
-
-    /* ======================================================
-       Init + helpers
-       ====================================================== */
-    (function init(){
-      const d = loadData();
-      if(d.profile){
-        document.getElementById('name').value = d.profile.name || '';
-        document.getElementById('age').value = d.profile.age || '';
-        document.getElementById('city').value = d.profile.city || '';
-        document.getElementById('income').value = d.profile.income || '';
-        document.getElementById('hours').value = d.profile.hoursPerWeek || '';
-      }
-    })();
-
-    function escapeHtml(str){
-      return String(str)
-        .replaceAll('&','&amp;')
-        .replaceAll('<','&lt;')
-        .replaceAll('>','&gt;')
-        .replaceAll('"','&quot;')
-        .replaceAll("'",'&#039;');
-    }
-  </script>
-</body>
-</html>
-
-
+            <svg viewBox="0 0 24 24"><path d="M12 12.75a5.25 5.25 0 1 0-5.25-5.25A5.26 5.26 0 0 0 12 12.75Zm0 2.25c-3.
