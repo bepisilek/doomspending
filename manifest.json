@@ -1,0 +1,21 @@
+{
+  "name": "Munkaóra",
+  "short_name": "Munkaóra",
+  "display": "standalone",
+  "start_url": "https://doomspending.vercel.app/index.html",
+  "scope": "https://doomspending.vercel.app/",
+  "background_color": "#eef3ff",
+  "theme_color": "#2967ff",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiB2aWV3Qm94PSIwIDAgMTkyIDE5MiI+PGNpcmNsZSBjeD0iOTYiIGN5PSI5NiIgcj0iOTYiIGZpbGw9IiMyOTY3ZmYiLz48dGV4dCB4PSI0OCUiIHk9IjU1JSIgZmlsbD0id2hpdGUiIGZvbnQtc2l6ZT0iNjQiIGZvbnQtZmFtaWx5PSJBcmlhbCI+TW88L3RleHQ+PC9zdmc+",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiI+PGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNTYiIGZpbGw9IiMyOTY3ZmYiLz48dGV4dCB4PSI0OCUiIHk9IjU1JSIgZmlsbD0id2hpdGUiIGZvbnQtc2l6ZT0iMTQ0IiBmb250LWZhbWlseT0iQXJpYWwiPk1vPC90ZXh0Pjwvc3ZnPg==",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
