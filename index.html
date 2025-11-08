@@ -14,6 +14,10 @@
     gtag('config', 'G-G8BZPSFGGG');
   </script>
 
+  <script>
+    console.log('BUILD_OK:PWA', !!navigator.serviceWorker, 'GA', typeof window.gtag === 'function');
+  </script>
+
   <style>
     /* =========================================================================
        FONTS
@@ -61,6 +65,7 @@ main, .screen, .stack, .card {
        ========================================================================= */
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
     html,body{height:100%;}
+
     body{
       font-family:Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
       color:var(--text);
@@ -432,6 +437,7 @@ main, .screen, .stack, .card {
       border:1px solid rgba(255,255,255,0.6); box-shadow:var(--shadow-nav);
       display:flex; gap:10px; z-index:20;
     }
+
     nav button{
       flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
       padding:12px; border-radius:18px; background:transparent; color:var(--muted);
@@ -812,6 +818,33 @@ main, .screen, .stack, .card {
         .replaceAll('"','&quot;')
         .replaceAll("'",'&#039;');
     }
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(r => console.log('✅ Munkaóra PWA ready', r.scope))
+          .catch(e => console.warn('SW registration failed:', e));
+      });
+    }
+
+    let deferredMunkaoraPrompt = null;
+    window.addEventListener('beforeinstallprompt', event => {
+      event.preventDefault();
+      deferredMunkaoraPrompt = event;
+
+      const promptInstall = () => {
+        if (!deferredMunkaoraPrompt) return;
+        deferredMunkaoraPrompt.prompt();
+        deferredMunkaoraPrompt.userChoice.then(choice => {
+          console.log('Munkaóra install prompt choice', choice.outcome);
+        }).catch(() => {});
+        deferredMunkaoraPrompt = null;
+        window.removeEventListener('click', promptInstall);
+      };
+
+      window.addEventListener('click', promptInstall, { once: true });
+    });
   </script>
 </body>
 </html>
