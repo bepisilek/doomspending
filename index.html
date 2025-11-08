@@ -562,14 +562,19 @@
       font-style:italic;
     }
 
+    /* NAV - ALAPBÓL REJTVE WELCOME SCREEN-EN */
     nav{
       position:fixed; left:50%; bottom:36px; transform:translateX(-50%);
       width:min(100%,420px); padding:10px; border-radius:999px;
       background:rgba(255,255,255,0.30); backdrop-filter:blur(28px);
       border:1px solid rgba(255,255,255,0.6); box-shadow:var(--shadow-nav);
-      display:flex; gap:10px; z-index:20;
+      display:none; /* ALAPBÓL REJTVE */
+      gap:10px; z-index:20;
       pointer-events:none;
       transition:opacity var(--fast), transform var(--fast);
+    }
+    nav.show{
+      display:flex; /* CSAK AKKOR JELENIK MEG HA VAN SHOW CLASS */
     }
     nav button{
       flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
@@ -601,7 +606,7 @@
   </style>
 </head>
 <body>
-  <div id="build-badge" style="position:fixed;left:8px;top:6px;font-size:11px;color:#5d6b85;opacity:.8;z-index:50;">v2.0 PRO</div>
+  <div id="build-badge" style="position:fixed;left:8px;top:6px;font-size:11px;color:#5d6b85;opacity:.8;z-index:50;">v2.1 FINAL</div>
 
   <div class="app-shell">
     <main class="screen-stack">
@@ -880,12 +885,12 @@
       const nb = document.getElementById(`nav-${screen}`);
       if (nb) nb.classList.add('active');
       
-      // Nav elrejtése welcome screen-en
+      // Nav megjelenítése/elrejtése
       const nav = document.getElementById('main-nav');
       if(screen === 'welcome'){
-        nav.style.display = 'none';
+        nav.classList.remove('show');
       } else {
-        nav.style.display = 'flex';
+        nav.classList.add('show');
       }
       
       track('view_' + screen);
@@ -1102,6 +1107,16 @@
       track('data_exported');
     }
 
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'",'&#039;');
+    }
+
+    // INIT - DOM betöltődés után
     (function init(){
       const d = loadData();
       if(d.profile){
@@ -1111,18 +1126,7 @@
         document.getElementById('income').value = d.profile.income || '';
         document.getElementById('hours').value = d.profile.hoursPerWeek || '';
       }
-      // Welcome screen-en rejtve van a nav
-      document.getElementById('main-nav').style.display = 'none';
     })();
-
-    function escapeHtml(str){
-      return String(str)
-        .replaceAll('&','&amp;')
-        .replaceAll('<','&lt;')
-        .replaceAll('>','&gt;')
-        .replaceAll('"','&quot;')
-        .replaceAll("'",'&#039;');
-    }
   </script>
 </body>
 </html>
