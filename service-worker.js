@@ -1,36 +1,88 @@
-const CACHE_NAME = "munkaora-v1";
-const URLS_TO_CACHE = [
-  "./",
-  "./index.html",
-  "./manifest.json",
+const VERSION = 'pwa-v1';
+const SHELL_CACHE = `${VERSION}-shell`;
+const RUNTIME_CACHE = `${VERSION}-runtime`;
+const APP_SHELL = [
+  './index.html',
+  './manifest.json'
 ];
+const FONT_HOSTS = ['https://fonts.googleapis.com', 'https://fonts.gstatic.com'];
 
-self.addEventListener("install", (event) => {
+self.addEventListener('install', event => {
+  console.log('✅ Munkaóra PWA ready', VERSION);
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(URLS_TO_CACHE))
+    caches.open(SHELL_CACHE)
+      .then(cache => cache.addAll(APP_SHELL))
+      .then(() => self.skipWaiting())
   );
-  self.skipWaiting();
 });
 
-self.addEventListener("activate", (event) => {
+self.addEventListener('activate', event => {
+  console.log('✅ Munkaóra PWA ready', VERSION);
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    )
+    caches.keys().then(keys =>
+      Promise.all(
+        keys
+          .filter(key => key.startsWith('pwa-') && key !== SHELL_CACHE && key !== RUNTIME_CACHE)
+          .map(key => caches.delete(key))
+      )
+    ).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "GET") return;
-  event.respondWith(
-    caches.match(event.request).then((response) =>
-      response ||
-      fetch(event.request).then((fetched) => {
-        const copy = fetched.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
-        return fetched;
-      }).catch(() => caches.match("./index.html"))
-    )
-  );
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  const { request } = event;
+  const url = new URL(request.url);
+
+  if (request.mode === 'navigate') {
+    event.respondWith(handleNavigation(request));
+    return;
+  }
+
+  if (FONT_HOSTS.includes(url.origin)) {
+    event.respondWith(staleWhileRevalidate(request, RUNTIME_CACHE));
+    return;
+  }
+
+  if (url.origin === self.location.origin) {
+    event.respondWith(staleWhileRevalidate(request, SHELL_CACHE));
+    return;
+  }
+
+  event.respondWith(staleWhileRevalidate(request, RUNTIME_CACHE));
 });
+
+function handleNavigation(request) {
+  return fetch(request)
+    .then(response => {
+      const copy = response.clone();
+      caches.open(SHELL_CACHE).then(cache => {
+        cache.put(request, copy.clone()).catch(() => {});
+        cache.put('./index.html', copy).catch(() => {});
+      });
+      return response;
+    })
+    .catch(() => caches.match(request)
+      .then(match => match || caches.match('./index.html'))
+    );
+}
+
+function staleWhileRevalidate(request, cacheName) {
+  return caches.open(cacheName).then(cache =>
+    cache.match(request).then(cachedResponse => {
+      const fetchPromise = fetch(request)
+        .then(networkResponse => {
+          if (networkResponse && networkResponse.status === 200) {
+            cache.put(request, networkResponse.clone()).catch(() => {});
+          }
+          return networkResponse;
+        })
+        .catch(() => cachedResponse);
+
+      return cachedResponse || fetchPromise;
+    })
+  );
+}
