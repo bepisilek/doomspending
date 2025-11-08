@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Munkaóra Kalkulátor</title>
+
+  <!-- GOOGLE ANALYTICS (későbbi méréshez) -->
+  <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXX');
+  </script> -->
+
+  <style>
+    :root {
+      --blue: #007aff;
+      --blue-dark: #005fe0;
+      --green: #22c55e;
+      --red: #ef4444;
+      --gray: #6b7280;
+      --bg: #f7f9fb;
+      --white: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: #111;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1, h2, h3 { margin: 0 0 1rem; }
+
+    .screen {
+      display: none;
+      width: 100%;
+      max-width: 420px;
+      padding: 24px;
+      animation: fadein 0.3s ease;
+    }
+    @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+
+    .active { display: block; }
+
+    button {
+      background: var(--blue);
+      color: var(--white);
+      border: none;
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover { background: var(--blue-dark); }
+
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+
+    nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--white);
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0;
+      z-index: 10;
+    }
+
+    nav button {
+      background: none;
+      color: var(--gray);
+      border-radius: 8px;
+      padding: 10px 16px;
+    }
+    nav button.active {
+      color: var(--blue);
+      background: #e0ecff;
+    }
+
+    .result-box {
+      background: #e8f0fe;
+      border: 2px solid var(--blue);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      margin: 20px 0;
+    }
+    .result-box .hours {
+      font-size: 48px;
+      font-weight: 600;
+      color: var(--blue);
+    }
+
+    .history-item {
+      background: var(--white);
+      border-left: 6px solid;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      padding: 14px 18px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .history-item.green { border-color: var(--green); }
+    .history-item.red { border-color: var(--red); }
+
+    .history-item small { color: var(--gray); font-size: 12px; }
+
+    .stats-box {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      margin-bottom: 16px;
+    }
+
+    .stats-box .big {
+      font-size: 40px;
+      color: var(--blue);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. WELCOME SCREEN -->
+  <div id="screen-welcome" class="screen active">
+    <h1 style="text-align:center;">Munkaóra</h1>
+    <p style="text-align:center;color:var(--gray);">Lássuk, hány órát dolgozol egy-egy vásárlásért</p>
+    <div style="text-align:center;margin:60px 0;">
+      <div style="width:100px;height:100px;margin:0 auto;background:var(--blue);border-radius:50%;box-shadow:0 10px 30px rgba(0,122,255,0.3);animation:float 3s ease-in-out infinite;"></div>
+      <style>@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}</style>
+    </div>
+    <div style="text-align:center;">
+      <button onclick="goTo('profile'); track('start_click')">Kezdjük</button>
+    </div>
+  </div>
+
+  <!-- 2. PROFILE SCREEN -->
+  <div id="screen-profile" class="screen">
+    <h2>Profilod</h2>
+    <input id="name" placeholder="Név" />
+    <input id="age" placeholder="Életkor" type="number" />
+    <input id="city" placeholder="Település" />
+    <input id="income" placeholder="Havi nettó jövedelem (Ft)" type="number" />
+    <input id="hours" placeholder="Heti munkaóra" type="number" />
+    <button onclick="saveProfile()">Mentés és továbblépés</button>
+  </div>
+
+  <!-- 3. CALCULATOR SCREEN -->
+  <div id="screen-calculator" class="screen">
+    <h2>Kalkulátor</h2>
+    <p class="gray">Add meg a terméket és az árát</p>
+    <input id="product" placeholder="Terméknév" />
+    <input id="price" placeholder="Ár (Ft)" type="number" />
+    <button onclick="calculate()">Nézzük</button>
+
+    <div id="result-box" class="result-box" style="display:none;">
+      <div class="hours" id="hoursResult">0</div>
+      <p>munkaórádba kerülne</p>
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:20px;">
+        <button style="background:var(--green);" onclick="saveDecision('megsporolom')">Megspórolom</button>
+        <button style="background:var(--red);" onclick="saveDecision('megveszem')">Megveszem</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. HISTORY SCREEN -->
+  <div id="screen-history" class="screen">
+    <h2>Előzmények</h2>
+    <div id="history-list"></div>
+  </div>
+
+  <!-- 5. STATS SCREEN -->
+  <div id="screen-stats" class="screen">
+    <h2>Statisztikák</h2>
+    <div class="stats-box">
+      <div class="big" id="ratio">0%</div>
+      <p>Spórolási arány</p>
+    </div>
+    <div class="stats-box">
+      <p><strong id="savedHours">0</strong> óra megspórolva</p>
+      <p><strong id="spentHours">0</strong> óra elköltve</p>
+    </div>
+    <div style="text-align:center;">
+      <button onclick="goTo('calculator')">Új kalkuláció</button>
+    </div>
+  </div>
+
+  <!-- NAVIGATION -->
+  <nav>
+    <button id="nav-calculator" class="active" onclick="goTo('calculator')">🧮</button>
+    <button id="nav-history" onclick="goTo('history')">📜</button>
+    <button id="nav-stats" onclick="goTo('stats')">📊</button>
+  </nav>
+
+  <script>
+    // ---- UTILITIES ----
+    function track(name, params={}) {
+      if (window.gtag) window.gtag('event', name, params);
+    }
+
+    function goTo(screen) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(`screen-${screen}`).classList.add('active');
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      const navBtn = document.getElementById(`nav-${screen}`);
+      if (navBtn) navBtn.classList.add('active');
+      track('view_'+screen);
+      if (screen === 'history') loadHistory();
+      if (screen === 'stats') loadStats();
+    }
+
+    // ---- LOCAL STORAGE DATA ----
+    const storeKey = "munkaora_data";
+    function loadData() {
+      return JSON.parse(localStorage.getItem(storeKey) || '{"profile":{},"history":[]}');
+    }
+    function saveData(data) {
+      localStorage.setItem(storeKey, JSON.stringify(data));
+    }
+
+    // ---- PROFILE ----
+    function saveProfile() {
+      const data = loadData();
+      data.profile = {
+        name: document.getElementById('name').value,
+        age: +document.getElementById('age').value,
+        city: document.getElementById('city').value,
+        income: +document.getElementById('income').value,
+        hoursPerWeek: +document.getElementById('hours').value
+      };
+      saveData(data);
+      track('profile_saved');
+      goTo('calculator');
+    }
+
+    // ---- CALCULATOR ----
+    let currentProduct = null;
+    let currentPrice = 0;
+    let currentHours = 0;
+
+    function calculate() {
+      const data = loadData();
+      const p = data.profile;
+      if (!p.income || !p.hoursPerWeek) {
+        alert('Előbb add meg a profilod adatait!');
+        goTo('profile');
+        return;
+      }
+      const product = document.getElementById('product').value.trim();
+      const price = +document.getElementById('price').value;
+      if (!product || !price) return alert('Add meg a termék nevét és árát!');
+      const hourly = p.income / (p.hoursPerWeek * 4);
+      const hours = (price / hourly).toFixed(1);
+      document.getElementById('result-box').style.display = 'block';
+      document.getElementById('hoursResult').innerText = hours;
+      currentProduct = product;
+      currentPrice = price;
+      currentHours = hours;
+      track('calculation_done');
+    }
+
+    function saveDecision(type) {
+      const data = loadData();
+      data.history.push({
+        id: Date.now(),
+        product: currentProduct,
+        price: currentPrice,
+        hours: currentHours,
+        decision: type,
+        ts: new Date().toISOString()
+      });
+      saveData(data);
+      track('decision_click', { decision: type });
+      document.getElementById('result-box').style.display = 'none';
+      document.getElementById('product').value = '';
+      document.getElementById('price').value = '';
+      goTo('history');
+    }
+
+    // ---- HISTORY ----
+    function loadHistory() {
+      const list = document.getElementById('history-list');
+      list.innerHTML = '';
+      const data = loadData();
+      if (data.history.length === 0) {
+        list.innerHTML = '<p style="color:var(--gray);text-align:center;">Még nincs adatod.</p>';
+        return;
+      }
+      [...data.history].reverse().forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'history-item ' + (item.decision === 'megsporolom' ? 'green' : 'red');
+        div.innerHTML = `<strong>${item.product}</strong><br>${item.price.toLocaleString()} Ft<br><small>${item.hours} óra • ${new Date(item.ts).toLocaleDateString()}</small>`;
+        list.appendChild(div);
+      });
+    }
+
+    // ---- STATS ----
+    function loadStats() {
+      const data = loadData();
+      const saved = data.history.filter(i => i.decision === 'megsporolom');
+      const spent = data.history.filter(i => i.decision === 'megveszem');
+      const ratio = data.history.length ? Math.round((saved.length / data.history.length) * 100) : 0;
+      document.getElementById('ratio').innerText = ratio + '%';
+      const savedHours = saved.reduce((sum, i) => sum + +i.hours, 0);
+      const spentHours = spent.reduce((sum, i) => sum + +i.hours, 0);
+      document.getElementById('savedHours').innerText = savedHours.toFixed(1);
+      document.getElementById('spentHours').innerText = spentHours.toFixed(1);
+    }
+
+    // INIT
+    (function init() {
+      const data = loadData();
+      if (data.profile.name) {
+        document.getElementById('name').value = data.profile.name;
+        document.getElementById('age').value = data.profile.age || '';
+        document.getElementById('city').value = data.profile.city || '';
+        document.getElementById('income').value = data.profile.income || '';
+        document.getElementById('hours').value = data.profile.hoursPerWeek || '';
+      }
+    })();
+  </script>
+</body>
+</html>
