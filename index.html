@@ -313,6 +313,7 @@
     .invite-status[data-status="success"]{ color:var(--green); }
     .invite-status[data-status="error"]{ color:var(--red); }
     .invite-status[data-status="info"]{ color:var(--blue-600); }
+    .rotate-btn{ margin-top:-4px; }
 
     input, select{
       width:100%;
@@ -605,9 +606,10 @@
             <h3>🔑 Meghívó szükséges</h3>
             <p class="invite-copy">Add meg az invite kódodat a Munkaóra Pro élmény eléréséhez.</p>
             <div class="invite-form">
-              <input id="inviteCodeInput" placeholder="Pl. 1234-5678-ABCD" autocomplete="one-time-code" inputmode="text" />
+              <input id="inviteCodeInput" placeholder="Pl. 1843-5092-JKLP" autocomplete="one-time-code" inputmode="text" />
               <button type="button" onclick="validateInvite()">✅ Kód ellenőrzése</button>
             </div>
+            <button class="btn-secondary rotate-btn" type="button" onclick="rotateInviteCodes()">🔄 Meghívók rotálása</button>
             <div id="inviteStatus" class="invite-status" role="status" aria-live="polite"></div>
           </div>
 
@@ -908,6 +910,21 @@
       input.value = '';
       updateInviteStatus('✅ Meghívó kód elfogadva. Kezdődhet a számolás!', 'success');
       track('invite_validated');
+    }
+
+    function rotateInviteCodes(){
+      if(inviteQueue.length){
+        const first = inviteQueue.shift();
+        if(first) inviteQueue.push(first);
+      } else {
+        inviteQueue = [...INVITE_CODES];
+      }
+      persistInviteQueue();
+      inviteValidated = false;
+      localStorage.removeItem(INVITE_VALID_KEY);
+      setStartButtonState(false);
+      updateInviteStatus('🔄 Új meghívó sorrend aktiválva. Add meg az aktuális kódot a folytatáshoz.', 'info');
+      track('invite_rotated');
     }
 
     function startApp(){
