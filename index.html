@@ -149,7 +149,6 @@
     }
     .header-icon svg{width:22px; height:22px; fill:#fff;}
 
-    /* Dark mode toggle */
     .theme-toggle{
       position:absolute;
       top:50%;
@@ -344,7 +343,6 @@
       box-shadow:none;
     }
 
-    /* Category selector */
     .category-grid{
       display:grid;
       grid-template-columns:repeat(3, 1fr);
@@ -444,7 +442,6 @@
     .history-item:hover{ transform:translateY(-4px); box-shadow:0 26px 60px -34px rgba(30,54,126,0.66); }
     @keyframes cardEnter{ from{opacity:0; transform:translateY(18px);} to{opacity:1; transform:translateY(0);} }
 
-    /* Achievements */
     .achievements-grid{
       display:grid;
       grid-template-columns:repeat(2, 1fr);
@@ -512,7 +509,6 @@
     }
     .stats-card strong{ font-size:1.6rem; color:var(--text); }
 
-    /* Chart */
     .chart-container{
       height:180px;
       position:relative;
@@ -547,7 +543,6 @@
       white-space:nowrap;
     }
 
-    /* Motivational quote */
     .quote-card{
       padding:24px;
       border-radius:var(--radius-xl);
@@ -574,6 +569,7 @@
       border:1px solid rgba(255,255,255,0.6); box-shadow:var(--shadow-nav);
       display:flex; gap:10px; z-index:20;
       pointer-events:none;
+      transition:opacity var(--fast), transform var(--fast);
     }
     nav button{
       flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
@@ -629,7 +625,7 @@
 
           <p class="welcome-copy">Számold ki, mennyi munkaórádba kerül egy vágyott vásárlás és érezd nagyon rosszul magad!</p>
           
-          <div class="card" style="width:100%; margin-bottom:40px;">
+          <div class="card" style="width:100%;">
             <div class="stack">
               <button onclick="goTo('profile'); track('start_click')">🚀 Kezdjük el!</button>
               <p style="text-align:center;font-size:0.85rem;">Már <strong>2,847</strong> felhasználó spórolt <strong>18,392</strong> órát! 🎉</p>
@@ -814,7 +810,7 @@
     </main>
   </div>
 
-  <nav>
+  <nav id="main-nav">
     <button id="nav-calculator" onclick="goTo('calculator')">
       <span class="nav-glow"></span>
       <svg viewBox="0 0 24 24"><path d="M6.75 3A2.75 2.75 0 0 0 4 5.75v12.5A2.75 2.75 0 0 0 6.75 21h10.5A2.75 2.75 0 0 0 20 18.25V5.75A2.75 2.75 0 0 0 17.25 3Zm.75 3.5h9a.75.75 0 0 1 0 1.5h-9a.75.75 0 0 1 0-1.5Zm0 4h9a.75.75 0 0 1 0 1.5h-9a.75.75 0 0 1 0-1.5Zm0 4h4a.75.75 0 0 1 0 1.5h-4a.75.75 0 0 1 0-1.5Z"/></svg>
@@ -870,12 +866,28 @@
       'Gondolkozz hosszú távon, élj boldogan! ✨'
     ];
 
+    function toggleTheme(){
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      html.setAttribute('data-theme', current === 'dark' ? '' : 'dark');
+      track('theme_toggle', {theme: current === 'dark' ? 'light' : 'dark'});
+    }
+
     function goTo(screen) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(`screen-${screen}`).classList.add('active');
       document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
       const nb = document.getElementById(`nav-${screen}`);
       if (nb) nb.classList.add('active');
+      
+      // Nav elrejtése welcome screen-en
+      const nav = document.getElementById('main-nav');
+      if(screen === 'welcome'){
+        nav.style.display = 'none';
+      } else {
+        nav.style.display = 'flex';
+      }
+      
       track('view_' + screen);
       if (screen === 'history') loadHistory();
       if (screen === 'stats') loadStats();
@@ -1034,5 +1046,83 @@
       weeklyChart.innerHTML = '';
       const days = ['H','K','Sze','Cs','P','Szo','V'];
       const now = new Date();
+      const dayCounts = [];
+      
       for(let i=6;i>=0;i--){
         const d = new Date(now);
+        d.setDate(d.getDate() - i);
+        const dayStr = d.toDateString();
+        const count = data.history.filter(item => new Date(item.ts).toDateString() === dayStr).length;
+        dayCounts.push(count);
+      }
+      
+      const maxCount = Math.max(...dayCounts, 1);
+      dayCounts.forEach((count, idx) => {
+        const bar = document.createElement('div');
+        bar.className = 'chart-bar';
+        bar.style.height = `${(count / maxCount) * 100}%`;
+        bar.innerHTML = `<div class="chart-label">${days[idx]}</div>`;
+        bar.title = `${count} döntés`;
+        weeklyChart.appendChild(bar);
+      });
+
+      // Achievements
+      const grid = document.getElementById('achievementsGrid');
+      grid.innerHTML = '';
+      achievements.forEach(ach => {
+        const unlocked = ach.condition(data);
+        const div = document.createElement('div');
+        div.className = `achievement ${unlocked ? 'unlocked' : 'locked'}`;
+        div.innerHTML = `
+          <div class="achievement-icon">${ach.icon}</div>
+          <div class="achievement-title">${ach.title}</div>
+          <div class="achievement-desc">${ach.desc}</div>
+        `;
+        grid.appendChild(div);
+      });
+      
+      track('stats_loaded', { total, ratio, savedHours, spentHours, streak });
+    }
+
+    function exportData(){
+      const data = loadData();
+      if(!data.history.length){
+        alert('Nincs exportálható adat!');
+        return;
+      }
+      let csv = 'Dátum,Termék,Ár,Óra,Döntés,Kategória\n';
+      data.history.forEach(i => {
+        csv += `${new Date(i.ts).toLocaleString('hu-HU')},"${i.product}",${i.price},${i.hours},${i.decision},${i.category}\n`;
+      });
+      const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `munkaora_export_${new Date().toISOString().slice(0,10)}.csv`;
+      link.click();
+      track('data_exported');
+    }
+
+    (function init(){
+      const d = loadData();
+      if(d.profile){
+        document.getElementById('name').value = d.profile.name || '';
+        document.getElementById('age').value = d.profile.age || '';
+        document.getElementById('city').value = d.profile.city || '';
+        document.getElementById('income').value = d.profile.income || '';
+        document.getElementById('hours').value = d.profile.hoursPerWeek || '';
+      }
+      // Welcome screen-en rejtve van a nav
+      document.getElementById('main-nav').style.display = 'none';
+    })();
+
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'",'&#039;');
+    }
+  </script>
+</body>
+</html>
