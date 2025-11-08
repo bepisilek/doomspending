@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Munkaóra • vNEXT</title>
+  <title>Munkaóra • Revolut UI</title>
 
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-G8BZPSFGGG"></script>
@@ -12,288 +12,67 @@
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', 'G-G8BZPSFGGG');
-    console.log("✅ GA script loaded");
   </script>
 
   <style>
-    /* =========================================================================
-       FONT
-       ========================================================================= */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
-    /* =========================================================================
-       TOKENS
-       ========================================================================= */
     :root {
-      --blue-500:#356dff;
-      --blue-600:#2b5bf7;
+      --blue:#2b5bf7;
       --cyan:#37d4ff;
+      --green:#1dbf73;
+      --red:#ff5c6a;
+      --bg-light:#f7faff;
       --text:#0f172a;
-      --muted:#5d6b85;
-      --white:#ffffff;
-      --shadow-soft:0 25px 60px -35px rgba(15,27,60,0.65);
-      --shadow-nav:0 26px 60px -30px rgba(18,36,78,0.50);
-      --radius-xl:20px;
-      --radius-lg:16px;
-      --fast:.25s cubic-bezier(.3,.7,.4,1);
+      --muted:#64748b;
+      --radius:18px;
+      --shadow:0 25px 60px -35px rgba(15,27,60,0.45);
     }
-
-    * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-    html, body { height:100%; overflow:hidden; }
-    body {
-      font-family:Inter, sans-serif;
-      color:var(--text);
-      background:linear-gradient(180deg,#f7faff 0%,#eef3ff 100%);
-      display:flex; justify-content:center; align-items:center;
-    }
-
-    /* =========================================================================
-       APP CONTAINER
-       ========================================================================= */
-    .app-shell {
-      width:100%;
-      max-width:430px;
-      height:100vh;
-      position:relative;
-      overflow:hidden;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-      padding:16px 14px 120px;
-    }
-
-    .screen {
-      flex:1;
-      display:none;
-      flex-direction:column;
-      justify-content:center;
-      align-items:center;
-      text-align:center;
-      animation:fade .4s ease;
-    }
-    .screen.active { display:flex; }
-
-    @keyframes fade {
-      from {opacity:0; transform:translateY(10px);}
-      to {opacity:1; transform:translateY(0);}
-    }
-
-    h1 { font-size:2rem; font-weight:800; }
-    h2 { font-size:1.2rem; font-weight:700; }
-    p { color:var(--muted); font-size:.9rem; }
-
-    /* =========================================================================
-       HERO CLOCK
-       ========================================================================= */
-    .hero-clock {
-      width:160px;
-      height:160px;
-      position:relative;
-      border-radius:50%;
-      background:radial-gradient(circle at 50% 35%, #fff 0%, #dff0ff 60%, #b6d5ff 100%);
-      box-shadow:0 10px 30px rgba(50,100,255,0.25);
-      display:flex; align-items:center; justify-content:center;
-      animation:floatClock 4s ease-in-out infinite;
-      margin:18px 0;
-    }
-
-    .clock-body {
-      width:70%;
-      height:70%;
-      border-radius:50%;
-      background:radial-gradient(circle, #fff 40%, #e7efff 100%);
-      position:relative;
-    }
-
-    .clock-hand {
-      position:absolute;
-      bottom:50%;
-      left:50%;
-      transform-origin:bottom center;
-      border-radius:2px;
-      background:var(--blue-600);
-    }
-
-    .clock-hand.hour {
-      width:4px;
-      height:28%;
-      animation:tickHour 720s linear infinite;
-    }
-
-    .clock-hand.minute {
-      width:3px;
-      height:36%;
-      animation:tickMinute 60s linear infinite;
-    }
-
-    @keyframes tickMinute {
-      from {transform:translate(-50%,0) rotate(0deg);}
-      to {transform:translate(-50%,0) rotate(360deg);}
-    }
-
-    @keyframes tickHour {
-      from {transform:translate(-50%,0) rotate(0deg);}
-      to {transform:translate(-50%,0) rotate(360deg);}
-    }
-
-    @keyframes floatClock {
-      0%,100% { transform:translateY(0); }
-      50% { transform:translateY(-8px); }
-    }
-
-    /* =========================================================================
-       INPUTS
-       ========================================================================= */
-    input {
-      width:100%;
-      border-radius:10px;
-      border:1px solid #ccd8ff;
-      padding:10px 14px;
-      margin:6px 0;
-      font-size:.9rem;
-      text-align:center;
-    }
-
-    button {
-      width:100%;
-      border:none;
-      border-radius:10px;
-      padding:12px 14px;
-      margin-top:10px;
-      background:linear-gradient(135deg,#2b5bf7,#37d4ff);
-      color:#fff;
-      font-weight:700;
-      font-size:.95rem;
-      box-shadow:0 10px 20px rgba(40,90,255,0.35);
-      transition:transform var(--fast);
-    }
-
-    button:active { transform:scale(0.96); }
-
-    /* =========================================================================
-       RESULT BOX
-       ========================================================================= */
-    .result-box {
-      display:none;
-      background:rgba(255,255,255,0.9);
-      border-radius:var(--radius-lg);
-      padding:14px;
-      margin-top:10px;
-      font-size:1rem;
-      box-shadow:0 4px 18px rgba(40,70,150,0.15);
-    }
-
-    .result-box .hours {
-      color:var(--blue-600);
-      font-size:1.8rem;
-      font-weight:700;
-    }
-
-    .decision-buttons {
-      display:flex;
-      gap:6px;
-      margin-top:8px;
-    }
-
-    .decision-buttons button {
-      flex:1;
-      font-size:.85rem;
-      padding:10px;
-      color:#fff;
-    }
-
-    .decision-buttons .save {
-      background:linear-gradient(135deg,#1dbf73,#2ceaa3);
-    }
-
-    .decision-buttons .buy {
-      background:linear-gradient(135deg,#ff5c6a,#ff8a8a);
-    }
-
-    /* =========================================================================
-       HISTORY ITEMS
-       ========================================================================= */
-    .history-item {
-      background:rgba(255,255,255,0.9);
-      border-radius:var(--radius-lg);
-      padding:10px;
-      margin:5px 0;
-      box-shadow:0 2px 8px rgba(0,0,0,0.1);
-      font-size:.9rem;
-      text-align:left;
-    }
-
-    .history-item.green { border-left:4px solid #1dbf73; }
-    .history-item.red { border-left:4px solid #ff5c6a; }
-
-    /* =========================================================================
-       STATS
-       ========================================================================= */
-    .progress-ring {
-      width:100px;
-      height:100px;
-      border-radius:50%;
-      background:conic-gradient(#2b5bf7 0deg, #e5ecff 0deg);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      margin:10px 0;
-    }
-
-    #ratio {
-      font-size:1.2rem;
-      color:var(--blue-600);
-      font-weight:700;
-    }
-
-    /* =========================================================================
-       FLOATING NAV
-       ========================================================================= */
-    nav {
-      position:fixed;
-      bottom:18px;
-      left:50%;
-      transform:translateX(-50%);
-      display:flex;
-      background:rgba(255,255,255,0.7);
-      backdrop-filter:blur(18px);
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,0.6);
-      box-shadow:var(--shadow-nav);
-      width:90%;
-      max-width:360px;
-      justify-content:space-around;
-      padding:6px;
-      z-index:20;
-    }
-
-    nav button {
-      background:transparent;
-      border:none;
-      color:var(--muted);
-      font-size:.7rem;
-      font-weight:600;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-    }
-
-    nav button.active {
-      color:var(--blue-600);
-    }
-
-    nav svg {
-      width:18px;
-      height:18px;
-      fill:currentColor;
-    }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+    html,body{height:100%;overflow:hidden;font-family:Inter,sans-serif;background:linear-gradient(180deg,#eef3ff 0%,#f9fbff 100%);}
+    body{display:flex;justify-content:center;align-items:center;color:var(--text);}
+    .app-shell{width:100%;max-width:430px;height:100vh;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;padding:20px 16px 140px;}
+    .screen{flex:1;display:none;flex-direction:column;justify-content:center;align-items:center;text-align:center;animation:fade .3s ease;}
+    .screen.active{display:flex;}
+    @keyframes fade{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+    h1{font-size:2.4rem;font-weight:800;margin-bottom:10px;}
+    h2{font-size:1.3rem;font-weight:700;margin-bottom:10px;}
+    p{color:var(--muted);font-size:.9rem;}
+    /* clock */
+    .hero-clock{width:180px;height:180px;border-radius:50%;position:relative;background:radial-gradient(circle at 50% 35%,#fff 0%,#dff0ff 60%,#b6d5ff 100%);box-shadow:0 20px 45px rgba(50,100,255,0.25);display:flex;align-items:center;justify-content:center;animation:floatClock 4s ease-in-out infinite;margin:25px 0;}
+    .clock-body{width:70%;height:70%;border-radius:50%;background:radial-gradient(circle,#fff 40%,#e7efff 100%);position:relative;}
+    .clock-hand{position:absolute;bottom:50%;left:50%;transform-origin:bottom center;border-radius:2px;background:var(--blue);}
+    .clock-hand.hour{width:4px;height:30%;animation:tickHour 720s linear infinite;}
+    .clock-hand.minute{width:3px;height:40%;animation:tickMinute 60s linear infinite;}
+    @keyframes tickMinute{from{transform:translate(-50%,0)rotate(0deg);}to{transform:translate(-50%,0)rotate(360deg);}}
+    @keyframes tickHour{from{transform:translate(-50%,0)rotate(0deg);}to{transform:translate(-50%,0)rotate(360deg);}}
+    @keyframes floatClock{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+    /* inputs */
+    input{width:100%;border-radius:var(--radius);border:1px solid #d0defa;padding:12px 14px;margin:5px 0;font-size:.95rem;text-align:center;background:rgba(255,255,255,0.85);backdrop-filter:blur(12px);}
+    button{width:100%;border:none;border-radius:var(--radius);padding:14px;margin-top:10px;font-size:1rem;font-weight:600;cursor:pointer;background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;box-shadow:0 10px 25px rgba(40,90,255,0.3);transition:transform .2s;}
+    button:active{transform:scale(.97);}
+    .result-box{display:none;margin-top:12px;padding:18px;background:rgba(255,255,255,0.9);border-radius:var(--radius);box-shadow:var(--shadow);}
+    .result-box .hours{font-size:2rem;font-weight:700;color:var(--blue);}
+    .decision-buttons{display:flex;gap:8px;margin-top:8px;}
+    .decision-buttons button{flex:1;font-size:.9rem;padding:10px;}
+    .decision-buttons .save{background:linear-gradient(135deg,var(--green),#36e1a9);}
+    .decision-buttons .buy{background:linear-gradient(135deg,var(--red),#ff8a8a);}
+    /* history */
+    .history-item{background:rgba(255,255,255,0.9);border-radius:var(--radius);padding:12px;margin:5px 0;text-align:left;box-shadow:0 2px 8px rgba(0,0,0,0.1);font-size:.9rem;}
+    .history-item.green{border-left:4px solid var(--green);}
+    .history-item.red{border-left:4px solid var(--red);}
+    /* stats */
+    .progress-ring{width:120px;height:120px;border-radius:50%;background:conic-gradient(var(--blue)0deg,#e5ecff 0deg);display:flex;align-items:center;justify-content:center;margin:12px;}
+    #ratio{font-size:1.4rem;font-weight:700;color:var(--blue);}
+    /* nav */
+    nav{position:absolute;left:50%;bottom:30px;transform:translateX(-50%);width:92%;max-width:360px;background:rgba(255,255,255,0.7);backdrop-filter:blur(20px);border-radius:999px;border:1px solid rgba(255,255,255,0.6);box-shadow:0 20px 50px rgba(19,36,78,0.3);display:flex;justify-content:space-around;padding:6px;z-index:50;}
+    nav button{background:transparent;border:none;color:var(--muted);font-size:.75rem;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+    nav button.active{color:var(--blue);}
+    nav svg{width:20px;height:20px;fill:currentColor;}
   </style>
 </head>
 <body>
   <div class="app-shell">
-
-    <!-- Welcome -->
+    <!-- 1. Welcome -->
     <section id="screen-welcome" class="screen active">
       <h1>Munkaóra</h1>
       <div class="hero-clock">
@@ -302,11 +81,11 @@
           <div class="clock-hand minute"></div>
         </div>
       </div>
-      <p>Számold ki, mennyi munkaórádba kerülne egy termék.</p>
-      <button onclick="goTo('profile'); track('start_click')">Kezdjük</button>
+      <p>Számold ki, mennyi munkaórádba kerül egy termék.</p>
+      <button onclick="goTo('profile');track('start_click')">Kezdjük</button>
     </section>
 
-    <!-- Profile -->
+    <!-- 2. Profil -->
     <section id="screen-profile" class="screen">
       <h2>Profilod</h2>
       <input id="name" placeholder="Név">
@@ -317,7 +96,7 @@
       <button onclick="saveProfile()">Mentés</button>
     </section>
 
-    <!-- Calculator -->
+    <!-- 3. Kalkulátor -->
     <section id="screen-calculator" class="screen">
       <h2>Kalkulátor</h2>
       <input id="product" placeholder="Terméknév">
@@ -333,13 +112,13 @@
       </div>
     </section>
 
-    <!-- History -->
+    <!-- 4. Előzmények -->
     <section id="screen-history" class="screen">
       <h2>Előzmények</h2>
       <div id="history-list"></div>
     </section>
 
-    <!-- Stats -->
+    <!-- 5. Statisztikák -->
     <section id="screen-stats" class="screen">
       <h2>Statisztikák</h2>
       <div class="progress-ring" id="ratioCircle"><span id="ratio">0%</span></div>
@@ -369,97 +148,50 @@
 
   <script>
     function track(name, params={}) {
-      console.log("GA event:", name, params);
-      if (window.gtag) window.gtag('event', name, params);
+      if(window.gtag) window.gtag('event', name, params);
+      console.log('GA event:',name);
     }
-
-    function goTo(screen) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById('screen-' + screen).classList.add('active');
-      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-      const btn = document.getElementById('nav-' + screen);
-      if (btn) btn.classList.add('active');
-      track('view_' + screen);
-      if (screen === 'history') loadHistory();
-      if (screen === 'stats') loadStats();
+    function goTo(screen){
+      document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+      document.getElementById('screen-'+screen).classList.add('active');
+      document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+      const nb=document.getElementById('nav-'+screen);if(nb)nb.classList.add('active');
+      track('view_'+screen);
+      if(screen==='history')loadHistory();
+      if(screen==='stats')loadStats();
     }
-
-    const STORE_KEY = 'munkaora_data';
-    function loadData() {
-      try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {profile:{},history:[]}; }
-      catch { return {profile:{},history:[]}; }
-    }
-    function saveData(data) { localStorage.setItem(STORE_KEY, JSON.stringify(data)); }
-
-    function saveProfile() {
-      const d = loadData();
-      d.profile = {
-        name: document.getElementById('name').value,
-        age: +document.getElementById('age').value,
-        city: document.getElementById('city').value,
-        income: +document.getElementById('income').value,
-        hoursPerWeek: +document.getElementById('hours').value
-      };
-      saveData(d);
-      track('profile_saved');
-      goTo('calculator');
-    }
-
-    let currentProduct=null,currentPrice=0,currentHours=0;
-
-    function calculate() {
-      const d = loadData();
-      const p = d.profile;
-      if (!p.income || !p.hoursPerWeek) {
-        alert("Előbb add meg a profilod!");
-        goTo('profile'); return;
-      }
-      const product = document.getElementById('product').value.trim();
-      const price = +document.getElementById('price').value;
-      if (!product || !price) { alert("Adj meg mindent!"); return; }
-      const hourly = p.income / (p.hoursPerWeek * 4);
-      const hours = (price / hourly).toFixed(1);
-      document.getElementById('hoursResult').innerText = hours;
-      document.getElementById('result-box').style.display = 'block';
-      currentProduct = product; currentPrice = price; currentHours = hours;
-      track('calculated', {product,price});
-    }
-
-    function saveDecision(type) {
-      const d = loadData();
-      d.history.push({id:Date.now(),product:currentProduct,price:currentPrice,hours:currentHours,decision:type,ts:new Date().toISOString()});
-      saveData(d);
-      track('decision', {type,product:currentProduct});
-      document.getElementById('result-box').style.display='none';
-      goTo('history');
-    }
-
-    function loadHistory() {
-      const d = loadData();
-      const list = document.getElementById('history-list');
-      list.innerHTML='';
-      if (d.history.length===0) { list.innerHTML="<p>Még nincs adatod.</p>"; return; }
-      d.history.slice().reverse().forEach(i=>{
-        const el=document.createElement('div');
-        el.className='history-item '+(i.decision==='megsporolom'?'green':'red');
-        el.innerHTML=`<strong>${i.product}</strong><br>${Number(i.price).toLocaleString('hu-HU')} Ft • ${i.hours} óra`;
-        list.appendChild(el);
-      });
-    }
-
-    function loadStats() {
+    const STORE_KEY='munkaora_data';
+    function loadData(){try{return JSON.parse(localStorage.getItem(STORE_KEY))||{profile:{},history:[]}}catch{return{profile:{},history:[]}}}
+    function saveData(d){localStorage.setItem(STORE_KEY,JSON.stringify(d))}
+    function saveProfile(){
       const d=loadData();
-      const saved=d.history.filter(x=>x.decision==='megsporolom');
-      const spent=d.history.filter(x=>x.decision==='megveszem');
-      const total=d.history.length;
-      const ratio=total?Math.round(saved.length/total*100):0;
-      document.getElementById('ratio').innerText=ratio+'%';
-      document.getElementById('ratioCircle').style.background=`conic-gradient(#2b5bf7 ${ratio*3.6}deg,#e5ecff 0deg)`;
+      d.profile={name:document.getElementById('name').value,age:+document.getElementById('age').value,city:document.getElementById('city').value,income:+document.getElementById('income').value,hoursPerWeek:+document.getElementById('hours').value};
+      saveData(d);track('profile_saved');goTo('calculator');
+    }
+    let currentProduct=null,currentPrice=0,currentHours=0;
+    function calculate(){
+      const d=loadData(),p=d.profile;if(!p.income||!p.hoursPerWeek){alert('Előbb add meg a profilod!');goTo('profile');return;}
+      const product=document.getElementById('product').value.trim(),price=+document.getElementById('price').value;if(!product||!price){alert('Adj meg mindent!');return;}
+      const hourly=p.income/(p.hoursPerWeek*4),hours=(price/hourly).toFixed(1);
+      document.getElementById('hoursResult').innerText=hours;document.getElementById('result-box').style.display='block';
+      currentProduct=product;currentPrice=price;currentHours=hours;track('calculation_done',{product,price});
+    }
+    function saveDecision(type){
+      const d=loadData();d.history.push({id:Date.now(),product:currentProduct,price:currentPrice,hours:currentHours,decision:type,ts:new Date().toISOString()});
+      saveData(d);track('decision_click',{decision:type,product:currentProduct});document.getElementById('result-box').style.display='none';goTo('history');
+    }
+    function loadHistory(){
+      const d=loadData(),list=document.getElementById('history-list');list.innerHTML='';
+      if(d.history.length===0){list.innerHTML='<p>Még nincs adatod.</p>';return;}
+      d.history.slice().reverse().forEach(i=>{const el=document.createElement('div');el.className='history-item '+(i.decision==='megsporolom'?'green':'red');el.innerHTML=`<strong>${i.product}</strong><br>${Number(i.price).toLocaleString('hu-HU')} Ft • ${i.hours} óra`;list.appendChild(el);});
+    }
+    function loadStats(){
+      const d=loadData(),saved=d.history.filter(x=>x.decision==='megsporolom'),spent=d.history.filter(x=>x.decision==='megveszem'),total=d.history.length,ratio=total?Math.round(saved.length/total*100):0;
+      document.getElementById('ratio').innerText=ratio+'%';document.getElementById('ratioCircle').style.background=`conic-gradient(var(--blue) ${ratio*3.6}deg,#e5ecff 0deg)`;
       document.getElementById('savedHours').innerText=saved.reduce((s,x)=>s+Number(x.hours),0).toFixed(1)+' óra megspórolva';
       document.getElementById('spentHours').innerText=spent.reduce((s,x)=>s+Number(x.hours),0).toFixed(1)+' óra elköltve';
+      track('stats_loaded',{ratio});
     }
-
-    console.log("✅ App ready vNEXT");
   </script>
 </body>
 </html>
