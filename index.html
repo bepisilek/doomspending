@@ -97,7 +97,7 @@
     .app-shell{
       width:min(100%,480px);
       min-height:100vh;
-      padding:clamp(24px,6vw,44px) clamp(18px,6vw,32px) 240px;
+      padding:clamp(24px,6vw,44px) clamp(18px,6vw,32px) 280px;
       position:relative;
       z-index:1;
       display:flex;
@@ -343,52 +343,16 @@
       box-shadow:none;
     }
 
-    .category-grid{
-      display:grid;
-      grid-template-columns:repeat(3, 1fr);
-      gap:12px;
-    }
-    .category-btn{
-      padding:16px 12px;
-      border-radius:var(--radius-md);
-      background:rgba(255,255,255,0.5);
-      border:2px solid transparent;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:8px;
-      cursor:pointer;
-      transition:all var(--fast);
-      font-size:0.8rem;
-      font-weight:600;
-      color:var(--text);
-    }
-    .category-btn:hover{
-      transform:translateY(-3px);
-      background:rgba(255,255,255,0.75);
-    }
-    .category-btn.selected{
-      border-color:var(--blue-600);
-      background:rgba(53,109,255,0.12);
-    }
-    .category-icon{
-      width:32px;
-      height:32px;
-      border-radius:50%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:18px;
-    }
-
     .result-box{
       display:none;
       border-radius:var(--radius-xl);
-      padding:28px 22px; text-align:center;
+      padding:28px 22px 32px;
+      text-align:center;
       background:linear-gradient(160deg, rgba(38,107,255,0.22) 0%, rgba(255,255,255,0.78) 100%);
       border:1px solid rgba(120,174,255,0.4);
       box-shadow:0 28px 58px -34px rgba(32,83,255,0.65);
       animation:scaleUp var(--slow);
+      margin-bottom:120px;
     }
     @keyframes scaleUp{ from{opacity:0; transform:translateY(16px) scale(0.98);} to{opacity:1; transform:translateY(0) scale(1);} }
     .result-box .hours{ font-size:3.2rem; font-weight:800; color:var(--blue-600); margin-bottom:8px; }
@@ -408,7 +372,7 @@
 
     #history-list{ display:flex; flex-direction:column; gap:16px; }
     .history-item{
-      position:relative; padding:20px 22px 22px 60px; border-radius:var(--radius-md);
+      position:relative; padding:20px 22px 22px 26px; border-radius:var(--radius-md);
       background:var(--glass); backdrop-filter:blur(24px);
       border:1px solid rgba(210,222,255,0.45);
       box-shadow:0 16px 40px -32px rgba(30,50,105,0.5);
@@ -422,20 +386,6 @@
     }
     .history-item.green::before{ background:linear-gradient(180deg, rgba(32,187,130,0.9), rgba(115,236,189,0.5)); }
     .history-item.red::before{ background:linear-gradient(180deg, rgba(255,92,106,0.9), rgba(255,162,174,0.5)); }
-    .history-category-icon{
-      position:absolute;
-      left:24px;
-      top:50%;
-      transform:translateY(-50%);
-      width:28px;
-      height:28px;
-      border-radius:50%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:14px;
-      background:rgba(255,255,255,0.75);
-    }
     .history-item strong{ display:block; font-weight:700; margin-bottom:4px;}
     .history-item span{ font-weight:600; color:var(--text); }
     .history-item small{ color:var(--muted); font-size:.78rem; display:block; margin-top:6px;}
@@ -562,19 +512,18 @@
       font-style:italic;
     }
 
-    /* NAV - ALAPBÓL REJTVE WELCOME SCREEN-EN */
     nav{
       position:fixed; left:50%; bottom:36px; transform:translateX(-50%);
       width:min(100%,420px); padding:10px; border-radius:999px;
       background:rgba(255,255,255,0.30); backdrop-filter:blur(28px);
       border:1px solid rgba(255,255,255,0.6); box-shadow:var(--shadow-nav);
-      display:none; /* ALAPBÓL REJTVE */
+      display:none;
       gap:10px; z-index:20;
       pointer-events:none;
       transition:opacity var(--fast), transform var(--fast);
     }
     nav.show{
-      display:flex; /* CSAK AKKOR JELENIK MEG HA VAN SHOW CLASS */
+      display:flex;
     }
     nav button{
       flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
@@ -601,12 +550,12 @@
 
     @media(min-width:520px){ 
       nav{ bottom:46px; }
-      .app-shell{ padding-bottom:260px; }
+      .app-shell{ padding-bottom:300px; }
     }
   </style>
 </head>
 <body>
-  <div id="build-badge" style="position:fixed;left:8px;top:6px;font-size:11px;color:#5d6b85;opacity:.8;z-index:50;">v2.1 FINAL</div>
+  <div id="build-badge" style="position:fixed;left:8px;top:6px;font-size:11px;color:#5d6b85;opacity:.8;z-index:50;">v2.2 LEAN</div>
 
   <div class="app-shell">
     <main class="screen-stack">
@@ -666,7 +615,7 @@
         </div>
       </section>
 
-      <!-- 3. Kalkulátor -->
+      <!-- 3. Kalkulátor LEAN MODE -->
       <section id="screen-calculator" class="screen">
         <header class="screen-header">
           <div>
@@ -683,36 +632,6 @@
         <div class="stack">
           <div class="card">
             <div class="stack">
-              <div>
-                <h3>📦 Mit szeretnél?</h3>
-                <p style="margin-bottom:12px;">Válassz kategóriát:</p>
-                <div class="category-grid" id="categoryGrid">
-                  <div class="category-btn" data-category="tech" onclick="selectCategory('tech')">
-                    <div class="category-icon" style="background:linear-gradient(135deg,#667eea,#764ba2)">💻</div>
-                    <span>Tech</span>
-                  </div>
-                  <div class="category-btn" data-category="fashion" onclick="selectCategory('fashion')">
-                    <div class="category-icon" style="background:linear-gradient(135deg,#f093fb,#f5576c)">👕</div>
-                    <span>Ruha</span>
-                  </div>
-                  <div class="category-btn" data-category="food" onclick="selectCategory('food')">
-                    <div class="category-icon" style="background:linear-gradient(135deg,#4facfe,#00f2fe)">🍔</div>
-                    <span>Étel</span>
-                  </div>
-                  <div class="category-btn" data-category="home" onclick="selectCategory('home')">
-                    <div class="category-icon" style="background:linear-gradient(135deg,#43e97b,#38f9d7)">🏠</div>
-                    <span>Otthon</span>
-                  </div>
-                  <div class="category-btn" data-category="travel" onclick="selectCategory('travel')">
-                    <div class="category-icon" style="background:linear-gradient(135deg,#fa709a,#fee140)">✈️</div>
-                    <span>Utazás</span>
-                  </div>
-                  <div class="category-btn" data-category="other" onclick="selectCategory('other')">
-                    <div class="category-icon" style="background:linear-gradient(135deg,#a8edea,#fed6e3)">🎁</div>
-                    <span>Egyéb</span>
-                  </div>
-                </div>
-              </div>
               <input id="product" placeholder="🏷️ Terméknév" />
               <input id="price" placeholder="💵 Ár (Ft)" type="number" />
               <button onclick="calculate()">🔍 Számolás</button>
@@ -818,7 +737,7 @@
   <nav id="main-nav">
     <button id="nav-calculator" onclick="goTo('calculator')">
       <span class="nav-glow"></span>
-      <svg viewBox="0 0 24 24"><path d="M6.75 3A2.75 2.75 0 0 0 4 5.75v12.5A2.75 2.75 0 0 0 6.75 21h10.5A2.75 2.75 0 0 0 20 18.25V5.75A2.75 2.75 0 0 0 17.25 3Zm.75 3.5h9a.75.75 0 0 1 0 1.5h-9a.75.75 0 0 1 0-1.5Zm0 4h9a.75.75 0 0 1 0 1.5h-9a.75.75 0 0 1 0-1.5Zm0 4h4a.75.75 0 0 1 0 1.5h-4a.75.75 0 0 1 0-1.5Z"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M6.75 3A2.75 2.75 0 0 0 4 5.75v12.5A2.75 2.75 0 0 0 6.75 21h10.5A2.75 2.75 0 0 0 20 18.25V5.75A2.75 2.75 0 0 0 17.25 3Zm .75 3.5h9a.75.75 0 0 1 0 1.5h-9a.75.75 0 0 1 0-1.5Zm0 4h9a.75.75 0 0 1 0 1.5h-9a.75.75 0 0 1 0-1.5Zm0 4h4a.75.75 0 0 1 0 1.5h-4a.75.75 0 0 1 0-1.5Z"/></svg>
       <span>Számol</span>
     </button>
     <button id="nav-history" onclick="goTo('history')">
@@ -844,14 +763,6 @@
     }
 
     let selectedCategory = 'other';
-    const categoryIcons = {
-      tech: '💻',
-      fashion: '👕',
-      food: '🍔',
-      home: '🏠',
-      travel: '✈️',
-      other: '🎁'
-    };
 
     const achievements = [
       {id:'first',title:'Első lépés',desc:'Első kalkuláció',icon:'🎯',condition:d=>d.history.length>=1},
@@ -885,7 +796,6 @@
       const nb = document.getElementById(`nav-${screen}`);
       if (nb) nb.classList.add('active');
       
-      // Nav megjelenítése/elrejtése
       const nav = document.getElementById('main-nav');
       if(screen === 'welcome'){
         nav.classList.remove('show');
@@ -904,12 +814,6 @@
       catch(e){ return { profile:{}, history:[] }; }
     }
     function saveData(data){ localStorage.setItem(STORE_KEY, JSON.stringify(data)); }
-
-    function selectCategory(cat){
-      selectedCategory = cat;
-      document.querySelectorAll('.category-btn').forEach(b=>b.classList.remove('selected'));
-      document.querySelector(`[data-category="${cat}"]`).classList.add('selected');
-    }
 
     function saveProfile(){
       const data = loadData();
@@ -943,6 +847,8 @@
         alert('Add meg a termék nevét és árát!');
         return;
       }
+      
+      // Számolás: havi jövedelem / havi munkaórák = órabér
       const hourly = p.income / (p.hoursPerWeek * 4);
       const hours = (price / hourly).toFixed(1);
       
@@ -980,7 +886,6 @@
       document.getElementById('product').value = '';
       document.getElementById('price').value = '';
       selectedCategory = 'other';
-      document.querySelectorAll('.category-btn').forEach(b=>b.classList.remove('selected'));
       goTo('history');
     }
 
@@ -997,7 +902,6 @@
         const el = document.createElement('div');
         el.className = 'history-item ' + (item.decision === 'megsporolom' ? 'green' : 'red');
         el.innerHTML =
-          `<div class="history-category-icon">${categoryIcons[item.category]||'🎁'}</div>` +
           '<strong>' + escapeHtml(item.product) + '</strong>' +
           '<span>' + Number(item.price).toLocaleString('hu-HU') + ' Ft</span><br>' +
           '<small>' + item.hours + ' óra • ' + new Date(item.ts).toLocaleDateString('hu-HU') + '</small>';
@@ -1046,7 +950,6 @@
       document.getElementById('streak').innerText = streak;
       document.getElementById('dailyQuote').innerText = quotes[Math.floor(Math.random()*quotes.length)];
       
-      // Weekly chart
       const weeklyChart = document.getElementById('weeklyChart');
       weeklyChart.innerHTML = '';
       const days = ['H','K','Sze','Cs','P','Szo','V'];
@@ -1071,7 +974,6 @@
         weeklyChart.appendChild(bar);
       });
 
-      // Achievements
       const grid = document.getElementById('achievementsGrid');
       grid.innerHTML = '';
       achievements.forEach(ach => {
@@ -1116,7 +1018,6 @@
         .replaceAll("'",'&#039;');
     }
 
-    // INIT - DOM betöltődés után
     (function init(){
       const d = loadData();
       if(d.profile){
