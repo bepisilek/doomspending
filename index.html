@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Munkaóra</title>
+  <title>Munkaóra • vNEXT</title>
 
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-G8BZPSFGGG"></script>
@@ -293,19 +293,18 @@
     }
 
     .clock-hand{
-      --tick-from:0deg;
-      --tick-to:90deg;
-      --tick-duration:6s;
+      --tick-start:0deg;
+      --tick-duration:60s;
       position:absolute;
       bottom:50%;
       left:50%;
       transform-origin:bottom center;
-      transform:translate(-50%,6px) rotate(var(--tick-from));
+      transform:translate(-50%,6px) rotate(var(--tick-start));
       border-radius:999px;
       background:linear-gradient(180deg,rgba(32,95,255,0.9),rgba(84,205,255,0.85));
       box-shadow:0 8px 18px -8px rgba(26,82,210,0.45);
       z-index:2;
-      animation:tick var(--tick-duration) ease-in-out infinite;
+      animation:tick var(--tick-duration) linear infinite;
     }
 
     .clock-hand::after{
@@ -320,17 +319,15 @@
     .clock-hand.hour{
       width:10px;
       height:54px;
-      --tick-from:-6deg;
-      --tick-to:18deg;
-      --tick-duration:12s;
+      --tick-start:-12deg;
+      --tick-duration:720s;
     }
 
     .clock-hand.minute{
       width:7px;
       height:78px;
-      --tick-from:36deg;
-      --tick-to:102deg;
-      --tick-duration:6s;
+      --tick-start:48deg;
+      --tick-duration:60s;
     }
 
     .clock-bell{
@@ -409,8 +406,7 @@
     }
 
     @keyframes tick{
-      0%,100%{transform:translate(-50%,6px) rotate(var(--tick-from));}
-      50%{transform:translate(-50%,6px) rotate(var(--tick-to));}
+      to{transform:translate(-50%,6px) rotate(calc(var(--tick-start) + 360deg));}
     }
     .welcome-copy{max-width:320px;font-size:1rem;}
 
@@ -748,6 +744,7 @@
   </style>
 </head>
 <body>
+  <!-- ✅ hero-clock + nav-profile present -->
   <div class="app-shell">
     <main class="screen-stack">
       <!-- 1. Welcome -->
@@ -755,7 +752,8 @@
         <div class="welcome-hero">
           <div class="welcome-pill">Personal finance companion</div>
           <h1>Munkaóra</h1>
-          <div class="hero-clock" aria-hidden="true">
+          <div id="build-badge" style="font-size:12px;color:#5d6b85;opacity:.9;">build: vNEXT</div>
+          <div class="hero-clock" role="img" aria-label="Alarm clock">
             <div class="clock-body">
               <div class="clock-hand hour"></div>
               <div class="clock-hand minute"></div>
