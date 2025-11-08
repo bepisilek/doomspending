@@ -3,16 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Munkaóra Kalkulátor</title>
+  <title>Munkaóra</title>
 
-  <!-- GOOGLE ANALYTICS (későbbi méréshez) -->
-  <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXX"></script>
+  <!-- GOOGLE ANALYTICS HELY -->
+  <!--
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXX"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', 'G-XXXXXXX');
-  </script> -->
+  </script>
+  -->
 
   <style>
     :root {
@@ -27,52 +29,116 @@
 
     * {
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
-    body {
+    html, body {
       margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
       background: var(--bg);
       color: #111;
+    }
+
+    body {
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: flex-start;
       min-height: 100vh;
     }
 
-    h1, h2, h3 { margin: 0 0 1rem; }
+    h1, h2 {
+      margin: 0 0 1rem 0;
+      font-weight: 600;
+    }
+
+    h1 {
+      font-size: clamp(1.8rem, 5vw, 2.2rem);
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 1.4rem;
+    }
+
+    p {
+      margin: 0.25rem 0 1rem 0;
+      line-height: 1.4;
+      color: var(--gray);
+    }
+
+    input {
+      width: 100%;
+      padding: 0.9rem 1rem;
+      margin-bottom: 0.8rem;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      font-size: 1rem;
+      background: var(--white);
+      transition: border 0.2s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--blue);
+    }
+
+    button {
+      appearance: none;
+      border: none;
+      border-radius: 12px;
+      padding: 1rem;
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: var(--white);
+      background: var(--blue);
+      width: 100%;
+      transition: background 0.25s, transform 0.1s;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    button:hover {
+      background: var(--blue-dark);
+    }
 
     .screen {
       display: none;
       width: 100%;
       max-width: 420px;
-      padding: 24px;
-      animation: fadein 0.3s ease;
+      min-height: 100vh;
+      padding: 1.5rem 1.25rem 5.5rem;
+      background: var(--bg);
+      animation: fadeIn 0.3s ease;
     }
-    @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
 
-    .active { display: block; }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(10px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
 
-    button {
+    .active {
+      display: block;
+    }
+
+    .float-icon {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
       background: var(--blue);
-      color: var(--white);
-      border: none;
-      border-radius: 12px;
-      padding: 14px 20px;
-      font-size: 16px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.2s;
+      box-shadow: 0 15px 30px rgba(0, 122, 255, 0.25);
+      margin: 60px auto;
+      animation: float 3s ease-in-out infinite;
     }
-    button:hover { background: var(--blue-dark); }
 
-    input {
-      width: 100%;
-      padding: 12px 14px;
-      margin-bottom: 14px;
-      border: 1px solid #d1d5db;
-      border-radius: 10px;
-      font-size: 16px;
+    @keyframes float {
+      0%,100% {transform: translateY(0);}
+      50% {transform: translateY(-10px);}
     }
 
     nav {
@@ -84,16 +150,20 @@
       border-top: 1px solid #e5e7eb;
       display: flex;
       justify-content: space-around;
-      padding: 8px 0;
+      align-items: center;
+      height: 64px;
       z-index: 10;
     }
 
     nav button {
       background: none;
       color: var(--gray);
+      font-size: 1.4rem;
+      width: auto;
+      padding: 0.5rem 1rem;
       border-radius: 8px;
-      padding: 10px 16px;
     }
+
     nav button.active {
       color: var(--blue);
       background: #e0ecff;
@@ -103,15 +173,31 @@
       background: #e8f0fe;
       border: 2px solid var(--blue);
       border-radius: 16px;
-      padding: 24px;
+      padding: 2rem 1rem;
       text-align: center;
-      margin: 20px 0;
+      margin: 1.5rem 0;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
     }
+
     .result-box .hours {
-      font-size: 48px;
-      font-weight: 600;
+      font-size: 3rem;
+      font-weight: 700;
       color: var(--blue);
     }
+
+    .decision-buttons {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      margin-top: 1.25rem;
+    }
+
+    .decision-buttons button {
+      width: 50%;
+    }
+
+    .decision-buttons button:first-child { background: var(--green); }
+    .decision-buttons button:last-child { background: var(--red); }
 
     .history-item {
       background: var(--white);
@@ -124,43 +210,48 @@
 
     .history-item.green { border-color: var(--green); }
     .history-item.red { border-color: var(--red); }
-
-    .history-item small { color: var(--gray); font-size: 12px; }
+    .history-item strong { font-weight: 600; }
+    .history-item small { color: var(--gray); font-size: 0.8rem; }
 
     .stats-box {
       background: var(--white);
       border-radius: 16px;
-      padding: 24px;
+      padding: 1.5rem;
       text-align: center;
       box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      margin-bottom: 16px;
+      margin-bottom: 1rem;
     }
 
     .stats-box .big {
-      font-size: 40px;
+      font-size: 2.5rem;
       color: var(--blue);
       font-weight: 600;
     }
+
+    .cta {
+      width: 100%;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+
   </style>
 </head>
 <body>
 
-  <!-- 1. WELCOME SCREEN -->
+  <!-- WELCOME -->
   <div id="screen-welcome" class="screen active">
-    <h1 style="text-align:center;">Munkaóra</h1>
-    <p style="text-align:center;color:var(--gray);">Lássuk, hány órát dolgozol egy-egy vásárlásért</p>
-    <div style="text-align:center;margin:60px 0;">
-      <div style="width:100px;height:100px;margin:0 auto;background:var(--blue);border-radius:50%;box-shadow:0 10px 30px rgba(0,122,255,0.3);animation:float 3s ease-in-out infinite;"></div>
-      <style>@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}</style>
-    </div>
-    <div style="text-align:center;">
+    <h1>Munkaóra</h1>
+    <p style="text-align:center;">Lássuk, hány órát dolgozol egy-egy vásárlásért</p>
+    <div class="float-icon"></div>
+    <div class="cta">
       <button onclick="goTo('profile'); track('start_click')">Kezdjük</button>
     </div>
   </div>
 
-  <!-- 2. PROFILE SCREEN -->
+  <!-- PROFILE -->
   <div id="screen-profile" class="screen">
     <h2>Profilod</h2>
+    <p>Add meg egyszer az alapadataidat</p>
     <input id="name" placeholder="Név" />
     <input id="age" placeholder="Életkor" type="number" />
     <input id="city" placeholder="Település" />
@@ -169,10 +260,10 @@
     <button onclick="saveProfile()">Mentés és továbblépés</button>
   </div>
 
-  <!-- 3. CALCULATOR SCREEN -->
+  <!-- CALCULATOR -->
   <div id="screen-calculator" class="screen">
     <h2>Kalkulátor</h2>
-    <p class="gray">Add meg a terméket és az árát</p>
+    <p>Írd be a terméket és az árát</p>
     <input id="product" placeholder="Terméknév" />
     <input id="price" placeholder="Ár (Ft)" type="number" />
     <button onclick="calculate()">Nézzük</button>
@@ -180,20 +271,20 @@
     <div id="result-box" class="result-box" style="display:none;">
       <div class="hours" id="hoursResult">0</div>
       <p>munkaórádba kerülne</p>
-      <div style="display:flex;gap:10px;justify-content:center;margin-top:20px;">
-        <button style="background:var(--green);" onclick="saveDecision('megsporolom')">Megspórolom</button>
-        <button style="background:var(--red);" onclick="saveDecision('megveszem')">Megveszem</button>
+      <div class="decision-buttons">
+        <button onclick="saveDecision('megsporolom')">Megspórolom</button>
+        <button onclick="saveDecision('megveszem')">Megveszem</button>
       </div>
     </div>
   </div>
 
-  <!-- 4. HISTORY SCREEN -->
+  <!-- HISTORY -->
   <div id="screen-history" class="screen">
     <h2>Előzmények</h2>
     <div id="history-list"></div>
   </div>
 
-  <!-- 5. STATS SCREEN -->
+  <!-- STATS -->
   <div id="screen-stats" class="screen">
     <h2>Statisztikák</h2>
     <div class="stats-box">
@@ -204,12 +295,12 @@
       <p><strong id="savedHours">0</strong> óra megspórolva</p>
       <p><strong id="spentHours">0</strong> óra elköltve</p>
     </div>
-    <div style="text-align:center;">
+    <div class="cta">
       <button onclick="goTo('calculator')">Új kalkuláció</button>
     </div>
   </div>
 
-  <!-- NAVIGATION -->
+  <!-- NAV -->
   <nav>
     <button id="nav-calculator" class="active" onclick="goTo('calculator')">🧮</button>
     <button id="nav-history" onclick="goTo('history')">📜</button>
@@ -217,11 +308,12 @@
   </nav>
 
   <script>
-    // ---- UTILITIES ----
+    // -------- ANALYTICS TRACKING --------
     function track(name, params={}) {
       if (window.gtag) window.gtag('event', name, params);
     }
 
+    // -------- NAVIGATION --------
     function goTo(screen) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(`screen-${screen}`).classList.add('active');
@@ -233,7 +325,7 @@
       if (screen === 'stats') loadStats();
     }
 
-    // ---- LOCAL STORAGE DATA ----
+    // -------- STORAGE --------
     const storeKey = "munkaora_data";
     function loadData() {
       return JSON.parse(localStorage.getItem(storeKey) || '{"profile":{},"history":[]}');
@@ -242,7 +334,7 @@
       localStorage.setItem(storeKey, JSON.stringify(data));
     }
 
-    // ---- PROFILE ----
+    // -------- PROFILE --------
     function saveProfile() {
       const data = loadData();
       data.profile = {
@@ -257,7 +349,7 @@
       goTo('calculator');
     }
 
-    // ---- CALCULATOR ----
+    // -------- CALCULATOR --------
     let currentProduct = null;
     let currentPrice = 0;
     let currentHours = 0;
@@ -301,7 +393,7 @@
       goTo('history');
     }
 
-    // ---- HISTORY ----
+    // -------- HISTORY --------
     function loadHistory() {
       const list = document.getElementById('history-list');
       list.innerHTML = '';
@@ -318,7 +410,7 @@
       });
     }
 
-    // ---- STATS ----
+    // -------- STATS --------
     function loadStats() {
       const data = loadData();
       const saved = data.history.filter(i => i.decision === 'megsporolom');
