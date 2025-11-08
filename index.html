@@ -214,100 +214,46 @@
       box-shadow:0 10px 28px -22px rgba(15,27,60,0.8);
     }
 
-    .hero-clock{
+    .hero-orb{
       width:220px;
       height:220px;
-      position:relative;
-      display:flex;
-      align-items:center;
-      justify-content:center;
       border-radius:50%;
-      animation:clockFloat 7s ease-in-out infinite;
-      filter:drop-shadow(0 38px 70px rgba(40,95,255,0.28)) drop-shadow(0 22px 40px rgba(43,209,255,0.28));
+      position:relative;
+      background:radial-gradient(circle at 30% 30%,#ffffff 0%,rgba(245,250,255,0.35) 40%,rgba(35,123,255,0.22) 100%);
+      box-shadow:0 40px 70px -50px rgba(25,78,255,0.75),0 18px 40px -26px rgba(22,167,255,0.65);
+      overflow:hidden;
+      animation:orbFloat 6s ease-in-out infinite;
     }
 
-    .hero-clock::before{
+    .hero-orb::before,
+    .hero-orb::after{
       content:"";
       position:absolute;
-      inset:-18%;
-      background:radial-gradient(circle at 50% 60%,rgba(68,151,255,0.32) 0%,rgba(255,255,255,0) 65%);
-      filter:blur(18px);
-      opacity:0.9;
-      z-index:-1;
-      animation:clockGlow 6s ease-in-out infinite;
+      inset:18%;
+      border-radius:50%;
+      filter:blur(12px);
+      opacity:0.8;
+      animation:orbPulse 6s ease-in-out infinite;
     }
 
-    .hero-clock svg{
-      width:100%;
-      height:100%;
-      display:block;
+    .hero-orb::before{
+      background:conic-gradient(from 130deg,#3d8bff,#4ae0ff,#bcdcff,#3d8bff);
     }
 
-    .hero-clock .hand-hour,
-    .hero-clock .hand-minute{
-      transform-box:fill-box;
-      transform-origin:100px 100px;
+    .hero-orb::after{
+      inset:28%;
+      background:radial-gradient(circle,#ffffff 0%,rgba(255,255,255,0) 65%);
+      animation-delay:1.5s;
     }
 
-    .hero-clock .hand-hour{
-      transform:rotate(-12deg);
-      animation:hourDrift 12s ease-in-out infinite;
+    @keyframes orbFloat{
+      0%,100%{transform:translateY(0) rotate(0deg);}
+      50%{transform:translateY(-14px) rotate(4deg);}
     }
 
-    .hero-clock .hand-minute{
-      transform:rotate(48deg);
-      animation:minuteSweep 8s ease-in-out infinite;
-    }
-
-    .hero-clock .bell{
-      animation:bellPulse 5s ease-in-out infinite;
-    }
-
-    .hero-clock .bell.right{animation-delay:1.6s;}
-
-    .hero-clock .sparkle{
-      animation:sparklePulse 4.5s ease-in-out infinite;
-    }
-
-    .hero-clock .clock-shadow{
-      transform-box:fill-box;
-      transform-origin:100px 172px;
-      animation:shadowBreathe 7s ease-in-out infinite;
-    }
-
-    @keyframes clockFloat{
-      0%,100%{transform:translateY(0);}
-      50%{transform:translateY(-14px);}
-    }
-
-    @keyframes clockGlow{
-      0%,100%{opacity:0.9;}
-      50%{opacity:0.6;}
-    }
-
-    @keyframes minuteSweep{
-      0%,100%{transform:rotate(48deg);}
-      50%{transform:rotate(105deg);}
-    }
-
-    @keyframes hourDrift{
-      0%,100%{transform:rotate(-12deg);}
-      50%{transform:rotate(18deg);}
-    }
-
-    @keyframes bellPulse{
-      0%,100%{transform:translateY(0);opacity:0.8;}
-      50%{transform:translateY(-3px);opacity:1;}
-    }
-
-    @keyframes sparklePulse{
-      0%,100%{opacity:0.25;transform:scale(1);}
-      50%{opacity:0.6;transform:scale(1.12);}
-    }
-
-    @keyframes shadowBreathe{
-      0%,100%{transform:scaleX(1);opacity:0.55;}
-      50%{transform:scaleX(0.9);opacity:0.75;}
+    @keyframes orbPulse{
+      0%,100%{transform:scale(1);opacity:0.9;}
+      50%{transform:scale(1.05);opacity:0.6;}
     }
 
     .welcome-copy{max-width:320px;font-size:1rem;}
@@ -576,7 +522,7 @@
       left:50%;
       bottom:32px;
       transform:translateX(-50%);
-      width:min(100%,400px);
+      width:min(100%,360px);
       padding:10px;
       border-radius:999px;
       background:rgba(255,255,255,0.28);
@@ -653,56 +599,7 @@
         <div class="welcome-hero">
           <div class="welcome-pill">Personal finance companion</div>
           <h1>Munkaóra</h1>
-          <div class="hero-clock" aria-hidden="true">
-            <svg viewBox="0 0 200 200" role="presentation" focusable="false">
-              <defs>
-                <radialGradient id="clockAura" cx="50%" cy="55%" r="70%">
-                  <stop offset="0%" stop-color="#61b4ff" stop-opacity="0.35" />
-                  <stop offset="60%" stop-color="#91e6ff" stop-opacity="0.18" />
-                  <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
-                </radialGradient>
-                <linearGradient id="clockBody" x1="20%" y1="15%" x2="85%" y2="100%">
-                  <stop offset="0%" stop-color="#f9fbff" />
-                  <stop offset="40%" stop-color="#eef4ff" />
-                  <stop offset="100%" stop-color="#d0e2ff" />
-                </linearGradient>
-                <linearGradient id="clockRing" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#4f8cff" />
-                  <stop offset="50%" stop-color="#67d5ff" />
-                  <stop offset="100%" stop-color="#82b4ff" />
-                </linearGradient>
-                <linearGradient id="handGradient" x1="50%" y1="0%" x2="50%" y2="100%">
-                  <stop offset="0%" stop-color="#1c47ff" />
-                  <stop offset="100%" stop-color="#43d3ff" />
-                </linearGradient>
-              </defs>
-              <g opacity="0.9">
-                <ellipse class="clock-shadow" cx="100" cy="172" rx="62" ry="18" fill="url(#clockAura)" />
-                <path class="bell" d="M52 54c-6.5-8.2-16-13.7-27-14.6 5.6-7.6 17.4-11.2 27.4-7.4 8.2 3.1 12.3 10.4 14.4 18.6z" fill="url(#clockRing)" opacity="0.75" />
-                <path class="bell right" d="M148 54c6.5-8.2 16-13.7 27-14.6-5.6-7.6-17.4-11.2-27.4-7.4-8.2 3.1-12.3 10.4-14.4 18.6z" fill="url(#clockRing)" opacity="0.75" />
-                <path d="M78 28c12-12 32-12 44 0l-5.5 5.5c-8.4-6.4-24.6-6.3-32.9 0z" fill="#bcd8ff" opacity="0.8" />
-                <circle cx="100" cy="108" r="86" fill="rgba(255,255,255,0.55)" />
-                <circle cx="100" cy="104" r="78" fill="url(#clockBody)" stroke="url(#clockRing)" stroke-width="6" />
-                <circle cx="100" cy="104" r="62" fill="rgba(255,255,255,0.88)" />
-                <g fill="#d5e4ff">
-                  <rect x="98" y="40" width="4" height="10" rx="2" />
-                  <rect x="98" y="158" width="4" height="10" rx="2" />
-                  <rect x="40" y="102" width="10" height="4" rx="2" />
-                  <rect x="150" y="102" width="10" height="4" rx="2" />
-                </g>
-                <g stroke="url(#handGradient)" stroke-width="6" stroke-linecap="round">
-                  <line class="hand-hour" x1="100" y1="104" x2="100" y2="64" />
-                  <line class="hand-minute" x1="100" y1="104" x2="100" y2="42" />
-                </g>
-                <circle cx="100" cy="104" r="8" fill="#fff" stroke="url(#handGradient)" stroke-width="3" />
-                <g fill="#5abfff" opacity="0.35">
-                  <circle class="sparkle" cx="156" cy="130" r="6" />
-                  <circle class="sparkle" cx="62" cy="142" r="4" />
-                  <circle class="sparkle" cx="132" cy="74" r="5" />
-                </g>
-              </g>
-            </svg>
-          </div>
+          <div class="hero-orb" aria-hidden="true"></div>
           <p class="welcome-copy">Számold ki, mennyi munkaórádba kerül egy vágyott vásárlás, és hozz tudatosabb döntéseket úgy, mint egy modern fintech appban.</p>
           <div class="card" style="align-items:center;">
             <button onclick="goTo('profile'); track('start_click')">Belépés a profilodhoz</button>
@@ -817,11 +714,6 @@
 
   <!-- Lebegő menü -->
   <nav>
-    <button id="nav-profile" onclick="goTo('profile')" aria-label="Profil">
-      <span class="nav-glow" aria-hidden="true"></span>
-      <svg viewBox="0 0 24 24"><path d="M12 12.75a5.25 5.25 0 1 0-5.25-5.25A5.26 5.26 0 0 0 12 12.75Zm0 2.25c-3.486 0-7.5 1.757-7.5 4.5a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5c0-2.743-4.014-4.5-7.5-4.5Z"/></svg>
-      <span>Profil</span>
-    </button>
     <button id="nav-calculator" onclick="goTo('calculator')" aria-label="Kalkulátor">
       <span class="nav-glow" aria-hidden="true"></span>
       <svg viewBox="0 0 24 24"><path d="M6.75 3A2.75 2.75 0 0 0 4 5.75v12.5A2.75 2.75 0 0 0 6.75 21h10.5A2.75 2.75 0 0 0 20 18.25V5.75A2.75 2.75 0 0 0 17.25 3Zm.75 3.5h9a.75.75 0 0 1 0 1.5h-9a.75.75 0 0 1 0-1.5Zm0 4h9a.75.75 0 0 1 0 1.5h-9a.75.75 0 0 1 0-1.5Zm0 4h4a.75.75 0 0 1 0 1.5h-4a.75.75 0 0 1 0-1.5Z"/></svg>
