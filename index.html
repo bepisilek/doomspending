@@ -4,12 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Munkaóra • Pro</title>
-
+  <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-G8BZPSFGGG"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){ dataLayer.push(arguments); }
+    function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
+
     gtag('config', 'G-G8BZPSFGGG');
   </script>
 
@@ -299,6 +300,23 @@
     }
     .stack{display:flex; flex-direction:column; gap:18px;}
 
+    .invite-card{ display:flex; flex-direction:column; gap:16px; align-items:stretch; text-align:left; }
+    .invite-card h3{ text-align:left; margin-bottom:4px; }
+    .invite-copy{ font-size:0.9rem; color:var(--muted); text-align:left; }
+    .invite-form{ display:flex; flex-direction:column; gap:12px; }
+    .invite-form button{ width:100%; }
+    .invite-start{ width:100%; display:none; }
+    .invite-start.show{ display:block; }
+    @media(min-width:520px){
+      .invite-form{ flex-direction:row; align-items:center; }
+      .invite-form input{ flex:1; }
+      .invite-form button{ width:auto; padding-inline:28px; }
+    }
+    .invite-status{ min-height:1.4em; font-size:0.88rem; font-weight:600; color:var(--muted); }
+    .invite-status[data-status="success"]{ color:var(--green); }
+    .invite-status[data-status="error"]{ color:var(--red); }
+    .invite-status[data-status="info"]{ color:var(--blue-600); }
+
     input, select{
       width:100%;
       border-radius:var(--radius-md);
@@ -336,6 +354,13 @@
     button:hover{ transform:translateY(-2px) scale(1.01); }
     button:hover::after{ opacity:1; }
     button:active{ transform:scale(0.98); }
+    button:disabled,
+    button.disabled{
+      cursor:not-allowed;
+      opacity:0.6;
+      transform:none !important;
+      box-shadow:none;
+    }
     .btn-secondary{
       background:rgba(255,255,255,0.9);
       color:var(--blue-600);
@@ -578,10 +603,20 @@
           </div>
 
           <p class="welcome-copy">Számold ki, mennyi munkaórádba kerül egy vágyott vásárlás és érezd nagyon rosszul magad!</p>
-          
+
+          <div class="card invite-card">
+            <h3>🔑 Meghívó szükséges</h3>
+            <p class="invite-copy">Add meg az invite kódodat a Munkaóra Pro élmény eléréséhez.</p>
+            <div id="inviteForm" class="invite-form">
+              <input id="inviteCodeInput" placeholder="Pl. 1234-5678-ABCD" autocomplete="one-time-code" inputmode="text" />
+              <button type="button" onclick="validateInvite()">✅ Kód ellenőrzése</button>
+            </div>
+            <button id="startButton" class="invite-start" type="button" onclick="startApp()" disabled aria-disabled="true">🚀 Kezdés</button>
+            <div id="inviteStatus" class="invite-status" role="status" aria-live="polite"></div>
+          </div>
+
           <div class="card" style="width:100%;">
             <div class="stack">
-              <button onclick="goTo('profile'); track('start_click')">🚀 Kezdjük el!</button>
               <p style="text-align:center;font-size:0.85rem;">Már <strong>2,847</strong> felhasználó spórolt <strong>18,392</strong> órát! 🎉</p>
             </div>
           </div>
@@ -781,6 +816,118 @@
       'A tudatos vásárlás a jövőd kulcsa! 🔑',
       'Gondolkozz hosszú távon, élj boldogan! ✨'
     ];
+
+    const INVITE_CODES = [
+      '1843-5092-JKLP','9320-1748-MQAE','4076-9921-BTCR','8512-3167-ZWUY','6940-2583-PXEV','7234-8119-HRLT','5802-4671-YQMN','9375-1204-VKAD','4129-7350-NBUE','6583-2901-GCFW',
+      '1726-8450-RMZH','3608-5942-WTLQ','9481-6023-EXHP','5307-1849-UJNC','7824-9631-DBSO','6159-2478-FLQA','8046-5312-SKNY','2973-6581-QGJR','4510-9824-VMPC','6791-3405-LHEA',
+      '5804-7912-CYTK','1639-4275-NZUF','7102-3698-XQBL','9258-6047-WTRD','3479-8516-MPAH','6903-2781-HQYE','8541-3902-JDUT','4068-1579-RWKC','7135-9804-LZMV','2486-5319-VQEA',
+      '9721-3408-XGTF','1840-5726-BKUL','5603-1987-YQPR','3981-6205-MHFC','7092-4186-ZRTA','8460-2351-NPLW','6217-5093-TRXE','9748-6310-DMWQ','5039-2186-GYKH','7825-4691-QALV',
+      '6358-9702-XRBD','2914-5803-VKQE','8042-7365-TLJM','1679-2058-RSHP','9380-6147-BFWN','4723-5981-HQCT','6598-3402-YZUR','3251-4790-MWJE','5906-8217-KDPL','7439-1062-XBVR'
+    ];
+    const INVITE_QUEUE_KEY = 'munkaora_invite_queue';
+    const INVITE_VALID_KEY = 'munkaora_invite_valid';
+    let inviteQueue = [];
+    let inviteValidated = false;
+
+    function normalizeInviteCode(value){
+      return String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    }
+
+    function loadInviteQueue(){
+      try{
+        const stored = JSON.parse(localStorage.getItem(INVITE_QUEUE_KEY));
+        if(Array.isArray(stored)){
+          const sanitized = stored.filter(code => INVITE_CODES.includes(code));
+          const missing = INVITE_CODES.filter(code => !sanitized.includes(code));
+          return sanitized.concat(missing);
+        }
+      }catch(e){ }
+      return [...INVITE_CODES];
+    }
+
+    function persistInviteQueue(){
+      localStorage.setItem(INVITE_QUEUE_KEY, JSON.stringify(inviteQueue));
+    }
+
+    function setStartButtonState(enabled){
+      const btn = document.getElementById('startButton');
+      const form = document.getElementById('inviteForm');
+      if(btn){
+        btn.disabled = !enabled;
+        btn.setAttribute('aria-disabled', String(!enabled));
+        btn.classList.toggle('show', enabled);
+      }
+      if(form){
+        form.hidden = !!enabled;
+      }
+    }
+
+    function updateInviteStatus(message, status = 'info'){
+      const statusEl = document.getElementById('inviteStatus');
+      if(!statusEl) return;
+      statusEl.textContent = message;
+      statusEl.setAttribute('data-status', status);
+    }
+
+    function initInviteGate(){
+      inviteQueue = loadInviteQueue();
+      inviteValidated = localStorage.getItem(INVITE_VALID_KEY) === 'true';
+      const input = document.getElementById('inviteCodeInput');
+      if(input){
+        input.addEventListener('keydown', (event) => {
+          if(event.key === 'Enter'){
+            event.preventDefault();
+            validateInvite();
+          }
+        });
+      }
+      setStartButtonState(inviteValidated);
+      if(inviteValidated){
+        updateInviteStatus('✅ Meghívó kód elfogadva. Kezdődhet a számolás!', 'success');
+      } else {
+        updateInviteStatus('Add meg az invite kódodat a kezdéshez.', 'info');
+      }
+    }
+
+    function validateInvite(){
+      const input = document.getElementById('inviteCodeInput');
+      if(!input) return;
+      const code = normalizeInviteCode(input.value);
+      if(!code){
+        updateInviteStatus('Írj be egy meghívó kódot!', 'error');
+        inviteValidated = false;
+        localStorage.removeItem(INVITE_VALID_KEY);
+        setStartButtonState(false);
+        return;
+      }
+      const index = inviteQueue.findIndex(item => normalizeInviteCode(item) === code);
+      if(index === -1){
+        updateInviteStatus('❌ Ez a meghívó kód nem érvényes.', 'error');
+        inviteValidated = false;
+        localStorage.removeItem(INVITE_VALID_KEY);
+        setStartButtonState(false);
+        return;
+      }
+      const [matched] = inviteQueue.splice(index, 1);
+      inviteQueue.push(matched);
+      persistInviteQueue();
+      inviteValidated = true;
+      localStorage.setItem(INVITE_VALID_KEY, 'true');
+      setStartButtonState(true);
+      input.value = '';
+      updateInviteStatus('✅ Meghívó kód elfogadva. Kezdődhet a számolás!', 'success');
+      track('invite_validated');
+    }
+
+    function startApp(){
+      if(!inviteValidated){
+        updateInviteStatus('Add meg az érvényes meghívó kódot a kezdéshez.', 'error');
+        setStartButtonState(false);
+        return;
+      }
+      track('start_click');
+      goTo('profile');
+    }
 
     function toggleTheme(){
       const html = document.documentElement;
@@ -1027,6 +1174,7 @@
         document.getElementById('income').value = d.profile.income || '';
         document.getElementById('hours').value = d.profile.hoursPerWeek || '';
       }
+      initInviteGate();
     })();
   </script>
 </body>
