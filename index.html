@@ -2,123 +2,125 @@
 <html lang="hu">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Munkaóra • Revolut UI</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+  <title>Munkaóra</title>
 
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-G8BZPSFGGG"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-G8BZPSFGGG');
+    gtag('js',new Date());
+    gtag('config','G-G8BZPSFGGG');
   </script>
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-    :root {
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    :root{
       --blue:#2b5bf7;
       --cyan:#37d4ff;
       --green:#1dbf73;
       --red:#ff5c6a;
-      --bg-light:#f7faff;
+      --bg1:#eef3ff;
       --text:#0f172a;
-      --muted:#64748b;
-      --radius:18px;
-      --shadow:0 25px 60px -35px rgba(15,27,60,0.45);
+      --muted:#6b7280;
+      --radius-lg:24px;
+      --radius-md:16px;
+      --shadow:0 25px 60px -35px rgba(15,27,60,0.35);
+      --blur:26px;
+      --card-bg:rgba(255,255,255,0.75);
+      --border:rgba(255,255,255,0.6);
     }
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-    html,body{height:100%;overflow:hidden;font-family:Inter,sans-serif;background:linear-gradient(180deg,#eef3ff 0%,#f9fbff 100%);}
+    html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:linear-gradient(180deg,#eef3ff 0%,#f9fbff 100%);}
     body{display:flex;justify-content:center;align-items:center;color:var(--text);}
-    .app-shell{width:100%;max-width:430px;height:100vh;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;padding:20px 16px 140px;}
-    .screen{flex:1;display:none;flex-direction:column;justify-content:center;align-items:center;text-align:center;animation:fade .3s ease;}
+    .app-shell{width:100%;max-width:430px;height:100vh;display:flex;flex-direction:column;position:relative;overflow:hidden;padding:20px 16px 120px;}
+    .screen{flex:1;display:none;flex-direction:column;justify-content:center;align-items:center;text-align:center;animation:fade .4s ease;}
     .screen.active{display:flex;}
-    @keyframes fade{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
-    h1{font-size:2.4rem;font-weight:800;margin-bottom:10px;}
-    h2{font-size:1.3rem;font-weight:700;margin-bottom:10px;}
-    p{color:var(--muted);font-size:.9rem;}
-    /* clock */
-    .hero-clock{width:180px;height:180px;border-radius:50%;position:relative;background:radial-gradient(circle at 50% 35%,#fff 0%,#dff0ff 60%,#b6d5ff 100%);box-shadow:0 20px 45px rgba(50,100,255,0.25);display:flex;align-items:center;justify-content:center;animation:floatClock 4s ease-in-out infinite;margin:25px 0;}
-    .clock-body{width:70%;height:70%;border-radius:50%;background:radial-gradient(circle,#fff 40%,#e7efff 100%);position:relative;}
+    @keyframes fade{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+    h1{font-size:2.5rem;font-weight:700;}
+    h2{font-size:1.3rem;font-weight:700;margin-bottom:8px;}
+    p{color:var(--muted);font-size:.95rem;line-height:1.4;}
+    /* --- floating clock --- */
+    .hero-clock{width:180px;height:180px;border-radius:50%;position:relative;background:radial-gradient(circle at 50% 40%,#fff 0%,#d7e9ff 70%,#9cc0ff 100%);box-shadow:0 30px 80px rgba(50,100,255,0.35);display:flex;align-items:center;justify-content:center;animation:float 5s ease-in-out infinite;margin:26px 0;}
+    .clock-inner{width:75%;height:75%;border-radius:50%;background:radial-gradient(circle,#fff 30%,#e7efff 100%);position:relative;}
     .clock-hand{position:absolute;bottom:50%;left:50%;transform-origin:bottom center;border-radius:2px;background:var(--blue);}
-    .clock-hand.hour{width:4px;height:30%;animation:tickHour 720s linear infinite;}
-    .clock-hand.minute{width:3px;height:40%;animation:tickMinute 60s linear infinite;}
-    @keyframes tickMinute{from{transform:translate(-50%,0)rotate(0deg);}to{transform:translate(-50%,0)rotate(360deg);}}
-    @keyframes tickHour{from{transform:translate(-50%,0)rotate(0deg);}to{transform:translate(-50%,0)rotate(360deg);}}
-    @keyframes floatClock{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
-    /* inputs */
-    input{width:100%;border-radius:var(--radius);border:1px solid #d0defa;padding:12px 14px;margin:5px 0;font-size:.95rem;text-align:center;background:rgba(255,255,255,0.85);backdrop-filter:blur(12px);}
-    button{width:100%;border:none;border-radius:var(--radius);padding:14px;margin-top:10px;font-size:1rem;font-weight:600;cursor:pointer;background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;box-shadow:0 10px 25px rgba(40,90,255,0.3);transition:transform .2s;}
+    .clock-hand.hour{width:4px;height:30%;animation:rotH 720s linear infinite;}
+    .clock-hand.min{width:3px;height:40%;animation:rotM 60s linear infinite;}
+    @keyframes rotM{from{transform:translate(-50%,0)rotate(0);}to{transform:translate(-50%,0)rotate(360deg);}}
+    @keyframes rotH{from{transform:translate(-50%,0)rotate(0);}to{transform:translate(-50%,0)rotate(360deg);}}
+    @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+    /* --- inputs --- */
+    input{width:100%;border-radius:var(--radius-md);border:1px solid rgba(180,200,255,0.6);padding:13px 14px;margin:6px 0;font-size:.95rem;background:rgba(255,255,255,0.8);backdrop-filter:blur(var(--blur));}
+    button{width:100%;border:none;border-radius:var(--radius-md);padding:14px;font-size:1rem;font-weight:600;color:#fff;cursor:pointer;background:linear-gradient(135deg,var(--blue),var(--cyan));box-shadow:0 20px 40px -20px rgba(50,100,255,0.4);transition:transform .2s;}
     button:active{transform:scale(.97);}
-    .result-box{display:none;margin-top:12px;padding:18px;background:rgba(255,255,255,0.9);border-radius:var(--radius);box-shadow:var(--shadow);}
+    .card{background:var(--card-bg);backdrop-filter:blur(var(--blur));border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;width:100%;box-shadow:var(--shadow);margin-top:12px;}
+    .result-box{display:none;margin-top:14px;padding:18px;background:rgba(255,255,255,0.85);border-radius:var(--radius-md);backdrop-filter:blur(var(--blur));box-shadow:0 15px 40px -20px rgba(40,90,255,0.3);}
     .result-box .hours{font-size:2rem;font-weight:700;color:var(--blue);}
-    .decision-buttons{display:flex;gap:8px;margin-top:8px;}
-    .decision-buttons button{flex:1;font-size:.9rem;padding:10px;}
+    .decision-buttons{display:flex;gap:10px;margin-top:10px;}
+    .decision-buttons button{flex:1;padding:10px;font-size:.9rem;}
     .decision-buttons .save{background:linear-gradient(135deg,var(--green),#36e1a9);}
     .decision-buttons .buy{background:linear-gradient(135deg,var(--red),#ff8a8a);}
-    /* history */
-    .history-item{background:rgba(255,255,255,0.9);border-radius:var(--radius);padding:12px;margin:5px 0;text-align:left;box-shadow:0 2px 8px rgba(0,0,0,0.1);font-size:.9rem;}
-    .history-item.green{border-left:4px solid var(--green);}
-    .history-item.red{border-left:4px solid var(--red);}
-    /* stats */
-    .progress-ring{width:120px;height:120px;border-radius:50%;background:conic-gradient(var(--blue)0deg,#e5ecff 0deg);display:flex;align-items:center;justify-content:center;margin:12px;}
-    #ratio{font-size:1.4rem;font-weight:700;color:var(--blue);}
-    /* nav */
-    nav{position:absolute;left:50%;bottom:30px;transform:translateX(-50%);width:92%;max-width:360px;background:rgba(255,255,255,0.7);backdrop-filter:blur(20px);border-radius:999px;border:1px solid rgba(255,255,255,0.6);box-shadow:0 20px 50px rgba(19,36,78,0.3);display:flex;justify-content:space-around;padding:6px;z-index:50;}
-    nav button{background:transparent;border:none;color:var(--muted);font-size:.75rem;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+    .history-item{background:var(--card-bg);border:1px solid var(--border);border-left:5px solid var(--blue);border-radius:var(--radius-md);padding:14px;margin:6px 0;text-align:left;box-shadow:0 3px 10px rgba(0,0,0,0.05);}
+    .history-item.green{border-left-color:var(--green);}
+    .history-item.red{border-left-color:var(--red);}
+    .progress-ring{width:130px;height:130px;border-radius:50%;background:conic-gradient(var(--blue)0deg,#e5ecff 0deg);display:flex;align-items:center;justify-content:center;margin:16px auto;box-shadow:0 25px 50px -30px rgba(20,80,255,0.4);}
+    #ratio{font-size:1.6rem;font-weight:700;color:var(--blue);}
+    nav{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);width:92%;max-width:370px;background:rgba(255,255,255,0.25);backdrop-filter:blur(30px);border-radius:999px;border:1px solid var(--border);box-shadow:0 25px 60px -35px rgba(19,36,78,0.35);display:flex;justify-content:space-around;align-items:center;padding:8px 4px;z-index:50;}
+    nav button{background:transparent;border:none;color:var(--muted);font-size:.75rem;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:color .2s;}
     nav button.active{color:var(--blue);}
-    nav svg{width:20px;height:20px;fill:currentColor;}
+    nav svg{width:22px;height:22px;fill:currentColor;}
   </style>
 </head>
 <body>
   <div class="app-shell">
-    <!-- 1. Welcome -->
     <section id="screen-welcome" class="screen active">
       <h1>Munkaóra</h1>
       <div class="hero-clock">
-        <div class="clock-body">
+        <div class="clock-inner">
           <div class="clock-hand hour"></div>
-          <div class="clock-hand minute"></div>
+          <div class="clock-hand min"></div>
         </div>
       </div>
-      <p>Számold ki, mennyi munkaórádba kerül egy termék.</p>
-      <button onclick="goTo('profile');track('start_click')">Kezdjük</button>
+      <p>Számold ki, mennyi munkaórádba kerül egy vásárlás.</p>
+      <div class="card"><button onclick="goTo('profile');track('start_click')">Kezdjük</button></div>
     </section>
 
-    <!-- 2. Profil -->
     <section id="screen-profile" class="screen">
       <h2>Profilod</h2>
-      <input id="name" placeholder="Név">
-      <input id="age" placeholder="Életkor" type="number">
-      <input id="city" placeholder="Település">
-      <input id="income" placeholder="Havi nettó (Ft)" type="number">
-      <input id="hours" placeholder="Heti munkaóra" type="number">
-      <button onclick="saveProfile()">Mentés</button>
+      <div class="card">
+        <input id="name" placeholder="Név">
+        <input id="age" placeholder="Életkor" type="number">
+        <input id="city" placeholder="Település">
+        <input id="income" placeholder="Havi nettó (Ft)" type="number">
+        <input id="hours" placeholder="Heti munkaóra" type="number">
+        <button onclick="saveProfile()">Mentés</button>
+      </div>
     </section>
 
-    <!-- 3. Kalkulátor -->
     <section id="screen-calculator" class="screen">
       <h2>Kalkulátor</h2>
-      <input id="product" placeholder="Terméknév">
-      <input id="price" placeholder="Ár (Ft)" type="number">
-      <button onclick="calculate()">Számolás</button>
-      <div id="result-box" class="result-box">
-        <div class="hours" id="hoursResult">0</div>
-        <p>munkaóra</p>
-        <div class="decision-buttons">
-          <button class="save" onclick="saveDecision('megsporolom')">Megspórolom</button>
-          <button class="buy" onclick="saveDecision('megveszem')">Megveszem</button>
+      <div class="card">
+        <input id="product" placeholder="Terméknév">
+        <input id="price" placeholder="Ár (Ft)" type="number">
+        <button onclick="calculate()">Számolás</button>
+        <div id="result-box" class="result-box">
+          <div class="hours" id="hoursResult">0</div>
+          <p>munkaóra</p>
+          <div class="decision-buttons">
+            <button class="save" onclick="saveDecision('megsporolom')">Megspórolom</button>
+            <button class="buy" onclick="saveDecision('megveszem')">Megveszem</button>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- 4. Előzmények -->
     <section id="screen-history" class="screen">
       <h2>Előzmények</h2>
-      <div id="history-list"></div>
+      <div id="history-list" class="card"></div>
     </section>
 
-    <!-- 5. Statisztikák -->
     <section id="screen-stats" class="screen">
       <h2>Statisztikák</h2>
       <div class="progress-ring" id="ratioCircle"><span id="ratio">0%</span></div>
@@ -129,28 +131,21 @@
 
   <nav>
     <button id="nav-calculator" onclick="goTo('calculator')">
-      <svg viewBox="0 0 24 24"><path d="M5 3h14v18H5z"/></svg>
-      <span>Kalkulátor</span>
+      <svg viewBox="0 0 24 24"><path d="M5 3h14v18H5z"/></svg><span>Kalkulátor</span>
     </button>
     <button id="nav-history" onclick="goTo('history')">
-      <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10"/></svg>
-      <span>Előzmények</span>
+      <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10"/></svg><span>Előzmények</span>
     </button>
     <button id="nav-stats" onclick="goTo('stats')">
-      <svg viewBox="0 0 24 24"><path d="M4 20V10h4v10Zm6 0V4h4v16Zm6 0V14h4v6Z"/></svg>
-      <span>Statisztikák</span>
+      <svg viewBox="0 0 24 24"><path d="M4 20V10h4v10Zm6 0V4h4v16Zm6 0V14h4v6Z"/></svg><span>Statisztikák</span>
     </button>
     <button id="nav-profile" onclick="goTo('profile')">
-      <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-3 0-6 1.5-6 3v1h12v-1c0-1.5-3-3-6-3Z"/></svg>
-      <span>Profil</span>
+      <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-3 0-6 1.5-6 3v1h12v-1c0-1.5-3-3-6-3Z"/></svg><span>Profil</span>
     </button>
   </nav>
 
   <script>
-    function track(name, params={}) {
-      if(window.gtag) window.gtag('event', name, params);
-      console.log('GA event:',name);
-    }
+    function track(name,params={}){if(window.gtag)window.gtag('event',name,params);}
     function goTo(screen){
       document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
       document.getElementById('screen-'+screen).classList.add('active');
@@ -163,31 +158,49 @@
     const STORE_KEY='munkaora_data';
     function loadData(){try{return JSON.parse(localStorage.getItem(STORE_KEY))||{profile:{},history:[]}}catch{return{profile:{},history:[]}}}
     function saveData(d){localStorage.setItem(STORE_KEY,JSON.stringify(d))}
+    function val(id){return document.getElementById(id).value.trim();}
     function saveProfile(){
       const d=loadData();
-      d.profile={name:document.getElementById('name').value,age:+document.getElementById('age').value,city:document.getElementById('city').value,income:+document.getElementById('income').value,hoursPerWeek:+document.getElementById('hours').value};
+      d.profile={name:val('name'),age:+val('age'),city:val('city'),income:+val('income'),hoursPerWeek:+val('hours')};
       saveData(d);track('profile_saved');goTo('calculator');
     }
     let currentProduct=null,currentPrice=0,currentHours=0;
     function calculate(){
-      const d=loadData(),p=d.profile;if(!p.income||!p.hoursPerWeek){alert('Előbb add meg a profilod!');goTo('profile');return;}
-      const product=document.getElementById('product').value.trim(),price=+document.getElementById('price').value;if(!product||!price){alert('Adj meg mindent!');return;}
+      const d=loadData(),p=d.profile;
+      if(!p.income||!p.hoursPerWeek){alert('Add meg a profilod adatait először!');goTo('profile');return;}
+      const product=val('product'),price=+val('price');
+      if(!product||!price){alert('Töltsd ki mindkettőt!');return;}
       const hourly=p.income/(p.hoursPerWeek*4),hours=(price/hourly).toFixed(1);
-      document.getElementById('hoursResult').innerText=hours;document.getElementById('result-box').style.display='block';
-      currentProduct=product;currentPrice=price;currentHours=hours;track('calculation_done',{product,price});
+      currentProduct=product;currentPrice=price;currentHours=hours;
+      document.getElementById('hoursResult').innerText=hours;
+      document.getElementById('result-box').style.display='block';
+      track('calculation_done',{product,price});
     }
     function saveDecision(type){
-      const d=loadData();d.history.push({id:Date.now(),product:currentProduct,price:currentPrice,hours:currentHours,decision:type,ts:new Date().toISOString()});
-      saveData(d);track('decision_click',{decision:type,product:currentProduct});document.getElementById('result-box').style.display='none';goTo('history');
+      if(!currentProduct)return;
+      const d=loadData();
+      d.history.push({id:Date.now(),product:currentProduct,price:currentPrice,hours:currentHours,decision:type,ts:new Date().toISOString()});
+      saveData(d);
+      track('decision_click',{decision:type});
+      document.getElementById('result-box').style.display='none';
+      document.getElementById('product').value='';document.getElementById('price').value='';
+      goTo('history');
     }
     function loadHistory(){
-      const d=loadData(),list=document.getElementById('history-list');list.innerHTML='';
+      const d=loadData(),list=document.getElementById('history-list');
+      list.innerHTML='';
       if(d.history.length===0){list.innerHTML='<p>Még nincs adatod.</p>';return;}
-      d.history.slice().reverse().forEach(i=>{const el=document.createElement('div');el.className='history-item '+(i.decision==='megsporolom'?'green':'red');el.innerHTML=`<strong>${i.product}</strong><br>${Number(i.price).toLocaleString('hu-HU')} Ft • ${i.hours} óra`;list.appendChild(el);});
+      d.history.slice().reverse().forEach(i=>{
+        const el=document.createElement('div');
+        el.className='history-item '+(i.decision==='megsporolom'?'green':'red');
+        el.innerHTML=`<strong>${i.product}</strong><br>${Number(i.price).toLocaleString('hu-HU')} Ft • ${i.hours} óra`;
+        list.appendChild(el);
+      });
     }
     function loadStats(){
       const d=loadData(),saved=d.history.filter(x=>x.decision==='megsporolom'),spent=d.history.filter(x=>x.decision==='megveszem'),total=d.history.length,ratio=total?Math.round(saved.length/total*100):0;
-      document.getElementById('ratio').innerText=ratio+'%';document.getElementById('ratioCircle').style.background=`conic-gradient(var(--blue) ${ratio*3.6}deg,#e5ecff 0deg)`;
+      document.getElementById('ratio').innerText=ratio+'%';
+      document.getElementById('ratioCircle').style.background=`conic-gradient(var(--blue) ${ratio*3.6}deg,#e5ecff 0deg)`;
       document.getElementById('savedHours').innerText=saved.reduce((s,x)=>s+Number(x.hours),0).toFixed(1)+' óra megspórolva';
       document.getElementById('spentHours').innerText=spent.reduce((s,x)=>s+Number(x.hours),0).toFixed(1)+' óra elköltve';
       track('stats_loaded',{ratio});
