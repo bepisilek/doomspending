@@ -1,0 +1,33 @@
+{
+  "name": "Munkaóra Pro",
+  "short_name": "Munkaóra",
+  "description": "Számold ki, mennyi munkaórádba kerül egy vásárlás!",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#eef3ff",
+  "theme_color": "#356dff",
+  "orientation": "portrait",
+  "scope": "/",
+  "lang": "hu",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "finance",
+    "productivity",
+    "utilities"
+  ],
+  "screenshots": []
+}

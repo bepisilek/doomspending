@@ -1,0 +1,34 @@
+{
+  "name": "munkaora-pwa",
+  "version": "2.5.0",
+  "description": "Munkaóra Pro - Progressive Web App",
+  "main": "index.html",
+  "scripts": {
+    "dev": "python3 -m http.server 8000",
+    "dev:node": "npx serve",
+    "deploy": "vercel",
+    "deploy:prod": "vercel --prod",
+    "build": "echo 'No build step needed - static PWA'",
+    "test": "echo 'Run Lighthouse PWA audit'",
+    "version:bump": "node scripts/bump-version.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/USERNAME/munkaora-pwa.git"
+  },
+  "keywords": [
+    "pwa",
+    "progressive-web-app",
+    "finance",
+    "productivity",
+    "time-calculator"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/USERNAME/munkaora-pwa/issues"
+  },
+  "homepage": "https://github.com/USERNAME/munkaora-pwa#readme",
+  "devDependencies": {},
+  "dependencies": {}
+}

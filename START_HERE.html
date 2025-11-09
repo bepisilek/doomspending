@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🚀 Munkaóra PWA - Start Here</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 800px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .subtitle {
+      color: #666;
+      font-size: 1.1rem;
+      margin-bottom: 30px;
+    }
+    .step {
+      background: #f8f9fa;
+      border-left: 4px solid #667eea;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+    }
+    .step-number {
+      display: inline-block;
+      background: #667eea;
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 32px;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+    .step-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    .code {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 15px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      margin: 10px 0;
+      overflow-x: auto;
+    }
+    .button {
+      display: inline-block;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      margin: 5px;
+      transition: transform 0.2s;
+    }
+    .button:hover {
+      transform: translateY(-2px);
+    }
+    .checklist {
+      list-style: none;
+      padding: 0;
+    }
+    .checklist li {
+      padding: 8px 0;
+      padding-left: 30px;
+      position: relative;
+    }
+    .checklist li:before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: #667eea;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+    .warning {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+    .success {
+      background: #d4edda;
+      border-left: 4px solid #28a745;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+    .file-tree {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      line-height: 1.8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🕐 Munkaóra Pro PWA</h1>
+    <p class="subtitle">Progressive Web App - Szétbontott struktúra cache-probléma mentesen</p>
+
+    <div class="warning">
+      <strong>⚠️ FONTOS:</strong> Az ikonok hiányoznak! Először generáld le őket az alábbi lépések szerint.
+    </div>
+
+    <div class="step">
+      <div class="step-title">
+        <span class="step-number">1</span>
+        Ikonok Generálása
+      </div>
+      <p>Nyisd meg böngészőben:</p>
+      <div class="code">icons/generate-icons.html</div>
+      <p>Kattints a letöltés gombokra és mentsd el a PNG fájlokat az <code>icons/</code> mappába.</p>
+    </div>
+
+    <div class="step">
+      <div class="step-title">
+        <span class="step-number">2</span>
+        Webszerver Indítása
+      </div>
+      <p>Válassz egyet:</p>
+      <div class="code">
+# Python (ajánlott)
+python3 -m http.server 8000
+
+# Node.js
+npx serve
+
+# VS Code
+Right-click index.html → "Open with Live Server"
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-title">
+        <span class="step-number">3</span>
+        Alkalmazás Megnyitása
+      </div>
+      <p>Böngészőben:</p>
+      <div class="code">http://localhost:8000</div>
+      <a href="index.html" class="button">🚀 Alkalmazás Indítása</a>
+    </div>
+
+    <div class="success">
+      <strong>✅ PWA Funkciók:</strong>
+      <ul class="checklist">
+        <li>Offline működés</li>
+        <li>Automatikus frissítés észlelés</li>
+        <li>Frissítés gomb (nincs cache probléma!)</li>
+        <li>Telepíthető mobilra</li>
+        <li>Gyors betöltés</li>
+        <li>Megosztás funkció</li>
+      </ul>
+    </div>
+
+    <div class="step">
+      <div class="step-title">
+        <span class="step-number">4</span>
+        Cache Frissítés (Verzióváltás)
+      </div>
+      <p>Új verzió kiadásához változtasd meg:</p>
+      <div class="code">
+sw.js     → CACHE_VERSION = 'munkaora-v2.6.0'
+app.js    → CURRENT_VERSION = 'v2.6'
+index.html → build-badge = 'v2.6 PWA'
+      </div>
+      <p>A Service Worker automatikusan:</p>
+      <ul class="checklist">
+        <li>Észleli az új verziót</li>
+        <li>Megjeleníti a frissítés bannert</li>
+        <li>Törli a régi cache-t</li>
+        <li>Betölti az új fájlokat</li>
+      </ul>
+    </div>
+
+    <h2 style="margin-top: 40px; margin-bottom: 20px;">📁 Fájl Struktúra</h2>
+    <div class="file-tree">
+pwa/
+├── 🌐 index.html          # Fő HTML
+├── 🎨 styles.css          # Összes CSS
+├── ⚙️ app.js              # JavaScript + PWA init
+├── 🔧 sw.js               # Service Worker
+├── 📋 manifest.json       # PWA konfiguráció
+├── 📚 README.md           # Teljes dokumentáció
+├── 🚀 QUICK_START.md      # Gyors útmutató
+├── 📄 FILE_LIST.txt       # Fájllista
+└── icons/
+    ├── 🛠️ generate-icons.html
+    ├── 🖼️ icon-192.png    # Generálandó!
+    ├── 🖼️ icon-512.png    # Generálandó!
+    └── 📐 icon.svg
+    </div>
+
+    <h2 style="margin-top: 40px; margin-bottom: 20px;">📖 Dokumentáció</h2>
+    <div style="text-align: center;">
+      <a href="QUICK_START.md" class="button">⚡ Gyors Indítás</a>
+      <a href="README.md" class="button">📖 Teljes Dokumentáció</a>
+      <a href="FILE_LIST.txt" class="button">📄 Fájl Lista</a>
+    </div>
+
+    <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #eee; text-align: center; color: #666;">
+      <p><strong>Munkaóra Pro v2.5</strong> | Progressive Web App</p>
+      <p style="font-size: 0.9rem; margin-top: 10px;">
+        Készítve cache-problémák elkerülésével és automatikus frissítéssel
+      </p>
+    </div>
+  </div>
+</body>
+</html>
