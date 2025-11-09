@@ -607,9 +607,100 @@
     }
     nav button.active .nav-glow{ opacity:1; }
 
+    /* Share Widget */
+    .share-widget{
+      position:fixed;
+      bottom:120px;
+      right:20px;
+      z-index:90;
+      animation:slideInBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      display:none;
+    }
+    .share-widget.show{
+      display:block;
+    }
+    @keyframes slideInBounce{
+      from{ opacity:0; transform:translateY(100px) scale(0.8); }
+      to{ opacity:1; transform:translateY(0) scale(1); }
+    }
+    .share-bubble{
+      position:relative;
+      background:linear-gradient(135deg, #31d69f 0%, #28d3c0 100%);
+      color:#fff;
+      padding:18px 22px;
+      border-radius:20px 20px 20px 4px;
+      box-shadow:0 12px 40px rgba(40,211,192,0.45);
+      max-width:280px;
+      cursor:pointer;
+      transition:all var(--fast);
+    }
+    .share-bubble:hover{
+      transform:translateY(-3px);
+      box-shadow:0 16px 50px rgba(40,211,192,0.6);
+    }
+    .share-bubble:active{
+      transform:scale(0.98);
+    }
+    .share-close{
+      position:absolute;
+      top:-8px;
+      right:-8px;
+      width:24px;
+      height:24px;
+      border-radius:50%;
+      background:rgba(255,255,255,0.95);
+      color:#31d69f;
+      border:none;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      font-size:16px;
+      font-weight:700;
+      line-height:1;
+      box-shadow:0 4px 12px rgba(0,0,0,0.15);
+      transition:all var(--fast);
+    }
+    .share-close:hover{
+      transform:scale(1.1) rotate(90deg);
+      background:#fff;
+    }
+    .share-icon{
+      font-size:28px;
+      margin-bottom:8px;
+      animation:wave 1s ease-in-out infinite;
+    }
+    @keyframes wave{
+      0%, 100%{ transform:rotate(0deg); }
+      25%{ transform:rotate(15deg); }
+      75%{ transform:rotate(-15deg); }
+    }
+    .share-text{
+      font-size:0.95rem;
+      font-weight:600;
+      line-height:1.4;
+    }
+    .share-text small{
+      display:block;
+      margin-top:6px;
+      font-size:0.8rem;
+      opacity:0.9;
+      font-weight:500;
+    }
+
     @media(min-width:520px){ 
       nav{ bottom:46px; }
       .app-shell{ padding-bottom:300px; }
+    }
+    @media(max-width:520px){
+      .share-widget{
+        bottom:100px;
+        right:16px;
+      }
+      .share-bubble{
+        max-width:240px;
+        padding:16px 18px;
+      }
     }
   </style>
 </head>
@@ -621,6 +712,18 @@
   </div>
   
   <div id="build-badge" style="position:fixed;left:8px;top:6px;font-size:11px;color:#5d6b85;opacity:.8;z-index:50;">v2.4 STABLE</div>
+
+  <!-- Share Widget -->
+  <div id="shareWidget" class="share-widget">
+    <div class="share-bubble" onclick="handleShare()">
+      <button class="share-close" onclick="closeShareWidget(event)" aria-label="Bezárás">×</button>
+      <div class="share-icon">🚀</div>
+      <div class="share-text">
+        Oszd meg barátaiddal!
+        <small>Kattints a megosztáshoz</small>
+      </div>
+    </div>
+  </div>
 
   <div class="app-shell">
     <main class="screen-stack">
@@ -1202,6 +1305,79 @@
         .replaceAll("'",'&#039;');
     }
 
+    // Share Widget Functions
+    const SHARE_WIDGET_KEY = 'munkaora_share_widget_dismissed';
+    const APP_URL = 'https://doomspending.vercel.app/';
+    const SHARE_MESSAGE = 'Ez az app lefordítja az árakat időre. Nézd meg!';
+
+    function initShareWidget(){
+      // Csak akkor jelenik meg, ha még nem volt bezárva ebben a sessionben
+      const dismissed = sessionStorage.getItem(SHARE_WIDGET_KEY);
+      if(!dismissed && inviteValidated){
+        // 15 másodperc késleltetés
+        setTimeout(() => {
+          const widget = document.getElementById('shareWidget');
+          if(widget && !sessionStorage.getItem(SHARE_WIDGET_KEY)){
+            widget.classList.add('show');
+            track('share_widget_shown');
+          }
+        }, 15000);
+      }
+    }
+
+    function closeShareWidget(event){
+      event.stopPropagation();
+      const widget = document.getElementById('shareWidget');
+      if(widget){
+        widget.classList.remove('show');
+        sessionStorage.setItem(SHARE_WIDGET_KEY, 'true');
+        track('share_widget_dismissed');
+      }
+    }
+
+    async function handleShare(){
+      const shareText = `${SHARE_MESSAGE}\n\n${APP_URL}`;
+      
+      // Másolás vágólapra
+      try {
+        await navigator.clipboard.writeText(shareText);
+        track('share_clipboard_success');
+        
+        // Vizuális feedback
+        const bubble = document.querySelector('.share-bubble');
+        const originalText = bubble.innerHTML;
+        bubble.innerHTML = `
+          <div class="share-icon">✅</div>
+          <div class="share-text">
+            Link másolva!
+            <small>Illeszd be bárhova</small>
+          </div>
+        `;
+        
+        setTimeout(() => {
+          bubble.innerHTML = originalText;
+        }, 2000);
+      } catch(err) {
+        console.error('Clipboard error:', err);
+      }
+
+      // Web Share API (főleg mobilon működik)
+      if(navigator.share){
+        try {
+          await navigator.share({
+            title: 'Munkaóra App',
+            text: SHARE_MESSAGE,
+            url: APP_URL
+          });
+          track('share_native_success');
+        } catch(err) {
+          if(err.name !== 'AbortError'){
+            console.error('Share error:', err);
+          }
+        }
+      }
+    }
+
     (function init(){
       const d = loadData();
       if(d.profile){
@@ -1212,6 +1388,7 @@
         document.getElementById('hours').value = d.profile.hoursPerWeek || '';
       }
       initInviteGate();
+      initShareWidget();
       checkVersion();
     })();
 
