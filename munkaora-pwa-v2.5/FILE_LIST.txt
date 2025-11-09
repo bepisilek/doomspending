@@ -1,0 +1,55 @@
+📁 MUNKAÓRA PRO - PWA FÁJL LISTA
+================================
+
+✅ CORE FÁJLOK (kötelező):
+├── index.html          # Fő HTML struktúra
+├── styles.css          # Összes CSS stílus
+├── app.js             # JavaScript logika + PWA init
+├── sw.js              # Service Worker (cache kezelés)
+└── manifest.json      # PWA konfiguráció
+
+📱 IKONOK (generálandó):
+├── icons/
+│   ├── generate-icons.html  # Ikon generáló eszköz
+│   ├── icon-192.png        # 192x192 app ikon
+│   ├── icon-512.png        # 512x512 app ikon
+│   └── icon.svg            # Forrás SVG (opcionális)
+
+📚 DOKUMENTÁCIÓ:
+├── README.md          # Teljes dokumentáció
+├── QUICK_START.md    # Gyors indítási útmutató
+└── FILE_LIST.txt     # Ez a fájl
+
+════════════════════════════════════════
+
+🎯 FONTOS LÉPÉSEK:
+
+1. Nyisd meg: icons/generate-icons.html
+2. Töltsd le a PNG ikonokat
+3. Indíts webszervert: python3 -m http.server 8000
+4. Nyisd meg: http://localhost:8000
+
+════════════════════════════════════════
+
+🔧 VERZIÓ NÖVELÉS (cache probléma elkerülése):
+
+Szerkesztendő fájlok új verzió esetén:
+1. sw.js → CACHE_VERSION = 'munkaora-vX.X.X'
+2. app.js → CURRENT_VERSION = 'vX.X'
+3. index.html → build-badge = 'vX.X PWA'
+
+════════════════════════════════════════
+
+✨ PWA FUNKCIÓK:
+
+✅ Offline működés (Service Worker)
+✅ Installálható app (manifest.json)
+✅ Auto cache frissítés (verzióalapú)
+✅ Frissítés gomb (skipWaiting)
+✅ Gyors betöltés (cache stratégia)
+✅ Nincs cache konfliktus (auto clean)
+
+════════════════════════════════════════
+
+Részletek: README.md
+Gyors start: QUICK_START.md
