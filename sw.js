@@ -1,150 +1,97 @@
-// ============================================
-// MUNKAÓRA PRO - SERVICE WORKER v2.5
-// ============================================
-
-const CACHE_VERSION = 'munkaora-v2.5.0';
-const CACHE_NAME = `${CACHE_VERSION}-static`;
-const DATA_CACHE_NAME = `${CACHE_VERSION}-data`;
-
-// Fájlok amit cache-elünk
-const FILES_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/styles.css',
-  '/app.js',
-  '/manifest.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png'
+const CACHE_VERSION = 'munkaora-v3-20251106';
+const APP_SHELL = [
+  './',
+  './index.html',
+  './app.js',
+  './manifest.webmanifest',
+  './icons/icon-192.svg',
+  './icons/icon-512.svg',
+  './icons/icon-512-maskable.svg'
 ];
 
-// ============================================
-// INSTALL - Service Worker telepítése
-// ============================================
 self.addEventListener('install', (event) => {
-  console.log('📦 Service Worker telepítés:', CACHE_VERSION);
-  
+  console.log('[SW] Installing version:', CACHE_VERSION);
+  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('✅ Cache megnyitva');
-        return cache.addAll(FILES_TO_CACHE);
-      })
-      .then(() => {
-        // Azonnal aktiválódjunk
-        return self.skipWaiting();
-      })
-      .catch(err => {
-        console.error('❌ Cache hiba:', err);
-      })
+    caches.open(CACHE_VERSION).then((cache) => {
+      console.log('[SW] Caching app shell');
+      return cache.addAll(APP_SHELL);
+    })
   );
 });
 
-// ============================================
-// ACTIVATE - Régi cache-ek törlése
-// ============================================
 self.addEventListener('activate', (event) => {
-  console.log('🔄 Service Worker aktiválás:', CACHE_VERSION);
-  
+  console.log('[SW] Activating version:', CACHE_VERSION);
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
+    caches.keys().then((keys) => {
+      console.log('[SW] Found caches:', keys);
       return Promise.all(
-        cacheNames.map((cacheName) => {
-          // Töröljük a régi cache-eket
-          if(cacheName !== CACHE_NAME && cacheName !== DATA_CACHE_NAME){
-            console.log('🗑️ Régi cache törlése:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
+        keys
+          .filter((key) => key !== CACHE_VERSION)
+          .map((key) => {
+            console.log('[SW] Deleting old cache:', key);
+            return caches.delete(key);
+          })
       );
     }).then(() => {
-      // Azonnal vegyük át az irányítást
+      console.log('[SW] Claiming clients');
       return self.clients.claim();
     })
   );
 });
 
-// ============================================
-// FETCH - Hálózati kérések kezelése
-// ============================================
 self.addEventListener('fetch', (event) => {
   const { request } = event;
-  const url = new URL(request.url);
-  
-  // Csak a saját origin kéréseket kezeljük
-  if(url.origin !== location.origin){
+  if (request.method !== 'GET') {
     return;
   }
   
-  // HTML fájlok: NETWORK FIRST (mindig friss)
-  if(request.headers.get('accept').includes('text/html')){
+  const requestURL = new URL(request.url);
+  
+  // Navigate requests (page loads)
+  if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          // Cache-eljük a választ következő alkalomra
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, responseToCache);
-          });
+          const copy = response.clone();
+          caches.open(CACHE_VERSION).then((cache) => {
+            cache.put(request, copy);
+          }).catch(() => {});
           return response;
         })
-        .catch(() => {
-          // Ha nincs net, próbáljuk a cache-ből
-          return caches.match(request);
-        })
+        .catch(() => caches.match('./index.html'))
     );
     return;
   }
   
-  // CSS, JS, képek: CACHE FIRST (gyors betöltés)
-  event.respondWith(
-    caches.match(request)
-      .then((response) => {
-        if(response){
-          return response;
+  // Same-origin requests (assets)
+  if (requestURL.origin === self.location.origin) {
+    event.respondWith(
+      caches.match(request).then((cachedResponse) => {
+        if (cachedResponse) {
+          // Return cached response and update in background
+          fetch(request).then((response) => {
+            if (response && response.status === 200) {
+              const copy = response.clone();
+              caches.open(CACHE_VERSION).then((cache) => {
+                cache.put(request, copy);
+              }).catch(() => {});
+            }
+          }).catch(() => {});
+          return cachedResponse;
         }
         
-        // Ha nincs cache-ben, töltsd le és cache-eld
+        // Not in cache, fetch from network
         return fetch(request).then((response) => {
-          // Csak a sikeres válaszokat cache-eljük
-          if(!response || response.status !== 200 || response.type !== 'basic'){
-            return response;
+          if (response && response.status === 200) {
+            const copy = response.clone();
+            caches.open(CACHE_VERSION).then((cache) => {
+              cache.put(request, copy);
+            }).catch(() => {});
           }
-          
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, responseToCache);
-          });
-          
           return response;
-        });
-      })
-  );
-});
-
-// ============================================
-// MESSAGE - Üzenetek kezelése
-// ============================================
-self.addEventListener('message', (event) => {
-  if(event.data && event.data.type === 'SKIP_WAITING'){
-    console.log('⏩ skipWaiting aktiválva');
-    self.skipWaiting();
-  }
-  
-  // Cache manuális frissítése
-  if(event.data && event.data.type === 'FORCE_UPDATE'){
-    console.log('🔄 Cache kényszerített frissítése');
-    event.waitUntil(
-      caches.keys().then((cacheNames) => {
-        return Promise.all(
-          cacheNames.map((cacheName) => caches.delete(cacheName))
-        );
-      }).then(() => {
-        return caches.open(CACHE_NAME).then((cache) => {
-          return cache.addAll(FILES_TO_CACHE);
         });
       })
     );
   }
 });
-
-console.log('🚀 Service Worker betöltve:', CACHE_VERSION);
