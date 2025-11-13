@@ -1,5 +1,5 @@
 // ============================================
-// MUNKAÓRA PRO - v2.5 PWA
+// MUNKAÓRA PRO - PWA
 // ============================================
 
 // Google Analytics
@@ -11,7 +11,7 @@ function track(name, params = {}) {
 // CONSTANTS & DATA
 // ============================================
 
-const CURRENT_VERSION = 'v2.5';
+// APP_VERSION betöltve a version.js-ből
 const VERSION_KEY = 'munkaora_version';
 const STORE_KEY = 'munkaora_data';
 const INVITE_QUEUE_KEY = 'munkaora_invite_queue';
@@ -246,40 +246,66 @@ function calculate(){
   const hours = (price / hourly).toFixed(1);
   
   const comparisons = [
-    `Ez ${Math.round(hours/8)} munkanap! 📅`,
-    `Ennyi idő alatt ${Math.round(hours*60/90)} filmet nézhetnél! 🎬`,
-    `Vagy ${Math.round(hours)} óra olvasás könyvekkel! 📚`,
-    `${Math.round(hours*60/30)} Netflix epizód! 📺`
+    {val:0.5,text:'fél óra munka'},
+    {val:1,text:'1 óra munka'},
+    {val:2,text:'2 óra munka'},
+    {val:4,text:'4 óra (fél munkanap)'},
+    {val:8,text:'8 óra (teljes munkanap)'},
+    {val:16,text:'2 munkanap'},
+    {val:40,text:'1 heti munka'},
+    {val:80,text:'2 heti munka'},
+    {val:160,text:'1 havi munka'}
   ];
   
-  document.getElementById('result-box').style.display = 'block';
+  let closestComp = comparisons[0];
+  let minDiff = Math.abs(hours - closestComp.val);
+  
+  for(let c of comparisons){
+    const diff = Math.abs(hours - c.val);
+    if(diff < minDiff){
+      minDiff = diff;
+      closestComp = c;
+    }
+  }
+  
   document.getElementById('hoursResult').innerText = hours;
-  document.getElementById('comparison').innerText = comparisons[Math.floor(Math.random()*comparisons.length)];
+  document.getElementById('comparison').innerText = `Ez kb. ${closestComp.text}`;
+  document.getElementById('result-box').classList.add('show');
+  
   currentProduct = product;
   currentPrice = price;
   currentHours = hours;
-  track('calculation_done', { product, price, category: selectedCategory });
+  
+  track('calculate', { product, price, hours });
 }
 
-function saveDecision(type){
-  if(!currentProduct){ alert('Előbb számoljunk!'); return; }
+function saveDecision(decision){
+  if(!currentProduct){
+    alert('Előbb végezz el egy kalkulációt!');
+    return;
+  }
+  
   const data = loadData();
   data.history.push({
-    id: Date.now(),
     product: currentProduct,
     price: currentPrice,
     hours: currentHours,
-    decision: type,
+    decision,
     category: selectedCategory,
-    ts: new Date().toISOString()
+    ts: Date.now()
   });
   saveData(data);
-  track('decision_click', { decision: type, product: currentProduct, price: currentPrice });
-  document.getElementById('result-box').style.display = 'none';
+  
   document.getElementById('product').value = '';
   document.getElementById('price').value = '';
-  selectedCategory = 'other';
-  goTo('history');
+  document.getElementById('result-box').classList.remove('show');
+  
+  currentProduct = null;
+  currentPrice = 0;
+  currentHours = 0;
+  
+  alert(decision === 'megsporolom' ? '💪 Szép munka!' : '🛒 Vásárlás rögzítve!');
+  track('decision_saved', { decision });
 }
 
 // ============================================
@@ -287,23 +313,30 @@ function saveDecision(type){
 // ============================================
 
 function loadHistory(){
-  const list = document.getElementById('history-list');
-  list.innerHTML = '';
   const data = loadData();
-  if(data.history.length === 0){
-    list.innerHTML = '<div class="card" style="text-align:center;"><p>📭 Még nincs adatod.</p><button class="btn-secondary" onclick="goTo(\'calculator\')">🚀 Indíts kalkulációt</button></div>';
-    track('history_empty_view');
+  const list = document.getElementById('history-list');
+  
+  if(!data.history.length){
+    list.innerHTML = '<div class="card"><p>Még nincs előzmény. Készíts egy kalkulációt!</p></div>';
     return;
   }
-  [...data.history].reverse().forEach(item=>{
-    const el = document.createElement('div');
-    el.className = 'history-item ' + (item.decision === 'megsporolom' ? 'green' : 'red');
-    el.innerHTML =
-      '<strong>' + escapeHtml(item.product) + '</strong>' +
-      '<span>' + Number(item.price).toLocaleString('hu-HU') + ' Ft</span><br>' +
-      '<small>' + item.hours + ' óra • ' + new Date(item.ts).toLocaleDateString('hu-HU') + '</small>';
-    list.appendChild(el);
-  });
+  
+  const sorted = [...data.history].reverse();
+  list.innerHTML = sorted.map(item => {
+    const icon = item.decision === 'megsporolom' ? '💚' : '💸';
+    const cls = item.decision === 'megsporolom' ? 'saved' : 'spent';
+    const date = new Date(item.ts).toLocaleDateString('hu-HU');
+    return `
+      <div class="card history-item ${cls}">
+        <div class="history-icon">${icon}</div>
+        <div class="history-content">
+          <h3>${escapeHtml(item.product)}</h3>
+          <p>${item.price.toLocaleString('hu-HU')} Ft • ${item.hours} óra • ${date}</p>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
   track('history_loaded', { count: data.history.length });
 }
 
@@ -312,23 +345,35 @@ function loadHistory(){
 // ============================================
 
 function calcStreak(data){
-  if(!data.history.length)return 0;
-  const sorted = [...data.history].sort((a,b)=>new Date(b.ts)-new Date(a.ts));
-  let streak=1;
-  for(let i=1;i<sorted.length;i++){
-    const d1=new Date(sorted[i-1].ts).toDateString();
-    const d2=new Date(sorted[i].ts).toDateString();
-    const diff = (new Date(d1)-new Date(d2))/(1000*60*60*24);
-    if(diff<=1)streak++;
-    else break;
+  if(!data.history.length) return 0;
+  const sorted = [...data.history].sort((a,b)=> b.ts - a.ts);
+  const today = new Date().toDateString();
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toDateString();
+  
+  const latest = new Date(sorted[0].ts).toDateString();
+  if(latest !== today && latest !== yesterdayStr) return 0;
+  
+  let streak = 0;
+  let checkDate = new Date();
+  
+  for(let i = 0; i < 365; i++){
+    const dateStr = checkDate.toDateString();
+    const hasEntry = sorted.some(item => new Date(item.ts).toDateString() === dateStr);
+    if(!hasEntry) break;
+    streak++;
+    checkDate.setDate(checkDate.getDate() - 1);
   }
+  
   return streak;
 }
 
 function loadStats(){
   const data = loadData();
-  const saved = data.history.filter(i => i.decision === 'megsporolom');
-  const spent = data.history.filter(i => i.decision === 'megveszem');
+  
+  const saved = data.history.filter(i=> i.decision === 'megsporolom');
+  const spent = data.history.filter(i=> i.decision === 'megveszem');
   const total = data.history.length;
   const ratio = total ? Math.round((saved.length / total) * 100) : 0;
   
@@ -484,11 +529,11 @@ async function handleShare(){
 function checkVersion(){
   try{
     const lastVersion = localStorage.getItem(VERSION_KEY);
-    if(lastVersion && lastVersion !== CURRENT_VERSION){
+    if(lastVersion && lastVersion !== APP_VERSION){
       document.getElementById('version-banner').classList.remove('hidden');
-      track('new_version_available', { from: lastVersion, to: CURRENT_VERSION });
+      track('new_version_available', { from: lastVersion, to: APP_VERSION });
     } else if(!lastVersion){
-      localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
+      localStorage.setItem(VERSION_KEY, APP_VERSION);
     }
   }catch(e){
     console.error('Version check failed:', e);
@@ -496,8 +541,8 @@ function checkVersion(){
 }
 
 function reloadApp(){
-  localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
-  track('version_updated', { version: CURRENT_VERSION });
+  localStorage.setItem(VERSION_KEY, APP_VERSION);
+  track('version_updated', { version: APP_VERSION });
   window.location.reload();
 }
 
@@ -578,5 +623,5 @@ function updateApp(){
   checkVersion();
   initServiceWorker();
   
-  console.log('🚀 Munkaóra PWA betöltve - ' + CURRENT_VERSION);
+  console.log('🚀 Munkaóra PWA betöltve - v' + APP_VERSION);
 })();
