@@ -437,24 +437,6 @@ function loadStats(){
   track('stats_loaded', { total, ratio, savedHours, spentHours, streak });
 }
 
-function exportData(){
-  const data = loadData();
-  if(!data.history.length){
-    alert('Nincs exportálható adat!');
-    return;
-  }
-  let csv = 'Dátum,Termék,Ár,Óra,Döntés,Kategória\n';
-  data.history.forEach(i => {
-    csv += `${new Date(i.ts).toLocaleString('hu-HU')},"${i.product}",${i.price},${i.hours},${i.decision},${i.category}\n`;
-  });
-  const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = `munkaora_export_${new Date().toISOString().slice(0,10)}.csv`;
-  link.click();
-  track('data_exported');
-}
-
 // ============================================
 // SHARE WIDGET
 // ============================================
