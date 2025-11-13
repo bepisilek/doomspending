@@ -1,7 +1,7 @@
 /* =======================================================================
    APP VERSION & CONFIG
    ======================================================================= */
-const APP_VERSION = "2.7.0";
+const APP_VERSION = "3.1.0";
 
 // SUPABASE CONFIG - KONFIGURÁLVA!
 const SUPABASE_URL = "https://twdauagksibhuafvdctw.supabase.co";
