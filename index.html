@@ -23,6 +23,9 @@
   <!-- Stylesheet -->
   <link rel="stylesheet" href="styles.css" />
   
+  <!-- KRITIKUS: Version.js betöltése ELŐSZÖR! -->
+  <script src="version.js"></script>
+  
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-G8BZPSFGGG"></script>
   <script>
@@ -45,7 +48,11 @@
     <button onclick="reloadApp()" class="version-btn">Frissítés</button>
   </div>
   
-  <div id="build-badge" style="position:fixed;left:8px;top:6px;font-size:11px;color:#5d6b85;opacity:.8;z-index:50;">v2.5 PWA</div>
+  <div id="build-badge" style="position:fixed;left:8px;top:6px;font-size:11px;color:#5d6b85;opacity:.8;z-index:50;"></div>
+  <script>
+    // Verzió badge dinamikus beállítása
+    document.getElementById('build-badge').textContent = 'v' + APP_VERSION.split('.').slice(0,2).join('.') + ' PWA';
+  </script>
 
   <!-- Share Widget -->
   <div id="shareWidget" class="share-widget">
