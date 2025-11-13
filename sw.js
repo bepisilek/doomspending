@@ -1,8 +1,11 @@
 // ============================================
-// MUNKAÓRA PRO - SERVICE WORKER v2.5
+// MUNKAÓRA PRO - SERVICE WORKER
 // ============================================
 
-const CACHE_VERSION = 'munkaora-v2.5.0';
+// Verzió importálása
+importScripts('version.js');
+
+const CACHE_VERSION = `munkaora-v${APP_VERSION}`;
 const CACHE_NAME = `${CACHE_VERSION}-static`;
 const DATA_CACHE_NAME = `${CACHE_VERSION}-data`;
 
@@ -12,6 +15,7 @@ const FILES_TO_CACHE = [
   '/index.html',
   '/styles.css',
   '/app.js',
+  '/version.js',
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png'
