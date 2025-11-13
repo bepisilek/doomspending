@@ -379,9 +379,9 @@ function calculate(){
     }
   }
   
+  document.getElementById('result-box').style.display = 'block';
   document.getElementById('hoursResult').innerText = hours;
   document.getElementById('comparison').innerText = `Ez kb. ${closestComp.text}`;
-  document.getElementById('result-box').classList.add('show');
   
   currentProduct = product;
   currentPrice = price;
@@ -414,7 +414,7 @@ function saveDecision(decision){
   
   document.getElementById('product').value = '';
   document.getElementById('price').value = '';
-  document.getElementById('result-box').classList.remove('show');
+  document.getElementById('result-box').style.display = 'none';
   
   currentProduct = null;
   currentPrice = 0;
