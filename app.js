@@ -103,7 +103,7 @@ const Supabase = (() => {
         hours: data.profile?.hours || null
       },
       saved: (data.saved || []).map(item => ({
-        name: item.name, // Termék/szolgáltatás neve
+        name: item.name,
         price: item.price,
         hours: item.hours,
         at: item.at,
@@ -393,16 +393,13 @@ const API={
     if(cloudData){
       console.log("[API] Loading data from cloud (without name)");
       try {
-        // Megtartjuk a LOCAL nevet, mert az NEM jön vissza a cloud-ból
         const localProfile = API.profile();
         const localName = localProfile?.name || "";
         
-        // Betöltjük a cloud adatokat
         if(cloudData.profile) {
-          // Hozzáadjuk a local nevet
           const mergedProfile = {
             ...cloudData.profile,
-            name: localName // Local név megmarad!
+            name: localName
           };
           Data.set("profile", mergedProfile);
         }
@@ -586,9 +583,12 @@ const App={
     if(p){
       $("#screen-welcome").classList.add("hidden");
       $("#screen-profile").classList.add("hidden");
+      $("#main-nav").classList.remove("hidden");
       this.updateProfileIcon();
       this.syncCalcHello();
       UI.coach("startup",{delay:500});
+    } else {
+      $("#main-nav").classList.add("hidden");
     }
     
     this.setView("calc");
@@ -598,7 +598,6 @@ const App={
 
   bindWelcome(){
     const startBtn=$("#startButton");
-    const backBtn=$("#backToWelcome");
     if(startBtn) startBtn.addEventListener("click",()=>{
       $("#screen-welcome").classList.add("hidden");
       $("#screen-profile").classList.remove("hidden");
@@ -617,6 +616,7 @@ const App={
       API.saveProfile(profile);
       $("#screen-profile").classList.add("hidden");
       $("#screen-welcome").classList.add("hidden");
+      $("#main-nav").classList.remove("hidden");
       this.updateProfileIcon(); this.syncCalcHello();
       UI.coach("startup",{delay:520});
     });
