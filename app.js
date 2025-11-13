@@ -1,7 +1,7 @@
 /* =======================================================================
    APP VERSION & CONFIG
    ======================================================================= */
-const APP_VERSION = "3.1.0";
+const APP_VERSION = "2.7.0";
 
 // SUPABASE CONFIG - KONFIGURÁLVA!
 const SUPABASE_URL = "https://twdauagksibhuafvdctw.supabase.co";
@@ -262,7 +262,7 @@ const VersionManager = (() => {
     
     const versionEl = $("#appVersion");
     if (versionEl) {
-      versionEl.textContent = getCurrentVersion();
+      versionEl.textContent = getCurrentVersion() + " PWA";
     }
   };
 
@@ -584,8 +584,8 @@ const App={
     
     const p=API.profile();
     if(p){
-      $("#welcomeScreen").classList.add("hidden");
-      $("#appScreen").classList.remove("hidden");
+      $("#screen-welcome").classList.add("hidden");
+      $("#screen-profile").classList.add("hidden");
       this.updateProfileIcon();
       this.syncCalcHello();
       UI.coach("startup",{delay:500});
@@ -597,15 +597,11 @@ const App={
   },
 
   bindWelcome(){
-    const startBtn=$("#startBtn");
+    const startBtn=$("#startButton");
     const backBtn=$("#backToWelcome");
     if(startBtn) startBtn.addEventListener("click",()=>{
-      $("#welcomeScreen").classList.add("hidden");
-      $("#profileSetupScreen").classList.remove("hidden");
-    });
-    if(backBtn) backBtn.addEventListener("click",()=>{
-      $("#profileSetupScreen").classList.add("hidden");
-      $("#welcomeScreen").classList.remove("hidden");
+      $("#screen-welcome").classList.add("hidden");
+      $("#screen-profile").classList.remove("hidden");
     });
   },
   
@@ -619,8 +615,8 @@ const App={
       };
       if(!profile.name||!profile.age||!profile.salary||!profile.hours){alert("Tölts ki minden mezőt!");return;}
       API.saveProfile(profile);
-      $("#profileSetupScreen").classList.add("hidden");
-      $("#appScreen").classList.remove("hidden");
+      $("#screen-profile").classList.add("hidden");
+      $("#screen-welcome").classList.add("hidden");
       this.updateProfileIcon(); this.syncCalcHello();
       UI.coach("startup",{delay:520});
     });
@@ -631,45 +627,24 @@ const App={
     if(toggle){
       toggle.addEventListener("change",()=>UI.setTheme(toggle.checked?"dark":"light"));
     }
-    $$('.theme-label').forEach(label=>{
-      label.addEventListener('click',()=>{
-        const theme=label.dataset.theme;
-        UI.setTheme(theme);
-      });
-    });
   },
 
   bindTabs(){
     $$(".tab").forEach(tab=>tab.addEventListener("click",()=>this.setView(tab.dataset.view)));
-    $$('[data-view="calc"]').forEach(b=>b.addEventListener("click",()=>this.setView("calc")));
   },
   
   setView(v,opts={}){
-    const {coachDelay=null,suppressCoach=false}=opts||{};
     this.state.view=v;
     $$(".tab").forEach(t=>t.classList.toggle("active",t.dataset.view===v));
-    $("#view-calc").classList.toggle("hidden",v!=="calc");
+    $("#screen-calculator").classList.toggle("hidden",v!=="calc");
     $("#view-results").classList.toggle("hidden",v!=="results");
     $("#view-stats").classList.toggle("hidden",v!=="stats");
     $("#view-goals").classList.toggle("hidden",v!=="goals");
     if(v==="results"){
       this.renderResults();
-      if(!suppressCoach){
-        let delay;
-        if(typeof coachDelay==="number"&&coachDelay>=0){
-          delay=coachDelay;
-        }else if(this.state.lastAction&&this.state.lastAction.timestamp&&(Date.now()-this.state.lastAction.timestamp)<2600){
-          delay=3200;
-        }else{
-          delay=220;
-        }
-        UI.coach("results",{delay});
-      }
     }
     if(v==="stats") this.drawStats();
-    if(v==="calc") this.syncCalcHello();
-    const prefersReduced=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    window.scrollTo({top:0,behavior:prefersReduced?"auto":"smooth"});
+    window.scrollTo({top:0,behavior:"smooth"});
   },
 
   bindCalculator(){
@@ -678,9 +653,8 @@ const App={
       const name=$("#productName").value.trim(); const price=Number($("#productPrice").value);
       if(!name||!price||price<=0){alert("Add meg a termék nevét és árát!");return;}
       const hourly=p.salary/(p.hours*4); const hours=price/hourly;
-      $("#workHoursText").textContent=`Kb. ${hours.toFixed(1)} munkaórádba kerülne (${fmtFt(price)}).`;
-      $("#hourlyHint").textContent=`Jelenlegi órabéred ~ ${fmtFt(hourly)}/óra`;
       const r=$("#calcResult"); r.dataset.name=name; r.dataset.price=String(price); r.dataset.hours=String(hours); r.classList.remove("hidden");
+      r.querySelector(".hours").textContent=hours.toFixed(1);
     };
     $("#calculateBtn").addEventListener("click",calc);
 
@@ -697,10 +671,10 @@ const App={
       return true;
     };
     $("#saveBtn").addEventListener("click",()=>{
-      if(commit("saved")) this.setView("results",{coachDelay:3600});
+      if(commit("saved")) this.setView("results");
     });
     $("#buyBtn").addEventListener("click",()=>{
-      if(commit("spent")) this.setView("results",{coachDelay:3600});
+      if(commit("spent")) this.setView("results");
     });
   },
   
@@ -745,7 +719,6 @@ const App={
     const totalSpent=spent.reduce((s,i)=>s+Number(i.price||0),0);
     $("#totalSaved").textContent=fmtFt(totalSaved);
     $("#totalSpent").textContent=fmtFt(totalSpent);
-    $("#net").textContent=fmtFt(totalSaved-totalSpent);
 
     const items=this.itemsFilteredSorted();
     const ul=$("#itemList"); ul.innerHTML="";
@@ -861,7 +834,7 @@ const App={
     });
     $("#deleteProfile").addEventListener("click",()=>{
       if(!confirm("Biztos törlöd a profilodat és minden adatot?")) return;
-      API.deleteProfile(); $("#profileModal").classList.add("hidden"); $("#appScreen").classList.add("hidden"); $("#welcomeScreen").classList.remove("hidden");
+      API.deleteProfile(); $("#profileModal").classList.add("hidden"); location.reload();
     });
   },
   
