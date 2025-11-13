@@ -1,12 +1,11 @@
-const CACHE_VERSION = 'munkaora-v3-20251106';
+const CACHE_VERSION = 'munkaora-v2.7.0';
 const APP_SHELL = [
   './',
   './index.html',
   './app.js',
-  './manifest.webmanifest',
-  './icons/icon-192.svg',
-  './icons/icon-512.svg',
-  './icons/icon-512-maskable.svg'
+  './manifest.json',
+  './icons/icon-192.png',
+  './icons/icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -48,7 +47,6 @@ self.addEventListener('fetch', (event) => {
   
   const requestURL = new URL(request.url);
   
-  // Navigate requests (page loads)
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
@@ -64,12 +62,10 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
-  // Same-origin requests (assets)
   if (requestURL.origin === self.location.origin) {
     event.respondWith(
       caches.match(request).then((cachedResponse) => {
         if (cachedResponse) {
-          // Return cached response and update in background
           fetch(request).then((response) => {
             if (response && response.status === 200) {
               const copy = response.clone();
@@ -81,7 +77,6 @@ self.addEventListener('fetch', (event) => {
           return cachedResponse;
         }
         
-        // Not in cache, fetch from network
         return fetch(request).then((response) => {
           if (response && response.status === 200) {
             const copy = response.clone();
