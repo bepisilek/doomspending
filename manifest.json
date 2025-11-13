@@ -24,10 +24,6 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": [
-    "finance",
-    "productivity",
-    "utilities"
-  ],
+  "categories": ["finance", "productivity", "utilities"],
   "screenshots": []
 }
