@@ -362,6 +362,8 @@ p{color:var(--muted); line-height:1.6;}
   padding:24px;
 }
 .stack{display:flex; flex-direction:column; gap:18px;}
+/* Extra padding a navbar miatt - hogy ne takarjon ki gombokat */
+.screen .stack{ padding-bottom:80px; }
 
 .invite-card{ display:flex; flex-direction:column; gap:16px; align-items:stretch; text-align:left; }
 .invite-card h3{ text-align:left; margin-bottom:4px; }
