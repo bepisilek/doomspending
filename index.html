@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="hu">
+<html lang="hu" data-app-version="2.7.0">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,22 +8,14 @@
   
   <title>Munkaóra • Pro</title>
   
-  <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json" />
-  
-  <!-- iOS PWA Support -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Munkaóra" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
-  
-  <!-- Favicon -->
   <link rel="icon" type="image/png" href="icons/icon-192.png" />
-  
-  <!-- Stylesheet -->
   <link rel="stylesheet" href="styles.css" />
   
-  <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-G8BZPSFGGG"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -33,21 +25,14 @@
   </script>
 </head>
 <body>
-  <!-- Update Available Banner -->
-  <div id="update-banner" class="update-banner hidden">
+  <div id="updateBanner" class="update-banner hidden">
     <span>🎉 Új verzió elérhető!</span>
-    <button onclick="updateApp()" class="update-btn">Frissítés most</button>
+    <button id="updateNow" class="update-btn">Frissítés most</button>
+    <button id="dismissUpdate" class="update-btn" style="background:rgba(255,255,255,0.15);">Később</button>
   </div>
 
-  <!-- Version Check Banner -->
-  <div id="version-banner" class="version-banner hidden">
-    <span>🎉 Új verzió elérhető!</span>
-    <button onclick="reloadApp()" class="version-btn">Frissítés</button>
-  </div>
-  
-  <div id="build-badge" style="position:fixed;left:8px;top:6px;font-size:11px;color:#5d6b85;opacity:.8;z-index:50;">v2.5 PWA</div>
+  <div id="appVersion" style="position:fixed;left:8px;top:6px;font-size:11px;color:#5d6b85;opacity:.8;z-index:50;">v2.7.0 PWA</div>
 
-  <!-- Share Widget -->
   <div id="shareWidget" class="share-widget">
     <div class="share-bubble" onclick="handleShare()">
       <button class="share-close" onclick="closeShareWidget(event)" aria-label="Bezárás">×</button>
@@ -61,13 +46,11 @@
 
   <div class="app-shell">
     <main class="screen-stack">
-
-      <!-- 1. Welcome -->
+      <!-- Welcome Screen -->
       <section id="screen-welcome" class="screen active">
         <div class="welcome-hero">
           <div class="welcome-pill">💰 Számolj és legyél szomorú!</div>
           <h1>Munkaóra</h1>
-
           <div class="hero-clock" role="img" aria-label="Alarm clock">
             <div class="clock-body">
               <div class="clock-hand hour"></div>
@@ -78,10 +61,7 @@
             <div class="clock-leg left"></div>
             <div class="clock-leg right"></div>
           </div>
-
           <p class="welcome-copy">Számold ki, mennyi munkaórádba kerül egy vágyott vásárlás és érezd nagyon rosszul magad!</p>
-
-          <!-- INVITE CARD -->
           <div id="inviteCard" class="card invite-card">
             <h3>🔑 Meghívó szükséges</h3>
             <p class="invite-copy">Add meg az invite kódodat a Munkaóra Pro élmény eléréséhez.</p>
@@ -91,8 +71,6 @@
             </div>
             <div id="inviteStatus" class="invite-status" role="status" aria-live="polite"></div>
           </div>
-
-          <!-- START CARD -->
           <div id="startCard" class="card hidden" style="width:100%;">
             <div class="stack">
               <button id="startButton" type="button" onclick="startApp()">🚀 Kezdjük el!</button>
@@ -102,61 +80,45 @@
         </div>
       </section>
 
-      <!-- 2. Profil -->
+      <!-- Profile Screen -->
       <section id="screen-profile" class="screen">
         <header class="screen-header">
-          <div>
-            <span class="caption">Munkaóra</span>
-            <h2>⚙️ Profilod</h2>
-          </div>
-          <div class="theme-toggle" onclick="toggleTheme()" title="Témák váltása">
-            <svg viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-          </div>
-          <div class="header-icon">
-            <svg viewBox="0 0 24 24"><path d="M12 12.75a5.25 5.25 0 1 0-5.25-5.25A5.26 5.26 0 0 0 12 12.75Zm0 2.25c-3.486 0-7.5 1.757-7.5 4.5a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5c0-2.743-4.014-4.5-7.5-4.5Z"/></svg>
-          </div>
+          <div><span class="caption">Munkaóra</span><h2>⚙️ Profilod</h2></div>
+          <div class="theme-toggle" onclick="toggleTheme()"><svg viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg></div>
+          <div class="header-icon"><svg viewBox="0 0 24 24"><path d="M12 12.75a5.25 5.25 0 1 0-5.25-5.25A5.26 5.26 0 0 0 12 12.75Zm0 2.25c-3.486 0-7.5 1.757-7.5 4.5a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5c0-2.743-4.014-4.5-7.5-4.5Z"/></svg></div>
         </header>
         <div class="stack">
           <div class="card stack">
             <p>Add meg az alapadataidat, hogy pontosan lássuk, mennyi időt dolgozol egy termékért.</p>
-            <input id="name" placeholder="👤 Név" />
-            <input id="age" placeholder="🎂 Életkor" type="number" />
-            <input id="city" placeholder="📍 Település" />
-            <input id="income" placeholder="💰 Havi nettó jövedelem (Ft)" type="number" />
-            <input id="hours" placeholder="⏰ Heti munkaóra" type="number" />
-            <button onclick="saveProfile()">💾 Mentés és továbblépés</button>
+            <input id="setupName" placeholder="👤 Név" />
+            <input id="setupAge" placeholder="🎂 Életkor" type="number" />
+            <input id="setupSalary" placeholder="💰 Havi nettó jövedelem (Ft)" type="number" />
+            <input id="setupHours" placeholder="⏰ Heti munkaóra" type="number" />
+            <button id="saveSetupProfile">💾 Mentés és továbblépés</button>
           </div>
         </div>
       </section>
 
-      <!-- 3. Kalkulátor -->
+      <!-- Calculator Screen -->
       <section id="screen-calculator" class="screen">
         <header class="screen-header">
-          <div>
-            <span class="caption">Munkaóra</span>
-            <h2>🧮 Kalkulátor</h2>
-          </div>
-          <div class="theme-toggle" onclick="toggleTheme()" title="Témák váltása">
-            <svg viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-          </div>
-          <div class="header-icon">
-            <svg viewBox="0 0 24 24"><path d="M6 2.75h12A3.25 3.25 0 0 1 21.25 6v12A3.25 3.25 0 0 1 18 21.25H6A3.25 3.25 0 0 1 2.75 18V6A3.25 3.25 0 0 1 6 2.75Zm.5 4a.75.75 0 0 0 0 1.5h2a.75.75 0 0 0 0-1.5h-2Zm0 4a.75.75 0 0 0 0 1.5h10a.75.75 0 0 0 0-1.5h-10Zm0 4a.75.75 0 0 0 0 1.5h10a.75.75 0 0 0 0-1.5h-10Z"/></svg>
-          </div>
+          <div><span class="caption">Munkaóra</span><h2 id="hello">🧮 Kalkulátor</h2></div>
+          <div class="theme-toggle" onclick="toggleTheme()"><svg viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg></div>
+          <div class="header-icon"><svg viewBox="0 0 24 24"><path d="M6 2.75h12A3.25 3.25 0 0 1 21.25 6v12A3.25 3.25 0 0 1 18 21.25H6A3.25 3.25 0 0 1 2.75 18V6A3.25 3.25 0 0 1 6 2.75Zm.5 4a.75.75 0 0 0 0 1.5h2a.75.75 0 0 0 0-1.5h-2Zm0 4a.75.75 0 0 0 0 1.5h10a.75.75 0 0 0 0-1.5h-10Zm0 4a.75.75 0 0 0 0 1.5h10a.75.75 0 0 0 0-1.5h-10Z"/></svg></div>
         </header>
         <div class="stack">
           <div class="card">
             <div class="stack">
-              <input id="product" placeholder="🏷️ Terméknév" />
-              <input id="price" placeholder="💵 Ár (Ft)" type="number" />
-              <button onclick="calculate()">🔍 Számolás</button>
-
-              <div id="result-box" class="result-box">
-                <div class="hours" id="hoursResult">0</div>
+              <input id="productName" placeholder="🏷️ Terméknév" />
+              <input id="productPrice" placeholder="💵 Ár (Ft)" type="number" />
+              <button id="calculateBtn">🔍 Számolás</button>
+              <div id="calcResult" class="result-box hidden">
+                <div class="hours">0</div>
                 <p style="font-size:1.1rem;font-weight:600;">munkaórádba kerülne</p>
-                <div class="comparison" id="comparison"></div>
+                <div class="comparison">Ez körülbelül annyira, mintha...</div>
                 <div class="decision-buttons">
-                  <button class="save" onclick="saveDecision('megsporolom')">💪 Megspórolom</button>
-                  <button class="buy" onclick="saveDecision('megveszem')">🛒 Megveszem</button>
+                  <button id="saveBtn" class="save">💪 Megspórolom</button>
+                  <button id="buyBtn" class="buy">🛒 Megveszem</button>
                 </div>
               </div>
             </div>
@@ -164,114 +126,113 @@
         </div>
       </section>
 
-      <!-- 4. Előzmények -->
-      <section id="screen-history" class="screen">
+      <!-- Results Screen -->
+      <section id="view-results" class="screen hidden">
         <header class="screen-header">
-          <div>
-            <span class="caption">Munkaóra</span>
-            <h2>📜 Előzmények</h2>
-          </div>
-          <div class="theme-toggle" onclick="toggleTheme()" title="Témák váltása">
-            <svg viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-          </div>
-          <div class="header-icon">
-            <svg viewBox="0 0 24 24"><path d="M12 3.75A8.25 8.25 0 1 0 20.25 12a.75.75 0 0 1 1.5 0 9.75 9.75 0 1 1-3.31-7.324l1.155-1.154a.75.75 0 1 1 1.06 1.06l-2.5 2.5a.75.75 0 0 1-1.28-.53V4.5a.75.75 0 0 1 1.5 0v1.134A8.23 8.23 0 0 0 12 3.75Zm.75 4.5v3.44l2.845 1.705a.75.75 0 0 1-.76 1.29l-3.25-1.95A.75.75 0 0 1 11.25 12V8.25a.75.75 0 0 1 1.5 0Z"/></svg>
-          </div>
+          <div><span class="caption">Munkaóra</span><h2>📜 Előzmények</h2></div>
+          <div class="theme-toggle" onclick="toggleTheme()"><svg viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg></div>
+          <div class="header-icon"><svg viewBox="0 0 24 24"><path d="M12 3.75A8.25 8.25 0 1 0 20.25 12a.75.75 0 0 1 1.5 0 9.75 9.75 0 1 1-3.31-7.324l1.155-1.154a.75.75 0 1 1 1.06 1.06l-2.5 2.5a.75.75 0 0 1-1.28-.53V4.5a.75.75 0 0 1 1.5 0v1.134A8.23 8.23 0 0 0 12 3.75Zm.75 4.5v3.44l2.845 1.705a.75.75 0 0 1-.76 1.29l-3.25-1.95A.75.75 0 0 1 11.25 12V8.25a.75.75 0 0 1 1.5 0Z"/></svg></div>
         </header>
         <div class="stack">
-          <div id="history-list"></div>
+          <div class="card">
+            <h3>Összefoglaló</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+              <div style="padding:16px;background:rgba(49,214,159,0.1);border-radius:12px;text-align:center;">
+                <p style="font-size:0.85rem;color:var(--muted);margin-bottom:4px;">💚 Spórolva</p>
+                <p id="totalSaved" style="font-size:1.4rem;font-weight:700;color:#31d69f;">0 Ft</p>
+              </div>
+              <div style="padding:16px;background:rgba(255,92,106,0.1);border-radius:12px;text-align:center;">
+                <p style="font-size:0.85rem;color:var(--muted);margin-bottom:4px;">💸 Elköltve</p>
+                <p id="totalSpent" style="font-size:1.4rem;font-weight:700;color:#ff5c6a;">0 Ft</p>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Szűrés & Keresés</h3>
+            <input id="searchBox" placeholder="🔍 Keresés (Ctrl+K)..." style="margin-bottom:12px;" />
+            <select id="filterSelect" style="margin-bottom:12px;">
+              <option value="all">Összes</option>
+              <option value="saved">Spórolt</option>
+              <option value="spent">Elköltött</option>
+            </select>
+            <select id="sortSelect">
+              <option value="date_desc">Legújabb először</option>
+              <option value="date_asc">Legrégebbi először</option>
+              <option value="price_desc">Legnagyobb ár</option>
+              <option value="price_asc">Legkisebb ár</option>
+            </select>
+          </div>
+          <div class="card">
+            <ul id="itemList" style="list-style:none;padding:0;"></ul>
+          </div>
         </div>
       </section>
 
-      <!-- 5. Statisztikák -->
-      <section id="screen-stats" class="screen">
+      <!-- Stats Screen -->
+      <section id="view-stats" class="screen hidden">
         <header class="screen-header">
-          <div>
-            <span class="caption">Munkaóra</span>
-            <h2>📊 Statisztikák</h2>
-          </div>
-          <div class="theme-toggle" onclick="toggleTheme()" title="Témák váltása">
-            <svg viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-          </div>
-          <div class="header-icon">
-            <svg viewBox="0 0 24 24"><path d="M5.75 4A1.75 1.75 0 0 1 7.5 2.25h1A1.75 1.75 0 0 1 10.25 4v15.75a2 2 0 0 1-2 2h-.75a2 2 0 0 1-2-2Zm5.5 5A1.75 1.75 0 0 1 13 7.25h1A1.75 1.75 0 0 1 15.75 9v10.75a2 2 0 0 1-2 2h-.75a2 2 0 0 1-2-2Zm5.5-5A1.75 1.75 0 0 1 18.5 4v15.75a2 2 0 0 1-2 2h-.75a2 2 0 0 1-2-2V4a1.75 1.75 0 0 1 1.75-1.75h1Z"/></svg>
-          </div>
+          <div><span class="caption">Munkaóra</span><h2>📊 Statisztikák</h2></div>
+          <div class="theme-toggle" onclick="toggleTheme()"><svg viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg></div>
+          <div class="header-icon"><svg viewBox="0 0 24 24"><path d="M5.75 4A1.75 1.75 0 0 1 7.5 2.25h1A1.75 1.75 0 0 1 10.25 4v15.75a2 2 0 0 1-2 2h-.75a2 2 0 0 1-2-2Zm5.5 5A1.75 1.75 0 0 1 13 7.25h1A1.75 1.75 0 0 1 15.75 9v10.75a2 2 0 0 1-2 2h-.75a2 2 0 0 1-2-2Zm5.5-5A1.75 1.75 0 0 1 18.5 4v15.75a2 2 0 0 1-2 2h-.75a2 2 0 0 1-2-2V4a1.75 1.75 0 0 1 1.75-1.75h1Z"/></svg></div>
         </header>
         <div class="stack">
-          <div class="quote-card">
-            <div class="quote-icon">💡</div>
-            <div class="quote-text" id="dailyQuote">Minden megspórolt óra egy lépés a pénzügyi szabadság felé!</div>
+          <div class="card">
+            <canvas id="statsCanvas" width="320" height="180" style="width:100%;height:auto;"></canvas>
           </div>
+        </div>
+      </section>
 
-          <div class="stats-grid">
-            <div class="progress-shell">
-              <div class="progress-ring" id="ratioCircle">
-                <span id="ratio">0%</span>
-              </div>
-              <p style="font-weight:600;">Spórolási arány 🎯</p>
-            </div>
-
-            <div class="card">
-              <h3>📈 Heti összesítő</h3>
-              <div class="chart-container">
-                <div class="chart-bars" id="weeklyChart"></div>
-              </div>
-            </div>
-
-            <div class="stats-cards">
-              <div class="stats-card">
-                <p>💚 <strong id="savedHours">0</strong> óra megspórolva</p>
-              </div>
-              <div class="stats-card">
-                <p>💸 <strong id="spentHours">0</strong> óra elköltve</p>
-              </div>
-              <div class="stats-card">
-                <p>🏆 <strong id="totalDecisions">0</strong> döntés eddig</p>
-              </div>
-              <div class="stats-card">
-                <p>🔥 <strong id="streak">0</strong> napos sorozat</p>
-              </div>
-            </div>
-
-            <div class="card">
-              <h3>🏅 Eredmények</h3>
-              <div class="achievements-grid" id="achievementsGrid"></div>
-            </div>
-          </div>
-
-          <div class="card" style="text-align:center;">
-            <button onclick="exportData()">📥 Adatok exportálása (CSV)</button>
-            <button class="btn-secondary" onclick="goTo('calculator')" style="margin-top:12px;">🔙 Új kalkuláció</button>
+      <!-- Goals Screen -->
+      <section id="view-goals" class="screen hidden">
+        <header class="screen-header">
+          <div><span class="caption">Munkaóra</span><h2>🎯 Célok</h2></div>
+          <div class="theme-toggle" onclick="toggleTheme()"><svg viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg></div>
+          <div class="header-icon"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm3.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm-7 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg></div>
+        </header>
+        <div class="stack">
+          <div class="card stack">
+            <h3>Havi költségvetés</h3>
+            <input id="monthlyCap" placeholder="Havi limit (Ft)" type="number" />
+            <h3 style="margin-top:20px;">Megtakarítási cél</h3>
+            <input id="savingGoal" placeholder="Cél összege (Ft)" type="number" />
+            <div id="goalProgressBar" style="width:0%;height:8px;background:linear-gradient(90deg,#31d69f,#28d3c0);border-radius:999px;margin-top:16px;"></div>
+            <p id="goalProgressLabel" style="text-align:center;font-size:0.9rem;margin-top:8px;">0%</p>
+            <button id="saveGoals" style="margin-top:20px;">💾 Mentés</button>
+            <button id="resetGoals" class="btn-secondary">🔄 Alaphelyzet</button>
           </div>
         </div>
       </section>
     </main>
   </div>
 
-  <nav id="main-nav">
-    <button id="nav-calculator" onclick="goTo('calculator')">
-      <span class="nav-glow"></span>
-      <svg viewBox="0 0 24 24"><path d="M6.75 3A2.75 2.75 0 0 0 4 5.75v12.5A2.75 2.75 0 0 0 6.75 21h10.5A2.75 2.75 0 0 0 20 18.25V5.75A2.75 2.75 0 0 0 17.25 3Zm .75 3.5h9a.75.75 0 0 1 0 1.5h-9a.75.75 0 0 1 0-1.5Zm0 4h9a.75.75 0 0 1 0 1.5h-9a.75.75 0 0 1 0-1.5Zm0 4h4a.75.75 0 0 1 0 1.5h-4a.75.75 0 0 1 0-1.5Z"/></svg>
-      <span>Számol</span>
-    </button>
-    <button id="nav-history" onclick="goTo('history')">
-      <span class="nav-glow"></span>
-      <svg viewBox="0 0 24 24"><path d="M12 2.75A9.25 9.25 0 1 0 21.25 12a.75.75 0 0 1 1.5 0 10.75 10.75 0 1 1-3.694-8.076l1.288-1.288a.75.75 0 0 1 1.06 1.06l-2.75 2.75a.75.75 0 0 1-1.28-.53V4.5a.75.75 0 0 1 1.5 0v.792A9.23 9.23 0 0 0 12 2.75Zm.75 5.5v3.69l3.095 1.855a.75.75 0 0 1-.75 1.29l-3.5-2.1A.75.75 0 0 1 11.25 12V8.25a.75.75 0 0 1 1.5 0Z"/></svg>
-      <span>Történet</span>
-    </button>
-    <button id="nav-stats" onclick="goTo('stats')">
-      <span class="nav-glow"></span>
-      <svg viewBox="0 0 24 24"><path d="M6.75 4A1.75 1.75 0 0 1 8.5 2.25h1A1.75 1.75 0 0 1 11.25 4v15.75a2 2 0 0 1-2 2h-.75a2 2 0 0 1-2-2Zm5.5 5A1.75 1.75 0 0 1 14 7.25h1A1.75 1.75 0 0 1 16.75 9v10.75a2 2 0 0 1-2 2h-.75a2 2 0 0 1-2-2Zm5.5-5A1.75 1.75 0 0 1 19.5 4v15.75a2 2 0 0 1-2 2h-.75a2 2 0 0 1-2-2V4a1.75 1.75 0 0 1 1.75-1.75h1Z"/></svg>
-      <span>Statisztika</span>
-    </button>
-    <button id="nav-profile" onclick="goTo('profile')">
-      <span class="nav-glow"></span>
-      <svg viewBox="0 0 24 24"><path d="M12 12.75a5.25 5.25 0 1 0-5.25-5.25A5.26 5.26 0 0 0 12 12.75Zm0 2.25c-3.486 0-7.5 1.757-7.5 4.5a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5c0-2.743-4.014-4.5-7.5-4.5Z"/></svg>
-      <span>Profil</span>
-    </button>
+  <nav id="main-nav" class="show">
+    <button class="tab active" data-view="calc"><svg viewBox="0 0 24 24"><path d="M6 2.75h12A3.25 3.25 0 0 1 21.25 6v12A3.25 3.25 0 0 1 18 21.25H6A3.25 3.25 0 0 1 2.75 18V6A3.25 3.25 0 0 1 6 2.75Zm.5 4a.75.75 0 0 0 0 1.5h2a.75.75 0 0 0 0-1.5h-2Zm0 4a.75.75 0 0 0 0 1.5h10a.75.75 0 0 0 0-1.5h-10Zm0 4a.75.75 0 0 0 0 1.5h10a.75.75 0 0 0 0-1.5h-10Z"/></svg><span>Számol</span></button>
+    <button class="tab" data-view="results"><svg viewBox="0 0 24 24"><path d="M12 3.75A8.25 8.25 0 1 0 20.25 12a.75.75 0 0 1 1.5 0 9.75 9.75 0 1 1-3.31-7.324l1.155-1.154a.75.75 0 1 1 1.06 1.06l-2.5 2.5a.75.75 0 0 1-1.28-.53V4.5a.75.75 0 0 1 1.5 0v1.134A8.23 8.23 0 0 0 12 3.75Zm.75 4.5v3.44l2.845 1.705a.75.75 0 0 1-.76 1.29l-3.25-1.95A.75.75 0 0 1 11.25 12V8.25a.75.75 0 0 1 1.5 0Z"/></svg><span>Történet</span></button>
+    <button class="tab" data-view="stats"><svg viewBox="0 0 24 24"><path d="M5.75 4A1.75 1.75 0 0 1 7.5 2.25h1A1.75 1.75 0 0 1 10.25 4v15.75a2 2 0 0 1-2 2h-.75a2 2 0 0 1-2-2Zm5.5 5A1.75 1.75 0 0 1 13 7.25h1A1.75 1.75 0 0 1 15.75 9v10.75a2 2 0 0 1-2 2h-.75a2 2 0 0 1-2-2Zm5.5-5A1.75 1.75 0 0 1 18.5 4v15.75a2 2 0 0 1-2 2h-.75a2 2 0 0 1-2-2V4a1.75 1.75 0 0 1 1.75-1.75h1Z"/></svg><span>Statisztika</span></button>
+    <button class="tab" data-view="goals"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm3.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm-7 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg><span>Célok</span></button>
   </nav>
 
-  <!-- JavaScript -->
+  <div id="profileModal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Profil szerkesztése</h2>
+      <input id="editName" placeholder="👤 Név" />
+      <input id="editAge" placeholder="🎂 Életkor" type="number" />
+      <input id="editSalary" placeholder="💰 Havi nettó jövedelem (Ft)" type="number" />
+      <input id="editHours" placeholder="⏰ Heti munkaóra" type="number" />
+      <button id="saveEditProfile">💾 Mentés</button>
+      <button id="deleteProfile" class="btn-secondary">🗑️ Törlés</button>
+      <button id="closeModal" class="btn-secondary">Bezárás</button>
+    </div>
+  </div>
+
+  <div id="snack" class="snack hidden"></div>
+  <div id="coach" class="coach-bubble"></div>
+  <div id="funnyThreat" class="funny-threat"></div>
+  <div id="a2hsPill" class="a2hs-pill">
+    <button id="a2hsAction">Telepítés</button>
+    <button id="a2hsClose">×</button>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>
