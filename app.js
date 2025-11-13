@@ -8,6 +8,113 @@ function track(name, params = {}) {
 }
 
 // ============================================
+// SUPABASE ANALYTICS
+// ============================================
+
+const SUPABASE_URL = 'https://twdauagksibhuafvdctw.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3ZGF1YWdrc2liaHVhZnZkY3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5NjcyMzQsImV4cCI6MjA3ODU0MzIzNH0.nK-REIO-yP6mfcHSwHgVCZvzLUq4Q96Bpm-WnlUgoL0';
+
+let supabase = null;
+
+// Supabase client inicializálása
+function initSupabase() {
+  try {
+    if (window.supabase && window.supabase.createClient) {
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      console.log('✅ Supabase client inicializálva');
+    } else {
+      console.warn('⚠️ Supabase library nem elérhető');
+    }
+  } catch (error) {
+    console.error('❌ Supabase init hiba:', error);
+  }
+}
+
+// User ID generálása vagy betöltése
+function getUserId() {
+  const USER_ID_KEY = 'munkaora_user_id';
+  let userId = localStorage.getItem(USER_ID_KEY);
+  
+  if (!userId) {
+    // Generálunk egy egyedi UUID-t
+    userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem(USER_ID_KEY, userId);
+    console.log('🆕 Új user ID generálva:', userId);
+  }
+  
+  return userId;
+}
+
+// Profil adatok küldése Supabase-be
+async function sendProfileToSupabase(profileData) {
+  if (!supabase) {
+    console.warn('⚠️ Supabase nem elérhető, profil nem került elküldésre');
+    return;
+  }
+  
+  try {
+    const userId = getUserId();
+    
+    // Név NEM kerül bele!
+    const analyticsData = {
+      user_id: userId,
+      age: profileData.age || null,
+      city: profileData.city || null,
+      income: profileData.income || null,
+      hours_per_week: profileData.hoursPerWeek || null,
+      updated_at: new Date().toISOString()
+    };
+    
+    // Upsert (insert or update)
+    const { data, error } = await supabase
+      .from('analytics_profiles')
+      .upsert(analyticsData, { onConflict: 'user_id' });
+    
+    if (error) {
+      console.error('❌ Supabase profil hiba:', error);
+    } else {
+      console.log('✅ Profil elküldve Supabase-be');
+    }
+  } catch (error) {
+    console.error('❌ Supabase profil exception:', error);
+  }
+}
+
+// Döntés adatok küldése Supabase-be
+async function sendDecisionToSupabase(decisionData) {
+  if (!supabase) {
+    console.warn('⚠️ Supabase nem elérhető, döntés nem került elküldésre');
+    return;
+  }
+  
+  try {
+    const userId = getUserId();
+    
+    const analyticsData = {
+      user_id: userId,
+      product: decisionData.product,
+      price: decisionData.price,
+      hours: decisionData.hours,
+      decision: decisionData.decision,
+      category: decisionData.category || 'other',
+      created_at: new Date().toISOString()
+    };
+    
+    const { data, error } = await supabase
+      .from('analytics_decisions')
+      .insert([analyticsData]);
+    
+    if (error) {
+      console.error('❌ Supabase döntés hiba:', error);
+    } else {
+      console.log('✅ Döntés elküldve Supabase-be');
+    }
+  } catch (error) {
+    console.error('❌ Supabase döntés exception:', error);
+  }
+}
+
+// ============================================
 // CONSTANTS & DATA
 // ============================================
 
@@ -219,6 +326,10 @@ function saveProfile(){
     hoursPerWeek: +document.getElementById('hours').value
   };
   saveData(data);
+  
+  // Küldjük Supabase-be (név NÉLKÜL!)
+  sendProfileToSupabase(data.profile);
+  
   track('profile_saved');
   goTo('calculator');
 }
@@ -286,15 +397,20 @@ function saveDecision(decision){
   }
   
   const data = loadData();
-  data.history.push({
+  const decisionData = {
     product: currentProduct,
     price: currentPrice,
     hours: currentHours,
     decision,
     category: selectedCategory,
     ts: Date.now()
-  });
+  };
+  
+  data.history.push(decisionData);
   saveData(data);
+  
+  // Küldjük Supabase-be
+  sendDecisionToSupabase(decisionData);
   
   document.getElementById('product').value = '';
   document.getElementById('price').value = '';
@@ -600,10 +716,12 @@ function updateApp(){
     document.getElementById('hours').value = d.profile.hoursPerWeek || '';
   }
   
+  initSupabase();
   initInviteGate();
   initShareWidget();
   checkVersion();
   initServiceWorker();
   
   console.log('🚀 Munkaóra PWA betöltve - v' + APP_VERSION);
+  console.log('👤 User ID:', getUserId());
 })();
