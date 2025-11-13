@@ -932,3 +932,25 @@ const registerServiceWorker=()=>{
 App.init();
 A2HS.init();
 registerServiceWorker();
+
+// Invite validation function
+function validateInvite() {
+  const code = $("#inviteCodeInput").value.trim();
+  const status = $("#inviteStatus");
+  
+  if(!code) {
+    status.textContent = "❌ Add meg az invite kódot!";
+    status.setAttribute("data-status", "error");
+    return;
+  }
+  
+  status.textContent = "✅ Kód elfogadva!";
+  status.setAttribute("data-status", "success");
+  
+  setTimeout(() => {
+    $("#inviteCard").classList.add("hidden");
+    $("#startCard").classList.remove("hidden");
+  }, 800);
+}
+
+
