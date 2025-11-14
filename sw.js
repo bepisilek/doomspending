@@ -79,10 +79,18 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
-  // HTML fájlok: NETWORK FIRST (mindig friss)
-  if(request.headers.get('accept').includes('text/html')){
+  // SW.js, version.js - MINDIG FRISS (soha ne cache-elj)
+  if(url.pathname === '/sw.js' || url.pathname === '/version.js'){
     event.respondWith(
-      fetch(request)
+      fetch(request, { cache: 'no-store' })
+    );
+    return;
+  }
+  
+  // HTML fájlok: NETWORK FIRST (mindig friss)
+  if(request.headers.get('accept') && request.headers.get('accept').includes('text/html')){
+    event.respondWith(
+      fetch(request, { cache: 'no-cache' })
         .then((response) => {
           // Cache-eljük a választ következő alkalomra
           const responseToCache = response.clone();
