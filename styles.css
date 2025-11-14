@@ -36,10 +36,13 @@
   --glass-border:rgba(71,85,105,0.35);
 }
 [data-theme="dark"] body{
+body {
   background:
-    radial-gradient(1200px 600px at 80% -10%, rgba(53,109,255,0.15), rgba(0,0,0,0) 60%),
-    radial-gradient(900px 900px at -10% 110%, rgba(30,70,160,0.18), rgba(0,0,0,0) 60%),
-    linear-gradient(180deg,#0f172a 0%, #1e293b 100%);
+    radial-gradient(1100px 800px at 80% -10%, rgba(88,130,255,0.28), rgba(255,255,255,0) 60%),
+    radial-gradient(900px 900px at -10% 110%, rgba(122,222,255,0.25), rgba(255,255,255,0) 60%),
+    linear-gradient(180deg, #f5f8ff 0%, #fbfcff 100%);
+}
+
 }
 
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
