@@ -1,6 +1,7 @@
 // ============================================
 // MUNKAÓRA PRO - KÖZPONTI VERZIÓ
 // ============================================
-// Csak ezt a fájlt kell módosítani verzióváltáskor!
+// FONTOS: A sw.js-ben is külön be van írva a verzió,
+// mert nem tud importálni! Ott is frissíteni kell!
 
-const APP_VERSION = '3.4.0';
+const APP_VERSION = '3.5.0';
