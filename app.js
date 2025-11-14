@@ -152,13 +152,20 @@ const achievements = [
 ];
 
 const quotes = [
-  'Minden megspórolt óra egy lépés a pénzügyi szabadság felé! 💪',
-  'A legjobb befektetés: az, amit nem költöttél el! 🎯',
-  'Kis lépések, nagy eredmények! 🚀',
-  'Te irányítod a pénzedet, ne fordítva! 💰',
-  'A tudatos vásárlás a jövőd kulcsa! 🔑',
-  'Gondolkozz hosszú távon, élj boldogan! ✨'
+  'A spórolt időd a jövőbeni lehetőségeid tőkéje.',
+  'Minden halasztott vásárlás tisztább gondolkodást épít.',
+  'A pénzügyi fegyelem lassan nő, aztán egyszer csak látszik.',
+  'A tudatos döntések csendesek, de később hangosan megtérülnek.',
+  'A szabadság ott kezdődik, ahol a kényszerköltekezés véget ér.',
+  'A jó döntéseket nem ünnepli senki, de a jövő meghálálja.',
+  'A költekezés pillanatnyi öröm, a spórolás hosszú távú önbizalom.',
+  'A jövőd szempontjából a kis megtartott döntések számítanak igazán.',
+  'Minden el nem költött forint egy kicsivel kevesebb stressz.',
+  'A türelem a leggazdagabb döntés.',
+  'A pénzügyi béke következetességgel épül, nem sebességgel.',
+  'A felelős döntések nem tiltások, hanem lehetőségek későbbre.'
 ];
+
 
 // ============================================
 // DATA MANAGEMENT
