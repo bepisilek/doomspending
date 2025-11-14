@@ -3,6 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <!-- 🔥 KRITIKUS: Ne cache-elje a böngésző! -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  
   <meta name="theme-color" content="#356dff" />
   <meta name="description" content="Számold ki, mennyi munkaórádba kerül egy vásárlás!" />
   
@@ -34,6 +40,18 @@
   
   <!-- KRITIKUS: Version.js betöltése ELŐSZÖR! -->
   <script src="version.js"></script>
+  
+  <!-- 🔥 FORCE RELOAD handler -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'FORCE_RELOAD') {
+          console.log('[HTML] Force reload message received');
+          window.location.reload();
+        }
+      });
+    }
+  </script>
   
   <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
