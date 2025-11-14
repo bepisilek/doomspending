@@ -1,15 +1,15 @@
-import { version } from './js/version.js';
+import { version } from './version.js';
 
 const CACHE_NAME = `munkaora-v${version}`;
 const urlsToCache = [
   '/',
   '/index.html',
   '/styles.css',
-  '/js/app.js',
-  '/js/version.js',
+  '/app.js',
+  '/version.js',
   '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png'
+  '/icons/icon-192.png',
+  '/icons/icon-512.png'
 ];
 
 // KRITIKUS: Azonnal aktiválódjon az új verzió
