@@ -653,10 +653,16 @@ let newWorker;
 
 function initServiceWorker(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('/sw.js')
+    navigator.serviceWorker.register('/sw.js', {
+      updateViaCache: 'none'  // FONTOS: Mindig friss SW-t töltsön be
+    })
       .then(reg => {
         registration = reg;
         console.log('✅ Service Worker regisztrálva');
+        
+        // AZONNALI update check minden betöltéskor
+        reg.update();
+        console.log('🔍 Update ellenőrzés...');
         
         // Ellenőrizzük van-e új verzió
         reg.addEventListener('updatefound', () => {
@@ -666,15 +672,17 @@ function initServiceWorker(){
           newWorker.addEventListener('statechange', () => {
             if(newWorker.state === 'installed' && navigator.serviceWorker.controller){
               // Van új verzió!
+              console.log('🎉 Új verzió elérhető!');
               showUpdateBanner();
             }
           });
         });
         
-        // Periodikus update check (óránként)
+        // Agresszív update check (5 percenként)
         setInterval(() => {
+          console.log('🔄 Periodikus update check...');
           reg.update();
-        }, 60 * 60 * 1000);
+        }, 5 * 60 * 1000);
       })
       .catch(err => {
         console.error('❌ Service Worker hiba:', err);
@@ -682,6 +690,7 @@ function initServiceWorker(){
       
     // Figyelés controller változására
     navigator.serviceWorker.addEventListener('controllerchange', () => {
+      console.log('🔄 Service Worker frissült, oldal újratöltése...');
       window.location.reload();
     });
   }
