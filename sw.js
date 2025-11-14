@@ -1,5 +1,5 @@
 // VERSION: Direkt beírva, nem importálva (Vercel build fix)
-const version = '3.1.0';
+const version = '3.5.0';
 
 const CACHE_NAME = `munkaora-v${version}`;
 const urlsToCache = [
