@@ -1,5 +1,9 @@
-// VERSION: Direkt beírva, nem importálva (Vercel build fix)
-const version = '3.5.0';
+// ============================================
+// MUNKAÓRA PRO - SERVICE WORKER
+// ============================================
+// VERSION betöltése a version.js-ből (EGYETLEN forrás!)
+importScripts('/version.js');
+const version = APP_VERSION;
 
 const CACHE_NAME = `munkaora-v${version}`;
 const urlsToCache = [
