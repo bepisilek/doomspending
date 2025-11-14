@@ -1,7 +1,6 @@
 // ============================================
 // MUNKAÓRA PRO - KÖZPONTI VERZIÓ
 // ============================================
-// FONTOS: A sw.js-ben is külön be van írva a verzió,
-// mert nem tud importálni! Ott is frissíteni kell!
+// Ez az EGYETLEN hely ahol a verziót frissíteni kell!
 
-const APP_VERSION = '3.5.0';
+const APP_VERSION = '3.7.0';
