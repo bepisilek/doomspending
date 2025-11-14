@@ -726,3 +726,20 @@ nav button.active .nav-glow{ opacity:1; }
     padding:16px 18px;
   }
 }
+/* Zöld háttér a megspórolt dolgokhoz */
+.history-item.saved {
+  background: #e8f9ee;
+  border-left: 6px solid #34c759;
+}
+
+/* Piros háttér a megvett dolgokhoz */
+.history-item.spent {
+  background: #fdeaea;
+  border-left: 6px solid #ff3b30;
+}
+
+/* Ikon színe egységesítve */
+.history-icon {
+  font-size: 26px;
+  margin-right: 10px;
+}
