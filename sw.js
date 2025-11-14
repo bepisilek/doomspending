@@ -1,4 +1,5 @@
-import { version } from './version.js';
+// VERSION: Direkt beírva, nem importálva (Vercel build fix)
+const version = '3.1.0';
 
 const CACHE_NAME = `munkaora-v${version}`;
 const urlsToCache = [
@@ -9,7 +10,8 @@ const urlsToCache = [
   '/version.js',
   '/manifest.json',
   '/icons/icon-192.png',
-  '/icons/icon-512.png'
+  '/icons/icon-512.png',
+  '/icons/apple-touch-icon.png'
 ];
 
 // KRITIKUS: Azonnal aktiválódjon az új verzió
