@@ -451,27 +451,88 @@ button:active{ transform:scale(0.98); }
 .decision-buttons .save{ background:linear-gradient(135deg, #1fb981 0%, #36e1a9 100%); }
 .decision-buttons .buy{ background:linear-gradient(135deg, #ff5c6a 0%, #ff7f9a 100%); }
 
-#history-list{ display:flex; flex-direction:column; gap:16px; }
-.history-item{
-  position:relative; padding:20px 22px 22px 26px; border-radius:var(--radius-md);
-  background:var(--glass); backdrop-filter:blur(24px);
+/* ================================
+   HISTORY – FIXED VERSION
+   ================================ */
+
+#history-list {
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+
+.history-item {
+  position:relative;
+  padding:20px 22px 22px 26px;
+  border-radius:var(--radius-md);
+  background:var(--glass);
+  backdrop-filter:blur(24px);
   border:1px solid rgba(210,222,255,0.45);
   box-shadow:0 16px 40px -32px rgba(30,50,105,0.5);
   transition:transform var(--fast), box-shadow var(--fast);
   animation:cardEnter .45s ease both;
   overflow:hidden;
 }
-.history-item::before{
-  content:""; position:absolute; top:18px; left:12px; bottom:18px; width:6px; border-radius:999px;
+
+/* 🔥 FONTOS: A KÉK CSÍK KIKAPCSOLVA */
+ /*
+.history-item::before {
+  content:"";
+  position:absolute;
+  top:18px;
+  left:12px;
+  bottom:18px;
+  width:6px;
+  border-radius:999px;
   background:linear-gradient(180deg, rgba(53,109,255,0.8), rgba(112,200,255,0.45));
 }
-.history-item.green::before{ background:linear-gradient(180deg, rgba(32,187,130,0.9), rgba(115,236,189,0.5)); }
-.history-item.red::before{ background:linear-gradient(180deg, rgba(255,92,106,0.9), rgba(255,162,174,0.5)); }
-.history-item strong{ display:block; font-weight:700; margin-bottom:4px;}
-.history-item span{ font-weight:600; color:var(--text); }
-.history-item small{ color:var(--muted); font-size:.78rem; display:block; margin-top:6px;}
-.history-item:hover{ transform:translateY(-4px); box-shadow:0 26px 60px -34px rgba(30,54,126,0.66); }
-@keyframes cardEnter{ from{opacity:0; transform:translateY(18px);} to{opacity:1; transform:translateY(0);} }
+*/
+
+/* 💚 Megspórolt döntés */
+.history-item.saved {
+  background:#e8f9ee;
+  border-left:6px solid #34c759;
+}
+
+/* ❤️ Megvett döntés */
+.history-item.spent {
+  background:#fdeaea;
+  border-left:6px solid #ff3b30;
+}
+
+.history-icon {
+  font-size:26px;
+  margin-right:10px;
+}
+
+.history-item strong {
+  display:block;
+  font-weight:700;
+  margin-bottom:4px;
+}
+
+.history-item span {
+  font-weight:600;
+  color:var(--text);
+}
+
+.history-item small {
+  color:var(--muted);
+  font-size:.78rem;
+  display:block;
+  margin-top:6px;
+}
+
+.history-item:hover {
+  transform:translateY(-4px);
+  box-shadow:0 26px 60px -34px rgba(30,54,126,0.66);
+}
+
+@keyframes cardEnter {
+  from { opacity:0; transform:translateY(18px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
 
 .achievements-grid{
   display:grid;
