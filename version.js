@@ -3,4 +3,4 @@
 // ============================================
 // Csak ezt a fájlt kell módosítani verzióváltáskor!
 
-const APP_VERSION = '2.9.2';
+const APP_VERSION = '3.0.0';
