@@ -36,6 +36,7 @@
   --glass-border:rgba(71,85,105,0.35);
 }
 [data-theme="dark"] body{
+body {
   background:
     radial-gradient(1100px 800px at 80% -10%, rgba(88,130,255,0.28), rgba(255,255,255,0) 60%),
     radial-gradient(900px 900px at -10% 110%, rgba(122,222,255,0.25), rgba(255,255,255,0) 60%),
