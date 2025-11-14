@@ -653,8 +653,16 @@ let newWorker;
 
 function initServiceWorker(){
   if('serviceWorker' in navigator){
+    // KRITIKUS: Figyelünk a FORCE_RELOAD üzenetre
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      if (event.data && event.data.type === 'FORCE_RELOAD') {
+        console.log('[App] Force reload requested by SW');
+        window.location.reload();
+      }
+    });
+    
     navigator.serviceWorker.register('/sw.js', {
-      updateViaCache: 'none'  // FONTOS: Mindig friss SW-t töltsön be
+      updateViaCache: 'none'  // KRITIKUS: Soha ne cache-elje a SW fájlt!
     })
       .then(reg => {
         registration = reg;
@@ -674,15 +682,19 @@ function initServiceWorker(){
               // Van új verzió!
               console.log('🎉 Új verzió elérhető!');
               showUpdateBanner();
+              // AZONNAL újratöltjük 1 mp után
+              setTimeout(() => {
+                window.location.reload();
+              }, 1000);
             }
           });
         });
         
-        // Agresszív update check (5 percenként)
+        // Agresszív update check (30 másodpercenként)
         setInterval(() => {
           console.log('🔄 Periodikus update check...');
           reg.update();
-        }, 5 * 60 * 1000);
+        }, 30 * 1000);
       })
       .catch(err => {
         console.error('❌ Service Worker hiba:', err);
