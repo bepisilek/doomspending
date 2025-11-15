@@ -53,11 +53,8 @@
     <button onclick="reloadApp()" class="update-btn">Frissítés most</button>
   </div>
   
-  <div id="build-badge" style="position:fixed;left:8px;top:6px;font-size:11px;color:#5d6b85;opacity:.8;z-index:50;"></div>
-  <script>
-    // Verzió badge dinamikus beállítása
-    document.getElementById('build-badge').textContent = 'v' + APP_VERSION.split('.').slice(0,2).join('.') + ' PWA';
-  </script>
+  <!-- Build Badge + Manuális Frissítés Gomb (app.js tölti fel dinamikusan) -->
+  <div id="build-badge"></div>
 
   <!-- Share Widget -->
   <div id="shareWidget" class="share-widget">
