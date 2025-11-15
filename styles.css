@@ -215,6 +215,68 @@
 }
 
 /* ============================================
+   BUILD BADGE + MANUAL VERSION CHECK BUTTON
+   ============================================ */
+
+#build-badge {
+  position: fixed;
+  left: 8px;
+  top: 6px;
+  font-size: 11px;
+  color: #5d6b85;
+  opacity: 0.8;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: opacity 0.2s ease;
+}
+
+#build-badge:hover {
+  opacity: 1;
+}
+
+#build-badge button {
+  padding: 2px 6px !important;
+  font-size: 10px !important;
+  background: linear-gradient(135deg, #356dff, #2b5bf7) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  opacity: 0.7 !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 2px 6px rgba(53, 109, 255, 0.3) !important;
+  width: auto !important;
+  height: auto !important;
+  min-height: unset !important;
+}
+
+#build-badge button:hover {
+  opacity: 1 !important;
+  transform: scale(1.05) !important;
+  box-shadow: 0 4px 12px rgba(53, 109, 255, 0.5) !important;
+}
+
+#build-badge button:active {
+  transform: scale(0.95) !important;
+}
+
+/* Dark mode */
+[data-theme="dark"] #build-badge {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] #build-badge button {
+  background: linear-gradient(135deg, #2b5bf7, #1c45d9) !important;
+  box-shadow: 0 2px 6px rgba(43, 91, 247, 0.4) !important;
+}
+
+[data-theme="dark"] #build-badge button:hover {
+  box-shadow: 0 4px 12px rgba(43, 91, 247, 0.6) !important;
+}
+
+/* ============================================
    ALAPÉRTELMEZETT LIGHT MODE STÍLUSOK
    ============================================ */
 
@@ -295,7 +357,7 @@ p{color:var(--muted); line-height:1.6;}
   display:none !important;
 }
 
-/* Update Banner (PWA) */
+/* Update Banner (PWA) - EGYETLEN BANNER! */
 .update-banner{
   position:fixed;
   top:0;
@@ -331,44 +393,9 @@ p{color:var(--muted); line-height:1.6;}
   transform:scale(1.05);
 }
 
-/* Version Banner */
-.version-banner{
-  position:fixed;
-  top:0;
-  left:50%;
-  transform:translateX(-50%);
-  background:linear-gradient(135deg, #31d69f 0%, #28d3c0 100%);
-  color:#fff;
-  padding:12px 20px;
-  border-radius:0 0 16px 16px;
-  box-shadow:0 8px 24px rgba(49,214,159,0.4);
-  z-index:100;
-  display:flex;
-  align-items:center;
-  gap:12px;
-  font-size:0.9rem;
-  font-weight:600;
-  animation:slideDown 0.4s ease;
-}
 @keyframes slideDown{
   from{ transform:translateX(-50%) translateY(-100%); opacity:0; }
   to{ transform:translateX(-50%) translateY(0); opacity:1; }
-}
-.version-btn{
-  padding:6px 16px !important;
-  font-size:0.85rem !important;
-  background:rgba(255,255,255,0.25) !important;
-  border:1px solid rgba(255,255,255,0.4) !important;
-  color:#fff !important;
-  border-radius:8px !important;
-  cursor:pointer;
-  transition:all var(--fast);
-  font-weight:700 !important;
-  width:auto !important;
-}
-.version-btn:hover{
-  background:rgba(255,255,255,0.35) !important;
-  transform:scale(1.05);
 }
 
 .screen-header{
