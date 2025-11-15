@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <!-- 🍎 iOS PWA Meta Tags - JAVÍTOTT VERZIÓ -->
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="Tivlo" />
+  <!-- 🔥 KRITIKUS: Cache-Control MARAD - verziófrissítéshez! -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   
   <meta name="theme-color" content="#356dff" />
   <meta name="description" content="Számold ki, mennyi munkaórádba kerül egy vásárlás!" />
@@ -17,15 +17,13 @@
   <!-- PWA Manifest -->
   <link rel="manifest" href="/manifest.json" />
   
-  <!-- 🍎 Apple Touch Icons - iOS PWA -->
-  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
-  <link rel="apple-touch-icon" sizes="167x167" href="/icons/apple-touch-icon.png" />
-  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-touch-icon.png" />
-  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-touch-icon.png" />
+  <!-- 🍎 iOS PWA Support -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Tivlo" />
   
-  <!-- iOS Startup Image -->
-  <link rel="apple-touch-startup-image" href="/icons/icon-512.png" />
+  <!-- 🍎 Apple Touch Icon - ROOT PATH! iOS automatikusan megtalálja! -->
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="/icons/icon-192.png" />
@@ -33,20 +31,8 @@
   <!-- Stylesheet -->
   <link rel="stylesheet" href="/styles.css" />
   
-  <!-- KRITIKUS: Version.js betöltése ELŐSZÖR! -->
+  <!-- Version.js -->
   <script src="/version.js"></script>
-  
-  <!-- 🔥 FORCE RELOAD handler -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.addEventListener('message', (event) => {
-        if (event.data && event.data.type === 'FORCE_RELOAD') {
-          console.log('[HTML] Force reload message received');
-          window.location.reload();
-        }
-      });
-    }
-  </script>
   
   <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
@@ -61,16 +47,10 @@
   </script>
 </head>
 <body>
-  <!-- Update Available Banner -->
+  <!-- ✅ EGYETLEN Update Banner (duplikáció kijavítva!) -->
   <div id="update-banner" class="update-banner hidden">
     <span>🎉 Új verzió elérhető!</span>
-    <button onclick="updateApp()" class="update-btn">Frissítés most</button>
-  </div>
-
-  <!-- Version Check Banner -->
-  <div id="version-banner" class="version-banner hidden">
-    <span>🎉 Új verzió elérhető!</span>
-    <button onclick="reloadApp()" class="version-btn">Frissítés</button>
+    <button onclick="reloadApp()" class="update-btn">Frissítés most</button>
   </div>
   
   <div id="build-badge" style="position:fixed;left:8px;top:6px;font-size:11px;color:#5d6b85;opacity:.8;z-index:50;"></div>
