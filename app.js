@@ -273,20 +273,30 @@ function toggleTheme(){
 }
 
 function goTo(screen) {
+  // képernyő elem lekérése
+  const target = document.getElementById(`screen-${screen}`);
+  if (!target) {
+    console.error("❌ Screen not found:", screen);
+    return;
+  }
+
+  // képernyők váltása
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(`screen-${screen}`).classList.add('active');
+  target.classList.add('active');
+
+  // navbar frissítés
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
   const nb = document.getElementById(`nav-${screen}`);
   if (nb) nb.classList.add('active');
-  
+
+  // navbar mindig látszik — nincs 'welcome' screen
   const nav = document.getElementById('main-nav');
-  if(screen === 'welcome'){
-    nav.classList.remove('show');
-  } else {
-    nav.classList.add('show');
-  }
-  
+  if (nav) nav.classList.add('show');
+
+  // analytics
   track('view_' + screen);
+
+  // extra funkciók
   if (screen === 'history') loadHistory();
   if (screen === 'stats') loadStats();
 }
