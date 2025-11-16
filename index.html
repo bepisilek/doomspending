@@ -16,7 +16,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Tivlo" />
   
-  <!-- Apple Touch Icon - PNG KELL! -->
+  <!-- Apple Touch Icon -->
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
   
   <!-- Theme -->
@@ -50,8 +50,8 @@
 <body>
   <!-- Update Banner -->
   <div id="update-banner" class="update-banner hidden">
-    <span>🎉 Új verzió!</span>
-    <button onclick="reloadApp()" class="update-btn">Frissítés</button>
+    <span>🎉 Új verzió elérhető!</span>
+    <button onclick="reloadApp()" class="update-btn">Frissítés most</button>
   </div>
   
   <!-- Build Badge -->
@@ -63,8 +63,8 @@
       <button class="share-close" onclick="closeShareWidget(event)" aria-label="Bezárás">×</button>
       <div class="share-icon">🚀</div>
       <div class="share-text">
-        Oszd meg!
-        <small>Koppints ide</small>
+        Oszd meg barátaiddal!
+        <small>Kattints a megosztáshoz</small>
       </div>
     </div>
   </div>
@@ -76,24 +76,29 @@
       <section id="screen-welcome" class="screen active">
         <div class="welcome-hero">
           <div class="welcome-pill">💰 Tivlo</div>
-          <h1>Mennyi<br>munkád?</h1>
+          
+          <h1>Mennyi munkád<br>egy vásárlás?</h1>
 
           <div class="hero-clock">
-            <div class="clock-body">
+            <div class="clock-face">
+              <div class="clock-center"></div>
               <div class="clock-hand hour"></div>
               <div class="clock-hand minute"></div>
             </div>
             <div class="clock-bell left"></div>
             <div class="clock-bell right"></div>
+            <div class="clock-base left"></div>
+            <div class="clock-base right"></div>
           </div>
 
-          <p class="welcome-copy">Váltsd át az árakat munkaórákra és hozz tudatos döntéseket!</p>
+          <p class="welcome-copy">Váltsd át az árakat munkaórákra és hozz<br>tudatos pénzügyi döntéseket!</p>
 
           <!-- INVITE CARD -->
           <div id="inviteCard" class="card invite-card">
             <h3>🔑 Meghívó kód</h3>
+            <p class="card-subtitle">Add meg a kódodat a kezdéshez</p>
             <div class="invite-form">
-              <input id="inviteCodeInput" placeholder="1843-5092-JKLP" autocomplete="off" />
+              <input id="inviteCodeInput" placeholder="Pl. 1843-5092-JKLP" autocomplete="off" />
               <button type="button" onclick="validateInvite()">Ellenőrzés</button>
             </div>
             <div id="inviteStatus" class="invite-status"></div>
@@ -101,8 +106,8 @@
 
           <!-- START CARD -->
           <div id="startCard" class="card hidden">
-            <button id="startButton" onclick="startApp()">🚀 Kezdjük!</button>
-            <p class="stat-text"><strong>2,847</strong> felhasználó • <strong>18,392</strong> óra megspórolva</p>
+            <button id="startButton" onclick="startApp()" class="primary-btn">🚀 Kezdjük el!</button>
+            <p class="stat-text">Már <strong>2,847</strong> felhasználó • <strong>18,392</strong> óra megspórolva</p>
           </div>
         </div>
       </section>
@@ -112,20 +117,22 @@
         <header class="screen-header">
           <div>
             <span class="caption">PROFIL</span>
-            <h2>Adataid</h2>
+            <h2>⚙️ Adataid</h2>
           </div>
-          <div class="theme-toggle" onclick="toggleTheme()">
+          <div class="theme-toggle" onclick="toggleTheme()" title="Témák váltása">
             <svg viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
           </div>
         </header>
-        <div class="stack">
+        <div class="content-stack">
           <div class="card">
-            <input id="name" placeholder="👤 Név" />
-            <input id="age" placeholder="🎂 Életkor" type="number" />
-            <input id="city" placeholder="📍 Település" />
-            <input id="income" placeholder="💰 Havi nettó (Ft)" type="number" />
-            <input id="hours" placeholder="⏰ Heti munkaóra" type="number" />
-            <button onclick="saveProfile()">Mentés</button>
+            <div class="form-stack">
+              <input id="name" placeholder="👤 Név" />
+              <input id="age" placeholder="🎂 Életkor" type="number" />
+              <input id="city" placeholder="📍 Település" />
+              <input id="income" placeholder="💰 Havi nettó jövedelem (Ft)" type="number" />
+              <input id="hours" placeholder="⏰ Heti munkaóra" type="number" />
+              <button onclick="saveProfile()">💾 Mentés és továbblépés</button>
+            </div>
           </div>
         </div>
       </section>
@@ -135,25 +142,33 @@
         <header class="screen-header">
           <div>
             <span class="caption">KALKULÁTOR</span>
-            <h2>Számolj</h2>
+            <h2>🧮 Számolj</h2>
           </div>
-          <div class="theme-toggle" onclick="toggleTheme()">
+          <div class="theme-toggle" onclick="toggleTheme()" title="Témák váltása">
             <svg viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
           </div>
         </header>
-        <div class="stack">
+        <div class="content-stack">
           <div class="card">
-            <input id="product" placeholder="🏷️ Termék neve" />
-            <input id="price" placeholder="💵 Ára (Ft)" type="number" />
-            <button onclick="calculate()">Számolás</button>
+            <div class="form-stack">
+              <input id="product" placeholder="🏷️ Termék neve" />
+              <input id="price" placeholder="💵 Ára (Ft)" type="number" />
+              <button onclick="calculate()">🔍 Számolás</button>
 
-            <div id="result-box" class="result-box">
-              <div class="hours" id="hoursResult">0</div>
-              <p class="result-label">munkaóra</p>
-              <div class="comparison" id="comparison"></div>
-              <div class="decision-buttons">
-                <button class="save" onclick="saveDecision('megsporolom')">💚 Spórolom</button>
-                <button class="buy" onclick="saveDecision('megveszem')">🛒 Veszem</button>
+              <div id="result-box" class="result-box">
+                <div class="result-value" id="hoursResult">0</div>
+                <p class="result-label">munkaóra</p>
+                <div class="comparison" id="comparison"></div>
+                <div class="decision-grid">
+                  <button class="decision-btn save" onclick="saveDecision('megsporolom')">
+                    <span class="btn-icon">💚</span>
+                    <span>Spórolom</span>
+                  </button>
+                  <button class="decision-btn buy" onclick="saveDecision('megveszem')">
+                    <span class="btn-icon">🛒</span>
+                    <span>Veszem</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -165,13 +180,13 @@
         <header class="screen-header">
           <div>
             <span class="caption">TÖRTÉNET</span>
-            <h2>Előzmények</h2>
+            <h2>📜 Előzmények</h2>
           </div>
-          <div class="theme-toggle" onclick="toggleTheme()">
+          <div class="theme-toggle" onclick="toggleTheme()" title="Témák váltása">
             <svg viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
           </div>
         </header>
-        <div class="stack">
+        <div class="content-stack">
           <div id="history-list"></div>
         </div>
       </section>
@@ -181,20 +196,20 @@
         <header class="screen-header">
           <div>
             <span class="caption">STATISZTIKA</span>
-            <h2>Teljesítmény</h2>
+            <h2>📊 Teljesítmény</h2>
           </div>
-          <div class="theme-toggle" onclick="toggleTheme()">
+          <div class="theme-toggle" onclick="toggleTheme()" title="Témák váltása">
             <svg viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
           </div>
         </header>
-        <div class="stack">
+        <div class="content-stack">
           <div class="quote-card">
             <div class="quote-icon">💡</div>
             <div class="quote-text" id="dailyQuote">Minden megspórolt óra a szabadság felé vezet!</div>
           </div>
 
           <div class="stats-grid">
-            <div class="progress-shell">
+            <div class="progress-card">
               <div class="progress-ring" id="ratioCircle">
                 <span id="ratio">0%</span>
               </div>
@@ -203,25 +218,25 @@
 
             <div class="card">
               <h3>📈 Heti aktivitás</h3>
-              <div class="chart-container">
+              <div class="chart-wrapper">
                 <div class="chart-bars" id="weeklyChart"></div>
               </div>
             </div>
 
             <div class="stats-cards">
-              <div class="stats-card green">
+              <div class="stat-card green">
                 <strong id="savedHours">0</strong>
                 <span>óra spórolva</span>
               </div>
-              <div class="stats-card red">
+              <div class="stat-card red">
                 <strong id="spentHours">0</strong>
                 <span>óra elköltve</span>
               </div>
-              <div class="stats-card blue">
+              <div class="stat-card blue">
                 <strong id="totalDecisions">0</strong>
-                <span>döntés összesen</span>
+                <span>döntés</span>
               </div>
-              <div class="stats-card orange">
+              <div class="stat-card orange">
                 <strong id="streak">0</strong>
                 <span>napos sorozat</span>
               </div>
@@ -233,7 +248,7 @@
             </div>
           </div>
 
-          <button onclick="goTo('calculator')" class="secondary-btn">Új kalkuláció</button>
+          <button onclick="goTo('calculator')" class="secondary-btn">🔙 Új kalkuláció</button>
         </div>
       </section>
     </main>
