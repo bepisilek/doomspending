@@ -3,42 +3,40 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  
+
   <!-- Cache Control -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  
+
   <title>Tivlo</title>
-  
-  <!-- iOS PWA Support -->
+
+  <!-- iOS PWA -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Tivlo" />
-  
-  <!-- Apple Touch Icon -->
+
+  <!-- Icons -->
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
-  
+  <link rel="icon" type="image/svg+xml" href="/icons/icon-192.svg" />
+
   <!-- Theme -->
   <meta name="theme-color" content="#0b66ff" />
   <meta name="description" content="Számold ki, mennyi munkaórádba kerül egy vásárlás!" />
-  
-  <!-- PWA Manifest -->
+
+  <!-- Manifest -->
   <link rel="manifest" href="/manifest.json" />
-  
-  <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="/icons/icon-192.svg" />
-  
-  <!-- Stylesheet -->
+
+  <!-- Styles -->
   <link rel="stylesheet" href="/styles.css" />
-  
+
   <!-- Version.js -->
   <script src="/version.js"></script>
-  
-  <!-- Supabase JS Client -->
+
+  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
-  
-  <!-- Google tag (gtag.js) -->
+
+  <!-- Google tag -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-G8BZPSFGGG"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -47,15 +45,13 @@
     gtag('config', 'G-G8BZPSFGGG');
   </script>
 </head>
+
 <body>
   <!-- Update Banner -->
   <div id="update-banner" class="update-banner hidden">
     <span>🎉 Új verzió elérhető!</span>
     <button onclick="reloadApp()" class="update-btn">Frissítés most</button>
   </div>
-  
-  <!-- Build Badge -->
-  <div id="build-badge"></div>
 
   <!-- Share Widget -->
   <div id="shareWidget" class="share-widget">
@@ -76,7 +72,7 @@
       <section id="screen-welcome" class="screen active">
         <div class="welcome-hero">
           <div class="welcome-pill">💰 Tivlo</div>
-          
+
           <h1>Mennyi munkád<br>egy vásárlás?</h1>
 
           <div class="hero-clock">
@@ -120,7 +116,9 @@
             <h2>⚙️ Adataid</h2>
           </div>
           <div class="theme-toggle" onclick="toggleTheme()" title="Témák váltása">
-            <svg viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+            <svg viewBox="0 0 24 24">
+              <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
           </div>
         </header>
         <div class="content-stack">
@@ -144,10 +142,13 @@
             <span class="caption">KALKULÁTOR</span>
             <h2>🧮 Számolj</h2>
           </div>
-          <div class="theme-toggle" onclick="toggleTheme()" title="Témák váltása">
-            <svg viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          <div class="theme-toggle" onclick="toggleTheme()">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
           </div>
         </header>
+
         <div class="content-stack">
           <div class="card">
             <div class="form-stack">
@@ -159,6 +160,7 @@
                 <div class="result-value" id="hoursResult">0</div>
                 <p class="result-label">munkaóra</p>
                 <div class="comparison" id="comparison"></div>
+
                 <div class="decision-grid">
                   <button class="decision-btn save" onclick="saveDecision('megsporolom')">
                     <span class="btn-icon">💚</span>
@@ -170,6 +172,7 @@
                   </button>
                 </div>
               </div>
+
             </div>
           </div>
         </div>
@@ -182,8 +185,10 @@
             <span class="caption">TÖRTÉNET</span>
             <h2>📜 Előzmények</h2>
           </div>
-          <div class="theme-toggle" onclick="toggleTheme()" title="Témák váltása">
-            <svg viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          <div class="theme-toggle" onclick="toggleTheme()">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
           </div>
         </header>
         <div class="content-stack">
@@ -191,23 +196,28 @@
         </div>
       </section>
 
-      <!-- 5. Statisztikák -->
+      <!-- 5. Statisztika -->
       <section id="screen-stats" class="screen">
         <header class="screen-header">
           <div>
             <span class="caption">STATISZTIKA</span>
             <h2>📊 Teljesítmény</h2>
           </div>
-          <div class="theme-toggle" onclick="toggleTheme()" title="Témák váltása">
-            <svg viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          <div class="theme-toggle" onclick="toggleTheme()">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
           </div>
         </header>
+
         <div class="content-stack">
+
           <div class="quote-card">
             <div class="quote-icon">💡</div>
-            <div class="quote-text" id="dailyQuote">Minden megspórolt óra a szabadság felé vezet!</div>
+            <div class="quote-text" id="dailyQuote"></div>
           </div>
 
+          <!-- Progress + Stats -->
           <div class="stats-grid">
             <div class="progress-card">
               <div class="progress-ring" id="ratioCircle">
@@ -249,30 +259,77 @@
           </div>
 
           <button onclick="goTo('calculator')" class="secondary-btn">🔙 Új kalkuláció</button>
+
         </div>
       </section>
+
     </main>
   </div>
 
+  <!-- Navigation -->
   <nav id="main-nav">
     <button id="nav-calculator" onclick="goTo('calculator')">
-      <svg viewBox="0 0 24 24"><path d="M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm1 4h8m-8 4h8m-8 4h4"/></svg>
-      <span>Számol</span>
+      <svg viewBox="0 0 24 24">
+        <path d="M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm0 
+8h10M7 7h10M9 16h2m4 0h2" />
+      </svg>
+      Számol
     </button>
+
     <button id="nav-history" onclick="goTo('history')">
-      <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9m-9-9v9l4 2M21 12h-2"/></svg>
-      <span>Történet</span>
+      <svg viewBox="0 0 24 24">
+        <path d="M12 6v6l4 2m6 0a10 
+10 0 1 1-20 0 10 10 0 0 1 20 0z" />
+      </svg>
+      Előzmények
     </button>
+
     <button id="nav-stats" onclick="goTo('stats')">
-      <svg viewBox="0 0 24 24"><path d="M8 3h2v18H8zm6 5h2v13h-2z"/></svg>
-      <span>Statisztika</span>
+      <svg viewBox="0 0 24 24">
+        <path d="M4 
+20h4V10H4v10zm6 
+0h4V4h-4v16zm6 0h4v-7h-4v7z" />
+      </svg>
+      Statisztika
     </button>
+
     <button id="nav-profile" onclick="goTo('profile')">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M5 21c0-4 3-7 7-7s7 3 7 7"/></svg>
-      <span>Profil</span>
+      <svg viewBox="0 0 24 24">
+        <path d="M12 
+12a5 5 0 1 1 0-10 5 5 0 0 1 0 
+10zm7 
+10H5a7 7 0 0 1 14 0z" />
+      </svg>
+      Profil
     </button>
   </nav>
 
+  <!-- App Logic -->
   <script src="/app.js"></script>
+
+  <!-- Reload Listener (kritikus a SW működéshez) -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', event => {
+        if (event.data && event.data.type === 'NEW_VERSION') {
+          console.log('SW: new version detected, reloading...');
+          window.location.reload();
+        }
+      });
+    }
+  </script>
+
+  <!-- Register SW -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker
+          .register('/sw.js', { updateViaCache: 'none' })
+          .then(reg => console.log('SW registered:', reg.scope))
+          .catch(err => console.log('SW registration failed:', err));
+      });
+    }
+  </script>
+
 </body>
 </html>
