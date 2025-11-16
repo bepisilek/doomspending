@@ -15,7 +15,10 @@ const urlsToCache = [
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
-  '/icons/apple-touch-icon.png'
+  '/icons/apple-touch-icon.png',
+  '/icons/apple-touch-icon-152x152.png',
+  '/icons/apple-touch-icon-167x167.png',
+  '/icons/apple-touch-icon-120x120.png'
 ];
 
 // KRITIKUS: Azonnal aktiválódjon az új verzió
