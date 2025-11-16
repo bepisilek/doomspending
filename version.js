@@ -3,4 +3,4 @@
 // ============================================
 // Ez az EGYETLEN hely ahol a verziót frissíteni kell!
 
-const APP_VERSION = '5.0.0';
+const APP_VERSION = '6.0.0';
