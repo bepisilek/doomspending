@@ -1,5 +1,5 @@
 // ============================================
-// MUNKAÓRA PRO - PWA
+// MUNKAÓRA PRO v5.0 - JAVÍTOTT VERZIÓKEZELÉS
 // ============================================
 
 // Google Analytics
@@ -16,46 +16,34 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 let supabase = null;
 
-// Supabase client inicializálása
 function initSupabase() {
   try {
     if (window.supabase && window.supabase.createClient) {
       supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       console.log('✅ Supabase client inicializálva');
-    } else {
-      console.warn('⚠️ Supabase library nem elérhető');
     }
   } catch (error) {
     console.error('❌ Supabase init hiba:', error);
   }
 }
 
-// User ID generálása vagy betöltése
 function getUserId() {
   const USER_ID_KEY = 'munkaora_user_id';
   let userId = localStorage.getItem(USER_ID_KEY);
   
   if (!userId) {
-    // Generálunk egy egyedi UUID-t
     userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     localStorage.setItem(USER_ID_KEY, userId);
-    console.log('🆕 Új user ID generálva:', userId);
   }
   
   return userId;
 }
 
-// Profil adatok küldése Supabase-be
 async function sendProfileToSupabase(profileData) {
-  if (!supabase) {
-    console.warn('⚠️ Supabase nem elérhető, profil nem került elküldésre');
-    return;
-  }
+  if (!supabase) return;
   
   try {
     const userId = getUserId();
-    
-    // Név NEM kerül bele!
     const analyticsData = {
       user_id: userId,
       age: profileData.age || null,
@@ -65,31 +53,21 @@ async function sendProfileToSupabase(profileData) {
       updated_at: new Date().toISOString()
     };
     
-    // Upsert (insert or update)
-    const { data, error } = await supabase
+    await supabase
       .from('analytics_profiles')
       .upsert(analyticsData, { onConflict: 'user_id' });
     
-    if (error) {
-      console.error('❌ Supabase profil hiba:', error);
-    } else {
-      console.log('✅ Profil elküldve Supabase-be');
-    }
+    console.log('✅ Profil elküldve Supabase-be');
   } catch (error) {
-    console.error('❌ Supabase profil exception:', error);
+    console.error('❌ Supabase profil hiba:', error);
   }
 }
 
-// Döntés adatok küldése Supabase-be
 async function sendDecisionToSupabase(decisionData) {
-  if (!supabase) {
-    console.warn('⚠️ Supabase nem elérhető, döntés nem került elküldésre');
-    return;
-  }
+  if (!supabase) return;
   
   try {
     const userId = getUserId();
-    
     const analyticsData = {
       user_id: userId,
       product: decisionData.product,
@@ -100,25 +78,20 @@ async function sendDecisionToSupabase(decisionData) {
       created_at: new Date().toISOString()
     };
     
-    const { data, error } = await supabase
+    await supabase
       .from('analytics_decisions')
       .insert([analyticsData]);
     
-    if (error) {
-      console.error('❌ Supabase döntés hiba:', error);
-    } else {
-      console.log('✅ Döntés elküldve Supabase-be');
-    }
+    console.log('✅ Döntés elküldve Supabase-be');
   } catch (error) {
-    console.error('❌ Supabase döntés exception:', error);
+    console.error('❌ Supabase döntés hiba:', error);
   }
 }
 
 // ============================================
-// CONSTANTS & DATA
+// CONSTANTS
 // ============================================
 
-// APP_VERSION betöltve a version.js-ből
 const VERSION_KEY = 'munkaora_version';
 const STORE_KEY = 'munkaora_data';
 const INVITE_QUEUE_KEY = 'munkaora_invite_queue';
@@ -165,7 +138,6 @@ const quotes = [
   'A pénzügyi béke következetességgel épül, nem sebességgel.',
   'A felelős döntések nem tiltások, hanem lehetőségek későbbre.'
 ];
-
 
 // ============================================
 // DATA MANAGEMENT
@@ -333,10 +305,7 @@ function saveProfile(){
     hoursPerWeek: +document.getElementById('hours').value
   };
   saveData(data);
-  
-  // Küldjük Supabase-be (név NÉLKÜL!)
   sendProfileToSupabase(data.profile);
-  
   track('profile_saved');
   goTo('calculator');
 }
@@ -415,8 +384,6 @@ function saveDecision(decision){
   
   data.history.push(decisionData);
   saveData(data);
-  
-  // Küldjük Supabase-be
   sendDecisionToSupabase(decisionData);
   
   document.getElementById('product').value = '';
@@ -628,154 +595,169 @@ async function handleShare(){
 }
 
 // ============================================
-// VERSION CHECK & UPDATE - JAVÍTOTT VERZIÓ
+// VERSION MANAGEMENT - JAVÍTOTT!!!
 // ============================================
 
 function checkVersion(){
-  try{
+  try {
     const lastVersion = localStorage.getItem(VERSION_KEY);
     const currentVersion = APP_VERSION;
     
-    console.log('[VERSION] Last:', lastVersion, 'Current:', currentVersion);
+    console.log('[VERSION] 🔍 Check:', {last: lastVersion, current: currentVersion});
     
-    // Ha van régi verzió ÉS különbözik
-    if(lastVersion && lastVersion !== currentVersion){
-      console.log('[VERSION] 🎉 Új verzió elérhető!');
-      showUpdateBanner();
-      track('new_version_available', { from: lastVersion, to: currentVersion });
-    } 
-    
-    // Ha nincs régi verzió, eltároljuk a jelenlegi
-    if(!lastVersion){
+    // KRITIKUS: Ha NEM egyezik, AZONNAL FRISSÍTJÜK!
+    if (lastVersion !== currentVersion) {
+      console.log('[VERSION] 🆕 Új verzió:', currentVersion);
+      
+      // AZONNAL FRISSÍTJÜK A localStorage-T!
       localStorage.setItem(VERSION_KEY, currentVersion);
-      console.log('[VERSION] Első futás, verzió mentve:', currentVersion);
+      
+      // Ha van régi verzió (nem első futás), mutassuk a banner-t
+      if (lastVersion) {
+        showUpdateBanner();
+        track('new_version_detected', { from: lastVersion, to: currentVersion });
+      } else {
+        console.log('[VERSION] ✅ Első futás, verzió mentve');
+      }
+    } else {
+      console.log('[VERSION] ✅ Verzió aktuális');
     }
-  }catch(e){
-    console.error('[VERSION] Check failed:', e);
+  } catch (error) {
+    console.error('[VERSION] ❌ Hiba:', error);
   }
 }
 
 function showUpdateBanner(){
   const banner = document.getElementById('update-banner');
-  if(banner){
+  if (banner) {
     banner.classList.remove('hidden');
-    console.log('[VERSION] ✅ Banner megjelenítve');
-  } else {
-    console.error('[VERSION] ❌ Banner elem nem található!');
+    console.log('[VERSION] 🎉 Banner megjelenítve');
   }
 }
 
 function reloadApp(){
-  const currentVersion = APP_VERSION;
-  localStorage.setItem(VERSION_KEY, currentVersion);
-  console.log('[VERSION] Verzió frissítve:', currentVersion);
-  track('version_updated', { version: currentVersion });
+  console.log('[VERSION] 🔄 Teljes újratöltés...');
   
-  // Hard reload
-  window.location.reload(true);
+  // KRITIKUS: Töröljük a cache-t!
+  if ('caches' in window) {
+    caches.keys().then(names => {
+      names.forEach(name => {
+        console.log('[VERSION] 🗑️ Cache törlés:', name);
+        caches.delete(name);
+      });
+    });
+  }
+  
+  // Service Worker unregister
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+      registrations.forEach(registration => {
+        console.log('[VERSION] 🗑️ SW unregister');
+        registration.unregister();
+      });
+    });
+  }
+  
+  track('version_updated', { version: APP_VERSION });
+  
+  // HARD RELOAD
+  setTimeout(() => {
+    window.location.reload();
+  }, 500);
 }
 
 function manualVersionCheck(){
-  console.log('[VERSION] 🔄 Manuális ellenőrzés indítva...');
+  console.log('[VERSION] 🔄 Manuális ellenőrzés...');
   
-  // 1. Service Worker update check
-  if ('serviceWorker' in navigator && typeof registration !== 'undefined') {
-    console.log('[VERSION] Service Worker update check...');
-    registration.update().then(() => {
-      console.log('[SW] Update check kész');
-    }).catch(err => {
-      console.error('[SW] Update check hiba:', err);
+  // Unregister + register SW
+  if ('serviceWorker' in navigator && registration) {
+    registration.unregister().then(() => {
+      console.log('[SW] Unregistered');
+      return navigator.serviceWorker.register('/sw.js', {
+        updateViaCache: 'none'
+      });
+    }).then(newReg => {
+      console.log('[SW] Re-registered');
+      newReg.update();
     });
   }
   
-  // 2. Verzióellenőrzés
+  // Verzió check
   const lastVersion = localStorage.getItem(VERSION_KEY);
   const currentVersion = APP_VERSION;
   
-  console.log('[VERSION] Verzió összehasonlítás:', lastVersion, '→', currentVersion);
-  
-  if(lastVersion && lastVersion !== currentVersion){
-    // Van új verzió!
+  if (lastVersion !== currentVersion) {
     showUpdateBanner();
   } else {
-    // Nincs új verzió
-    setTimeout(() => {
-      const banner = document.getElementById('update-banner');
-      if(!banner || banner.classList.contains('hidden')){
-        alert('✅ Már a legfrissebb verzión vagy!\n\nJelenlegi verzió: v' + currentVersion);
-      }
-    }, 500);
+    alert(`✅ Már a legfrissebb verzión vagy!\n\nVerzió: v${currentVersion}`);
   }
 }
 
 // ============================================
-// PWA SERVICE WORKER - JAVÍTOTT
+// SERVICE WORKER INIT - JAVÍTOTT
 // ============================================
 
 let registration;
-let newWorker;
 
 function initServiceWorker(){
-  if('serviceWorker' in navigator){
-    // Service Worker üzenetek fogadása
-    navigator.serviceWorker.addEventListener('message', (event) => {
-      console.log('[SW] Message received:', event.data);
-      
-      // Új verzió elérhető
-      if (event.data && event.data.type === 'NEW_VERSION') {
-        console.log('[SW] 🎉 Új verzió:', event.data.version);
-        showUpdateBanner();
-      }
-      
-      // Force reload
-      if (event.data && event.data.type === 'FORCE_RELOAD') {
-        console.log('[SW] Force reload requested');
-        window.location.reload();
-      }
-    });
+  if (!('serviceWorker' in navigator)) {
+    console.warn('⚠️ Service Worker nem támogatott');
+    return;
+  }
+  
+  // SW üzenetek fogadása
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    console.log('[SW] Üzenet:', event.data);
     
-    navigator.serviceWorker.register('/sw.js', {
-      updateViaCache: 'none'  // KRITIKUS: Ne cache-elje a SW fájlt!
-    })
-      .then(reg => {
-        registration = reg;
-        console.log('✅ Service Worker regisztrálva');
+    if (event.data && event.data.type === 'NEW_VERSION') {
+      console.log('[SW] 🎉 Új verzió:', event.data.version);
+      showUpdateBanner();
+    }
+    
+    if (event.data && event.data.action === 'RELOAD') {
+      console.log('[SW] 🔄 Reload request');
+      // NE töltse újra automatikusan, hadd döntse el a user!
+    }
+  });
+  
+  // SW regisztráció
+  navigator.serviceWorker.register('/sw.js', {
+    updateViaCache: 'none'  // KRITIKUS!
+  })
+    .then(reg => {
+      registration = reg;
+      console.log('✅ Service Worker regisztrálva');
+      
+      // Azonnali update check
+      reg.update();
+      
+      // Új verzió detektálása
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        console.log('🔄 Új SW települ...');
         
-        // AZONNALI update check
-        reg.update();
-        console.log('🔍 Initial update check...');
-        
-        // Új verzió detektálása
-        reg.addEventListener('updatefound', () => {
-          newWorker = reg.installing;
-          console.log('🔄 Új Service Worker települ...');
-          
-          newWorker.addEventListener('statechange', () => {
-            if(newWorker.state === 'installed' && navigator.serviceWorker.controller){
-              // Van új verzió!
-              console.log('🎉 Új verzió elérhető!');
-              showUpdateBanner();
-            }
-          });
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            console.log('🎉 Új verzió telepítve!');
+            showUpdateBanner();
+          }
         });
-        
-        // Periodikus update check (30 sec)
-        setInterval(() => {
-          console.log('🔄 Periodikus update check...');
-          reg.update();
-        }, 30 * 1000);
-      })
-      .catch(err => {
-        console.error('❌ Service Worker hiba:', err);
       });
       
-    // Controller változás detektálása
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      console.log('🔄 Service Worker frissült!');
+      // Periodikus check (60 sec)
+      setInterval(() => {
+        console.log('🔄 Periodikus SW update check...');
+        reg.update();
+      }, 60 * 1000);
+    })
+    .catch(err => {
+      console.error('❌ Service Worker hiba:', err);
     });
-  } else {
-    console.warn('⚠️ Service Worker nem támogatott');
-  }
+  
+  // Controller változás
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    console.log('🔄 Service Worker frissült!');
+  });
 }
 
 // ============================================
@@ -796,29 +778,29 @@ function initServiceWorker(){
   initInviteGate();
   initShareWidget();
   
-  // KRITIKUS: Verzió ellenőrzés
+  // KRITIKUS: Verzió ellenőrzés AZONNAL!
   checkVersion();
   
-  // Service Worker inicializálás
+  // Service Worker init
   initServiceWorker();
   
-  // Build badge frissítése manuális gombbal
+  // Build badge
   const buildBadge = document.getElementById('build-badge');
   if(buildBadge){
     buildBadge.innerHTML = `
-      v${APP_VERSION.split('.').slice(0,2).join('.')} PWA 
+      v${APP_VERSION} PWA 
       <button 
         onclick="manualVersionCheck()" 
-        style="margin-left:6px;padding:2px 6px;font-size:10px;background:#356dff;color:#fff;border:none;border-radius:4px;cursor:pointer;opacity:0.7;transition:all 0.2s;"
+        style="margin-left:6px;padding:2px 6px;font-size:10px;background:#0b66ff;color:#fff;border:none;border-radius:4px;cursor:pointer;opacity:0.7;transition:all 0.2s;"
         onmouseover="this.style.opacity='1';this.style.transform='scale(1.05)'"
         onmouseout="this.style.opacity='0.7';this.style.transform='scale(1)'"
-        title="Verzió ellenőrzés (kattints a frissítéshez)"
+        title="Verzió ellenőrzés"
       >
         🔄
       </button>
     `;
   }
   
-  console.log('🚀 Munkaóra PWA betöltve - v' + APP_VERSION);
+  console.log(`🚀 Munkaóra PRO v${APP_VERSION} betöltve`);
   console.log('👤 User ID:', getUserId());
 })();
