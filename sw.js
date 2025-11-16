@@ -1,11 +1,11 @@
 // ============================================
-// MUNKAÓRA PRO - SERVICE WORKER
+// SERVICE WORKER v5.0 - AGRESSZÍV CACHE TÖRLÉS
 // ============================================
-// VERSION betöltése a version.js-ből (EGYETLEN forrás!)
-importScripts('/version.js');
-const version = APP_VERSION;
 
-const CACHE_NAME = `munkaora-v${version}`;
+importScripts('/version.js');
+
+const VERSION = APP_VERSION;
+const CACHE_NAME = `munkaora-v${VERSION}-${Date.now()}`; // TIMESTAMP!
 const urlsToCache = [
   '/',
   '/index.html',
@@ -19,115 +19,142 @@ const urlsToCache = [
   '/icons/apple-touch-icon.png'
 ];
 
-// KRITIKUS: Azonnal aktiválódjon az új verzió
+// INSTALL - TÖRÖL MINDENT + CACHE ÚJ
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing version:', version);
+  console.log(`[SW] 🆕 Installing v${VERSION}`);
   
   event.waitUntil(
     (async () => {
-      // ELŐSZÖR TÖRÖLJÜNK MINDEN RÉGI CACHE-T!
-      const cacheNames = await caches.keys();
-      await Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('[SW] Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-      
-      // Utána cache-eljük az új fájlokat
-      const cache = await caches.open(CACHE_NAME);
-      await cache.addAll(urlsToCache);
-      
-      // AZONNAL aktiválódjon, ne várjon!
-      await self.skipWaiting();
+      try {
+        // 1. TÖRÖLJÜK AZ ÖSSZES RÉGI CACHE-T
+        const cacheNames = await caches.keys();
+        console.log('[SW] 🗑️ Törlöm az összes cache-t:', cacheNames);
+        await Promise.all(
+          cacheNames.map(name => {
+            console.log('[SW] Törlés:', name);
+            return caches.delete(name);
+          })
+        );
+        
+        // 2. CACHE-ELJÜK AZ ÚJ FÁJLOKAT
+        console.log('[SW] 📦 Új fájlok cache-elése...');
+        const cache = await caches.open(CACHE_NAME);
+        await cache.addAll(urlsToCache);
+        console.log('[SW] ✅ Cache kész:', CACHE_NAME);
+        
+        // 3. AZONNAL AKTIVÁLÓDJON
+        await self.skipWaiting();
+        console.log('[SW] ⚡ Skip waiting - azonnal aktiválódik');
+      } catch (error) {
+        console.error('[SW] ❌ Install hiba:', error);
+      }
     })()
   );
 });
 
-// KRITIKUS: Azonnal vegye át a kontrollt
+// ACTIVATE - VEGYE ÁT A KONTROLLT + ÜZENJEN
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating version:', version);
+  console.log(`[SW] 🔥 Activating v${VERSION}`);
   
   event.waitUntil(
     (async () => {
-      // Töröljünk minden cache-t ami nem a jelenlegi
-      const cacheNames = await caches.keys();
-      await Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('[SW] Deleting old cache during activate:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-      
-      // AZONNAL vegye át a kontrollt minden kliensben
-      await self.clients.claim();
-      
-      // Újratöltjük az összes klienst
-      const clients = await self.clients.matchAll({ type: 'window' });
-      clients.forEach(client => {
-        client.postMessage({ type: 'FORCE_RELOAD' });
-      });
+      try {
+        // 1. TÖRÖLJÜK A RÉGI CACHE-EKET
+        const cacheNames = await caches.keys();
+        await Promise.all(
+          cacheNames
+            .filter(name => name !== CACHE_NAME)
+            .map(name => {
+              console.log('[SW] 🗑️ Activate: törlöm', name);
+              return caches.delete(name);
+            })
+        );
+        
+        // 2. VEGYE ÁT A KONTROLLT MINDEN CLIENT-EN
+        await self.clients.claim();
+        console.log('[SW] ✅ Clients claimed');
+        
+        // 3. ÜZENJEN MINDEN CLIENT-NEK
+        const clients = await self.clients.matchAll({ type: 'window' });
+        console.log(`[SW] 📢 Üzenetek küldése ${clients.length} client-nek`);
+        
+        clients.forEach(client => {
+          client.postMessage({
+            type: 'NEW_VERSION',
+            version: VERSION,
+            action: 'RELOAD'
+          });
+        });
+        
+        console.log('[SW] ✅ Activate kész');
+      } catch (error) {
+        console.error('[SW] ❌ Activate hiba:', error);
+      }
     })()
   );
 });
 
-// Network First stratégia HTML-hez, Cache First máshoz
+// FETCH - NETWORK FIRST az index.html-hez!
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Kihagyjuk a Supabase hívásokat
-  if (url.hostname.includes('supabase')) {
+  // Skip Supabase, Google Analytics
+  if (
+    url.hostname.includes('supabase') ||
+    url.hostname.includes('google-analytics') ||
+    url.hostname.includes('googletagmanager')
+  ) {
     return;
   }
 
-  // HTML fájlokhoz: MINDIG a hálózatról próbáljuk, cache csak ha offline
-  if (request.destination === 'document' || url.pathname.endsWith('.html')) {
+  // HTML, JS, CSS - MINDIG NETWORK FIRST (friss tartalom!)
+  if (
+    request.destination === 'document' ||
+    url.pathname.endsWith('.html') ||
+    url.pathname.endsWith('.js') ||
+    url.pathname.endsWith('.css')
+  ) {
     event.respondWith(
-      fetch(request)
+      fetch(request, { cache: 'no-cache' })
         .then(response => {
-          // Ha sikeres, cache-eljük
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(request, responseToCache);
-          });
+          if (response && response.status === 200) {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(request, responseClone);
+            });
+          }
           return response;
         })
-        .catch(() => {
-          // Ha nincs net, akkor cache-ből
-          return caches.match(request);
-        })
+        .catch(() => caches.match(request))
     );
     return;
   }
 
-  // Minden máshoz: Cache First
+  // Minden más - CACHE FIRST
   event.respondWith(
-    caches.match(request).then(response => {
-      if (response) {
-        return response;
+    caches.match(request).then(cached => {
+      if (cached) {
+        return cached;
       }
       return fetch(request).then(response => {
-        if (!response || response.status !== 200 || response.type === 'error') {
-          return response;
+        if (response && response.status === 200) {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(request, responseClone);
+          });
         }
-        const responseToCache = response.clone();
-        caches.open(CACHE_NAME).then(cache => {
-          cache.put(request, responseToCache);
-        });
         return response;
       });
     })
   );
 });
 
-// Verzió ellenőrzés üzenet
+// MESSAGE - Verzió lekérdezés
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'GET_VERSION') {
-    event.ports[0].postMessage({ version });
+    event.ports[0].postMessage({ version: VERSION });
   }
 });
+
+console.log(`[SW] 🚀 Service Worker v${VERSION} loaded`);
