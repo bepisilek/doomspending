@@ -13,12 +13,9 @@ const urlsToCache = [
   '/app.js',
   '/version.js',
   '/manifest.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/icons/apple-touch-icon.png',
-  '/icons/apple-touch-icon-152x152.png',
-  '/icons/apple-touch-icon-167x167.png',
-  '/icons/apple-touch-icon-120x120.png'
+  '/icons/icon-192.svg',
+  '/icons/icon-512.svg',
+  '/icons/icon-512-maskable.svg'
 ];
 
 // KRITIKUS: Azonnal aktiválódjon az új verzió
