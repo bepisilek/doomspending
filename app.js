@@ -161,6 +161,27 @@ function escapeHtml(str){
     .replaceAll("'",'&#039;');
 }
 
+function parseNumberInput(value, allowFloat = false){
+  if(value === undefined || value === null) return 0;
+  let normalized = String(value).trim();
+  normalized = normalized.replace(/\s/g, '').replace(/,/g, '.');
+
+  if(allowFloat){
+    normalized = normalized.replace(/[^0-9.]/g, '');
+    const firstDot = normalized.indexOf('.');
+    if(firstDot !== -1){
+      normalized = normalized.slice(0, firstDot + 1) + normalized.slice(firstDot + 1).replace(/\./g, '');
+    }
+  } else {
+    normalized = normalized.replace(/[^0-9]/g, '');
+  }
+
+  if(!normalized) return 0;
+
+  const parsed = allowFloat ? parseFloat(normalized) : parseInt(normalized, 10);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 // ============================================
 // INVITE SYSTEM
 // ============================================
@@ -307,13 +328,18 @@ function goTo(screen) {
 
 function saveProfile(){
   const data = loadData();
-  data.profile = {
-    name: document.getElementById('name').value,
-    age: +document.getElementById('age').value,
-    city: document.getElementById('city').value,
-    income: +document.getElementById('income').value,
-    hoursPerWeek: +document.getElementById('hours').value
-  };
+  const name = document.getElementById('name').value.trim();
+  const age = parseNumberInput(document.getElementById('age').value);
+  const city = document.getElementById('city').value.trim();
+  const income = parseNumberInput(document.getElementById('income').value);
+  const hoursPerWeek = parseNumberInput(document.getElementById('hours').value, true);
+
+  if(!income || !hoursPerWeek){
+    alert('Add meg a havi nettó jövedelmedet és a heti munkaóráid számát!');
+    return;
+  }
+
+  data.profile = { name, age, city, income, hoursPerWeek };
   saveData(data);
   sendProfileToSupabase(data.profile);
   track('profile_saved');
@@ -333,15 +359,22 @@ function calculate(){
     return;
   }
   const product = document.getElementById('product').value.trim();
-  const price = +document.getElementById('price').value;
+  const price = parseNumberInput(document.getElementById('price').value);
   if(!product || !price){
     alert('Add meg a termék nevét és árát!');
     return;
   }
-  
+
   const hourly = p.income / (p.hoursPerWeek * 4);
-  const hours = (price / hourly).toFixed(1);
-  
+  if(!hourly || !isFinite(hourly)){
+    alert('Előbb add meg helyesen a profil adataid!');
+    goTo('profile');
+    return;
+  }
+
+  const hoursValue = price / hourly;
+  const roundedHours = Math.round(hoursValue * 10) / 10;
+
   const comparisons = [
     {val:0.5,text:'fél óra munka'},
     {val:1,text:'1 óra munka'},
@@ -355,25 +388,25 @@ function calculate(){
   ];
   
   let closestComp = comparisons[0];
-  let minDiff = Math.abs(hours - closestComp.val);
-  
+  let minDiff = Math.abs(roundedHours - closestComp.val);
+
   for(let c of comparisons){
-    const diff = Math.abs(hours - c.val);
+    const diff = Math.abs(roundedHours - c.val);
     if(diff < minDiff){
       minDiff = diff;
       closestComp = c;
     }
   }
-  
+
   document.getElementById('result-box').style.display = 'block';
-  document.getElementById('hoursResult').innerText = hours;
+  document.getElementById('hoursResult').innerText = roundedHours.toFixed(1);
   document.getElementById('comparison').innerText = `Ez kb. ${closestComp.text}`;
-  
+
   currentProduct = product;
   currentPrice = price;
-  currentHours = hours;
-  
-  track('calculate', { product, price, hours });
+  currentHours = roundedHours;
+
+  track('calculate', { product, price, hours: roundedHours });
 }
 
 function saveDecision(decision){
