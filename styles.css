@@ -42,6 +42,10 @@
   /* Animation */
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
   --duration: 300ms;
+
+  /* Safe area (iOS PWA) */
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* Dark Mode */
@@ -121,9 +125,9 @@ p {
 /* Layout */
 .app-shell {
   width: min(100%, 480px);
-  min-height: 100vh;
+  min-height: 100dvh;
   margin: 0 auto;
-  padding: var(--space) var(--space) 120px;
+  padding: calc(var(--space) + var(--safe-area-top)) var(--space) calc(80px + var(--safe-area-bottom));
   position: relative;
 }
 
@@ -819,7 +823,7 @@ nav button.active svg {
 /* Utilities */
 .update-banner {
   position: fixed;
-  top: 0;
+  top: var(--safe-area-top);
   left: 50%;
   transform: translateX(-50%);
   padding: 14px 24px;
@@ -853,7 +857,7 @@ nav button.active svg {
 #build-badge {
   position: fixed;
   left: 12px;
-  top: 12px;
+  top: calc(12px + var(--safe-area-top));
   font-size: 0.7rem;
   color: var(--text-muted);
   opacity: 0.7;
@@ -873,7 +877,7 @@ nav button.active svg {
 
 .share-widget {
   position: fixed;
-  bottom: 110px;
+  bottom: calc(110px + var(--safe-area-bottom));
   right: var(--space);
   z-index: 90;
   display: none;
