@@ -1085,12 +1085,10 @@ function initServiceWorker(){
   const buildBadge = document.getElementById('build-badge');
   if(buildBadge){
     buildBadge.innerHTML = `
-      v${APP_VERSION} PWA 
-      <button 
-        onclick="manualVersionCheck()" 
-        style="margin-left:6px;padding:2px 6px;font-size:10px;background:#0b66ff;color:#fff;border:none;border-radius:4px;cursor:pointer;opacity:0.7;transition:all 0.2s;"
-        onmouseover="this.style.opacity='1';this.style.transform='scale(1.05)'"
-        onmouseout="this.style.opacity='0.7';this.style.transform='scale(1)'"
+      v${APP_VERSION} PWA
+      <button
+        class="badge-refresh"
+        onclick="manualVersionCheck()"
         title="Verzió ellenőrzés"
       >
         🔄
