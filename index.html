@@ -47,6 +47,9 @@
 </head>
 
 <body>
+  <!-- Build Badge (verzió megjelenítés) -->
+  <div id="build-badge"></div>
+
   <!-- Update Banner -->
   <div id="update-banner" class="update-banner hidden">
     <span>🎉 Új verzió elérhető!</span>
@@ -125,10 +128,10 @@
           <div class="card">
             <div class="form-stack">
               <input id="name" placeholder="👤 Név" />
-              <input id="age" placeholder="🎂 Életkor" type="number" />
+              <input id="age" placeholder="🎂 Életkor" type="text" inputmode="numeric" data-numeric="int" />
               <input id="city" placeholder="📍 Település" />
-              <input id="income" placeholder="💰 Havi nettó jövedelem (Ft)" type="number" />
-              <input id="hours" placeholder="⏰ Heti munkaóra" type="number" />
+              <input id="income" placeholder="💰 Havi nettó jövedelem (Ft)" type="text" inputmode="numeric" data-numeric="int" />
+              <input id="hours" placeholder="⏰ Heti munkaóra" type="text" inputmode="decimal" data-numeric="float" />
               <button onclick="saveProfile()">💾 Mentés és továbblépés</button>
             </div>
           </div>
@@ -153,7 +156,7 @@
           <div class="card">
             <div class="form-stack">
               <input id="product" placeholder="🏷️ Termék neve" />
-              <input id="price" placeholder="💵 Ára (Ft)" type="number" />
+              <input id="price" placeholder="💵 Ára (Ft)" type="text" inputmode="numeric" data-numeric="int" />
               <button onclick="calculate()">🔍 Számolás</button>
 
               <div id="result-box" class="result-box">
