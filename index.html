@@ -71,7 +71,7 @@
   <div class="app-shell">
     <main class="screen-stack">
 
-      <!-- 1. Welcome -->
+      <!-- 1. Welcome + Auth -->
       <section id="screen-welcome" class="screen active">
         <div class="welcome-hero">
           <div class="welcome-pill">💰 Tivlo</div>
@@ -92,22 +92,44 @@
 
           <p class="welcome-copy">Váltsd át az árakat munkaórákra és hozz<br>tudatos pénzügyi döntéseket!</p>
 
-          <!-- INVITE CARD -->
-          <div id="inviteCard" class="card invite-card">
-            <h3>🔑 Meghívó kód</h3>
-            <p class="card-subtitle">Add meg a kódodat a kezdéshez</p>
-            <div class="invite-form">
-              <input id="inviteCodeInput" placeholder="Pl. 1843-5092-JKLP" autocomplete="off" />
-              <button type="button" onclick="validateInvite()">Ellenőrzés</button>
+          <!-- AUTH CARD -->
+          <div id="authCard" class="card auth-card">
+            <div id="authTabs" class="auth-tabs">
+              <button id="tabSignup" class="auth-tab active" onclick="switchAuthTab('signup')">Regisztráció</button>
+              <button id="tabLogin" class="auth-tab" onclick="switchAuthTab('login')">Bejelentkezés</button>
             </div>
-            <div id="inviteStatus" class="invite-status"></div>
+
+            <!-- SIGNUP FORM -->
+            <div id="signupForm" class="auth-form">
+              <div class="form-stack">
+                <input id="signupEmail" type="email" placeholder="📧 Email cím" autocomplete="email" />
+                <input id="signupPassword" type="password" placeholder="🔒 Jelszó (min. 6 karakter)" autocomplete="new-password" />
+                <input id="signupPasswordConfirm" type="password" placeholder="🔒 Jelszó megerősítése" autocomplete="new-password" />
+                
+                <label class="checkbox-label">
+                  <input type="checkbox" id="marketingConsent" />
+                  <span>Hírlevélre feliratkozom, és hozzájárulok adataim marketing célú felhasználásához. (Opcionális)</span>
+                </label>
+
+                <button onclick="handleSignup()">🚀 Regisztráció</button>
+                <div id="signupStatus" class="auth-status"></div>
+              </div>
+            </div>
+
+            <!-- LOGIN FORM -->
+            <div id="loginForm" class="auth-form hidden">
+              <div class="form-stack">
+                <input id="loginEmail" type="email" placeholder="📧 Email cím" autocomplete="email" />
+                <input id="loginPassword" type="password" placeholder="🔒 Jelszó" autocomplete="current-password" />
+                
+                <button onclick="handleLogin()">🔓 Bejelentkezés</button>
+                <button onclick="handleForgotPassword()" class="secondary-btn">🔄 Elfelejtett jelszó</button>
+                <div id="loginStatus" class="auth-status"></div>
+              </div>
+            </div>
           </div>
 
-          <!-- START CARD -->
-          <div id="startCard" class="card hidden">
-            <button id="startButton" onclick="startApp()" class="primary-btn">🚀 Kezdjük el!</button>
-            <p class="stat-text">Már <strong>2,847</strong> felhasználó • <strong>18,392</strong> óra megspórolva</p>
-          </div>
+          <p class="stat-text">Már <strong>2,847</strong> felhasználó • <strong>18,392</strong> óra megspórolva</p>
         </div>
       </section>
 
@@ -118,16 +140,24 @@
             <span class="caption">PROFIL</span>
             <h2>⚙️ Adataid</h2>
           </div>
-          <div class="theme-toggle" onclick="toggleTheme()" title="Témák váltása">
-            <svg viewBox="0 0 24 24">
-              <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
-            </svg>
+          <div class="header-actions">
+            <div class="theme-toggle" onclick="toggleTheme()" title="Témák váltása">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+              </svg>
+            </div>
+            <button class="logout-btn" onclick="handleLogout()" title="Kijelentkezés">🚪</button>
           </div>
         </header>
         <div class="content-stack">
           <div class="card">
+            <p class="auth-info">
+              <strong>Email:</strong> <span id="userEmail">-</span>
+            </p>
+          </div>
+          <div class="card">
             <div class="form-stack">
-              <input id="name" placeholder="👤 Név" />
+              <input id="name" placeholder="👤 Név (opcionális)" />
               <input id="age" placeholder="🎂 Életkor" type="text" inputmode="numeric" data-numeric="int" />
               <input id="city" placeholder="📍 Település" />
               <input id="income" placeholder="💰 Havi nettó jövedelem (Ft)" type="text" inputmode="numeric" data-numeric="int" />
@@ -309,8 +339,6 @@
 
   <!-- App Logic -->
   <script src="/app.js"></script>
-
-  <!-- ✅ JAVÍTVA: Egyetlen SW regisztráció az app.js-ben, itt nincs semmi -->
 
 </body>
 </html>
