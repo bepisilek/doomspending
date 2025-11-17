@@ -307,29 +307,7 @@
   <!-- App Logic -->
   <script src="/app.js"></script>
 
-  <!-- Reload Listener (kritikus a SW működéshez) -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.addEventListener('message', event => {
-        if (event.data && event.data.type === 'NEW_VERSION') {
-          console.log('SW: new version detected, reloading...');
-          window.location.reload();
-        }
-      });
-    }
-  </script>
-
-  <!-- Register SW -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker
-          .register('/sw.js', { updateViaCache: 'none' })
-          .then(reg => console.log('SW registered:', reg.scope))
-          .catch(err => console.log('SW registration failed:', err));
-      });
-    }
-  </script>
+  <!-- ✅ JAVÍTVA: Egyetlen SW regisztráció az app.js-ben, itt nincs semmi -->
 
 </body>
 </html>
