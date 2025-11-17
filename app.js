@@ -364,8 +364,8 @@ async function sendProfileToSupabase(profileData) {
 }
 
 async function sendDecisionToSupabase(decisionData) {
-  if (!supabase || !currentUser || !hasMarketingConsent) {
-    console.log('⚠️ Analytics nem küldve (nincs consent vagy user)');
+  if (!supabase || !currentUser) {
+    console.log('⚠️ Analytics nem küldve (nincs user)');
     return;
   }
   
