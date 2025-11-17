@@ -1,5 +1,5 @@
 // ============================================
-// MUNKAÓRA PRO v7.0 - JAVÍTOTT VERZIÓKEZELÉS + RLS
+// MUNKAÓRA PRO v8.0 - SUPABASE AUTH + MARKETING OPT-IN
 // ============================================
 
 // Google Analytics
@@ -8,44 +8,344 @@ function track(name, params = {}) {
 }
 
 // ============================================
-// SUPABASE ANALYTICS
+// SUPABASE SETUP
 // ============================================
 
 const SUPABASE_URL = 'https://twdauagksibhuafvdctw.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3ZGF1YWdrc2liaHVhZnZkY3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5NjcyMzQsImV4cCI6MjA3ODU0MzIzNH0.nK-REIO-yP6mfcHSwHgVCZvzLUq4Q96Bpm-WnlUgoL0';
 
 let supabase = null;
+let currentUser = null;
+let hasMarketingConsent = false;
 
 function initSupabase() {
   try {
     if (window.supabase && window.supabase.createClient) {
       supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       console.log('✅ Supabase client inicializálva');
+      
+      // Auth state change listener
+      supabase.auth.onAuthStateChange((event, session) => {
+        console.log('[AUTH] Event:', event, 'Session:', !!session);
+        currentUser = session?.user || null;
+        
+        if (event === 'SIGNED_IN') {
+          handleAuthSuccess();
+        } else if (event === 'SIGNED_OUT') {
+          handleSignout();
+        }
+      });
+      
+      // Check current session
+      checkSession();
     }
   } catch (error) {
     console.error('❌ Supabase init hiba:', error);
   }
 }
 
-function getUserId() {
-  const USER_ID_KEY = 'munkaora_user_id';
-  let userId = localStorage.getItem(USER_ID_KEY);
-  
-  if (!userId) {
-    userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    localStorage.setItem(USER_ID_KEY, userId);
+async function checkSession() {
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error) throw error;
+    
+    if (session) {
+      currentUser = session.user;
+      console.log('✅ Aktív session:', currentUser.email);
+      await loadMarketingConsent();
+      handleAuthSuccess();
+    } else {
+      console.log('⚠️ Nincs aktív session');
+      showAuthScreen();
+    }
+  } catch (error) {
+    console.error('❌ Session check hiba:', error);
+    showAuthScreen();
   }
-  
-  return userId;
 }
 
-async function sendProfileToSupabase(profileData) {
-  if (!supabase) return;
+async function loadMarketingConsent() {
+  if (!currentUser) return false;
   
   try {
-    const userId = getUserId();
+    const { data, error } = await supabase
+      .from('marketing_consents')
+      .select('has_consent')
+      .eq('user_id', currentUser.id)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') { // PGRST116 = not found
+      console.error('Marketing consent load error:', error);
+      return false;
+    }
+    
+    hasMarketingConsent = data?.has_consent || false;
+    console.log('✅ Marketing consent:', hasMarketingConsent);
+    return hasMarketingConsent;
+  } catch (error) {
+    console.error('❌ Marketing consent hiba:', error);
+    return false;
+  }
+}
+
+// ============================================
+// AUTH FUNCTIONS
+// ============================================
+
+function switchAuthTab(tab) {
+  const signupTab = document.getElementById('tabSignup');
+  const loginTab = document.getElementById('tabLogin');
+  const signupForm = document.getElementById('signupForm');
+  const loginForm = document.getElementById('loginForm');
+  
+  if (tab === 'signup') {
+    signupTab.classList.add('active');
+    loginTab.classList.remove('active');
+    signupForm.classList.remove('hidden');
+    loginForm.classList.add('hidden');
+  } else {
+    loginTab.classList.add('active');
+    signupTab.classList.remove('active');
+    loginForm.classList.remove('hidden');
+    signupForm.classList.add('hidden');
+  }
+}
+
+function validateEmail(email) {
+  // Basic email validation
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(email);
+}
+
+async function handleSignup() {
+  const email = document.getElementById('signupEmail').value.trim();
+  const password = document.getElementById('signupPassword').value;
+  const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
+  const marketingConsent = document.getElementById('marketingConsent').checked;
+  const statusEl = document.getElementById('signupStatus');
+  
+  // Validation
+  if (!email || !password) {
+    updateAuthStatus(statusEl, '❌ Email és jelszó megadása kötelező!', 'error');
+    return;
+  }
+  
+  if (!validateEmail(email)) {
+    updateAuthStatus(statusEl, '❌ Érvénytelen email cím formátum!', 'error');
+    return;
+  }
+  
+  if (password.length < 6) {
+    updateAuthStatus(statusEl, '❌ A jelszónak legalább 6 karakter hosszúnak kell lennie!', 'error');
+    return;
+  }
+  
+  if (password !== passwordConfirm) {
+    updateAuthStatus(statusEl, '❌ A jelszavak nem egyeznek!', 'error');
+    return;
+  }
+  
+  updateAuthStatus(statusEl, '⏳ Regisztráció folyamatban...', 'info');
+  
+  try {
+    // Sign up with Supabase Auth
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: window.location.origin,
+      }
+    });
+    
+    if (error) throw error;
+    
+    // Save marketing consent
+    hasMarketingConsent = marketingConsent;
+    if (data.user) {
+      await saveMarketingConsent(data.user.id, marketingConsent);
+    }
+    
+    updateAuthStatus(statusEl, '✅ Regisztráció sikeres! Ellenőrizd az email fiókodat a megerősítéshez.', 'success');
+    track('signup_success', { marketing_consent: marketingConsent });
+    
+    // Clear form
+    document.getElementById('signupEmail').value = '';
+    document.getElementById('signupPassword').value = '';
+    document.getElementById('signupPasswordConfirm').value = '';
+    document.getElementById('marketingConsent').checked = false;
+    
+  } catch (error) {
+    console.error('Signup error:', error);
+    updateAuthStatus(statusEl, `❌ Hiba: ${error.message}`, 'error');
+    track('signup_error');
+  }
+}
+
+async function handleLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const statusEl = document.getElementById('loginStatus');
+  
+  if (!email || !password) {
+    updateAuthStatus(statusEl, '❌ Email és jelszó megadása kötelező!', 'error');
+    return;
+  }
+  
+  if (!validateEmail(email)) {
+    updateAuthStatus(statusEl, '❌ Érvénytelen email cím formátum!', 'error');
+    return;
+  }
+  
+  updateAuthStatus(statusEl, '⏳ Bejelentkezés...', 'info');
+  
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+    
+    if (error) throw error;
+    
+    currentUser = data.user;
+    await loadMarketingConsent();
+    
+    updateAuthStatus(statusEl, '✅ Bejelentkezés sikeres!', 'success');
+    track('login_success');
+    
+    // Clear form
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPassword').value = '';
+    
+    handleAuthSuccess();
+    
+  } catch (error) {
+    console.error('Login error:', error);
+    updateAuthStatus(statusEl, `❌ Hiba: ${error.message}`, 'error');
+    track('login_error');
+  }
+}
+
+async function handleLogout() {
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+    
+    currentUser = null;
+    hasMarketingConsent = false;
+    
+    track('logout');
+    console.log('✅ Kijelentkezés sikeres');
+    
+  } catch (error) {
+    console.error('Logout error:', error);
+    alert('Hiba a kijelentkezés során!');
+  }
+}
+
+async function handleForgotPassword() {
+  const email = document.getElementById('loginEmail').value.trim();
+  
+  if (!email) {
+    alert('Add meg az email címedet az email mezőben!');
+    return;
+  }
+  
+  if (!validateEmail(email)) {
+    alert('Érvénytelen email cím formátum!');
+    return;
+  }
+  
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin
+    });
+    
+    if (error) throw error;
+    
+    alert('✅ Jelszó visszaállító email elküldve! Ellenőrizd az email fiókodat.');
+    track('password_reset_requested');
+    
+  } catch (error) {
+    console.error('Password reset error:', error);
+    alert(`❌ Hiba: ${error.message}`);
+  }
+}
+
+function handleAuthSuccess() {
+  // Hide auth screen, show app
+  const nav = document.getElementById('main-nav');
+  if (nav) nav.classList.add('show');
+  
+  // Update user email display
+  const userEmailEl = document.getElementById('userEmail');
+  if (userEmailEl && currentUser) {
+    userEmailEl.textContent = currentUser.email;
+  }
+  
+  // Load profile data
+  loadProfileData();
+  
+  // Go to profile screen
+  goTo('profile');
+  
+  track('auth_success');
+}
+
+function handleSignout() {
+  showAuthScreen();
+  
+  // Clear local data (optional)
+  const data = loadData();
+  data.profile = {};
+  data.history = [];
+  saveData(data);
+}
+
+function showAuthScreen() {
+  const nav = document.getElementById('main-nav');
+  if (nav) nav.classList.remove('show');
+  
+  goTo('welcome');
+}
+
+function updateAuthStatus(element, message, status = 'info') {
+  if (!element) return;
+  element.textContent = message;
+  element.setAttribute('data-status', status);
+}
+
+async function saveMarketingConsent(userId, consent) {
+  try {
+    const { error } = await supabase
+      .from('marketing_consents')
+      .upsert({
+        user_id: userId,
+        has_consent: consent,
+        consented_at: consent ? new Date().toISOString() : null,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'user_id' });
+    
+    if (error) throw error;
+    
+    console.log('✅ Marketing consent mentve:', consent);
+  } catch (error) {
+    console.error('❌ Marketing consent mentés hiba:', error);
+  }
+}
+
+// ============================================
+// ANALYTICS - CSAK HA VAN MARKETING CONSENT
+// ============================================
+
+async function sendProfileToSupabase(profileData) {
+  if (!supabase || !currentUser || !hasMarketingConsent) {
+    console.log('⚠️ Analytics nem küldve (nincs consent vagy user)');
+    return;
+  }
+  
+  try {
     const analyticsData = {
-      user_id: userId,
+      user_id: currentUser.id,
       age: profileData.age || null,
       city: profileData.city || null,
       income: profileData.income || null,
@@ -57,19 +357,21 @@ async function sendProfileToSupabase(profileData) {
       .from('analytics_profiles')
       .upsert(analyticsData, { onConflict: 'user_id' });
     
-    console.log('✅ Profil elküldve Supabase-be');
+    console.log('✅ Profil analytics elküldve');
   } catch (error) {
     console.error('❌ Supabase profil hiba:', error);
   }
 }
 
 async function sendDecisionToSupabase(decisionData) {
-  if (!supabase) return;
+  if (!supabase || !currentUser || !hasMarketingConsent) {
+    console.log('⚠️ Analytics nem küldve (nincs consent vagy user)');
+    return;
+  }
   
   try {
-    const userId = getUserId();
     const analyticsData = {
-      user_id: userId,
+      user_id: currentUser.id,
       product: decisionData.product,
       price: decisionData.price,
       hours: decisionData.hours,
@@ -82,7 +384,7 @@ async function sendDecisionToSupabase(decisionData) {
       .from('analytics_decisions')
       .insert([analyticsData]);
     
-    console.log('✅ Döntés elküldve Supabase-be');
+    console.log('✅ Döntés analytics elküldve');
   } catch (error) {
     console.error('❌ Supabase döntés hiba:', error);
   }
@@ -94,26 +396,14 @@ async function sendDecisionToSupabase(decisionData) {
 
 const VERSION_KEY = 'munkaora_version';
 const STORE_KEY = 'munkaora_data';
-const INVITE_QUEUE_KEY = 'munkaora_invite_queue';
-const INVITE_VALID_KEY = 'munkaora_invite_valid';
 const SHARE_WIDGET_KEY = 'munkaora_share_widget_dismissed';
 const APP_URL = 'https://doomspending.vercel.app/';
 const SHARE_MESSAGE = 'Ez az app lefordítja az árakat időre. Nézd meg!';
 
 let selectedCategory = 'other';
-let inviteQueue = [];
-let inviteValidated = false;
 let currentProduct = null;
 let currentPrice = 0;
 let currentHours = 0;
-
-const INVITE_CODES = [
-  '1843-5092-JKLP','9320-1748-MQAE','4076-9921-BTCR','8512-3167-ZWUY','6940-2583-PXEV','7234-8119-HRLT','5802-4671-YQMN','9375-1204-VKAD','4129-7350-NBUE','6583-2901-GCFW',
-  '1726-8450-RMZH','3608-5942-WTLQ','9481-6023-EXHP','5307-1849-UJNC','7824-9631-DBSO','6159-2478-FLQA','8046-5312-SKNY','2973-6581-QGJR','4510-9824-VMPC','6791-3405-LHEA',
-  '5804-7912-CYTK','1639-4275-NZUF','7102-3698-XQBL','9258-6047-WTRD','3479-8516-MPAH','6903-2781-HQYE','8541-3902-JDUT','4068-1579-RWKC','7135-9804-LZMV','2486-5319-VQEA',
-  '9721-3408-XGTF','1840-5726-BKUL','5603-1987-YQPR','3981-6205-MHFC','7092-4186-ZRTA','8460-2351-NPLW','6217-5093-TRXE','9748-6310-DMWQ','5039-2186-GYKH','7825-4691-QALV',
-  '6358-9702-XRBD','2914-5803-VKQE','8042-7365-TLJM','1679-2058-RSHP','9380-6147-BFWN','4723-5981-HQCT','6598-3402-YZUR','3251-4790-MWJE','5906-8217-KDPL','7439-1062-XBVR'
-];
 
 const achievements = [
   {id:'first',title:'Első lépés',desc:'Első kalkuláció',icon:'🎯',condition:d=>d.history.length>=1},
@@ -165,7 +455,7 @@ function setupNumericInputs(){
         key === 'End' ||
         (e.ctrlKey && (key === 'a' || key === 'c' || key === 'v' || key === 'x'))
       ) {
-        return; // Engedjük ezeket
+        return;
       }
       
       // Engedd a számokat
@@ -173,11 +463,11 @@ function setupNumericInputs(){
         return;
       }
       
-      // Engedd a pontot/vesszőt float esetén (csak ha még nincs a stringben)
+      // Engedd a pontot/vesszőt float esetén
       if (allowFloat && (key === '.' || key === ',')) {
         const currentValue = input.value;
         if (!currentValue.includes('.') && !currentValue.includes(',')) {
-          return; // Első pont/vessző OK
+          return;
         }
       }
       
@@ -190,17 +480,13 @@ function setupNumericInputs(){
       let value = e.target.value;
       
       if (allowFloat) {
-        // Vessző → pont
         value = value.replace(',', '.');
-        // Csak számok és egy pont
         value = value.replace(/[^0-9.]/g, '');
-        // Maximum egy pont
         const parts = value.split('.');
         if (parts.length > 2) {
           value = parts[0] + '.' + parts.slice(1).join('');
         }
       } else {
-        // Csak számok
         value = value.replace(/[^0-9]/g, '');
       }
       
@@ -239,6 +525,17 @@ function saveData(data){
   localStorage.setItem(STORE_KEY, JSON.stringify(data)); 
 }
 
+function loadProfileData(){
+  const d = loadData();
+  if(d.profile){
+    document.getElementById('name').value = d.profile.name || '';
+    document.getElementById('age').value = d.profile.age || '';
+    document.getElementById('city').value = d.profile.city || '';
+    document.getElementById('income').value = d.profile.income || '';
+    document.getElementById('hours').value = d.profile.hoursPerWeek || '';
+  }
+}
+
 function escapeHtml(str){
   return String(str)
     .replaceAll('&','&amp;')
@@ -270,106 +567,6 @@ function parseNumberInput(value, allowFloat = false){
 }
 
 // ============================================
-// INVITE SYSTEM
-// ============================================
-
-function normalizeInviteCode(value){
-  return String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-}
-
-function loadInviteQueue(){
-  try{
-    const stored = JSON.parse(localStorage.getItem(INVITE_QUEUE_KEY));
-    if(Array.isArray(stored)){
-      const sanitized = stored.filter(code => INVITE_CODES.includes(code));
-      const missing = INVITE_CODES.filter(code => !sanitized.includes(code));
-      return sanitized.concat(missing);
-    }
-  }catch(e){ }
-  return [...INVITE_CODES];
-}
-
-function persistInviteQueue(){
-  localStorage.setItem(INVITE_QUEUE_KEY, JSON.stringify(inviteQueue));
-}
-
-function updateInviteStatus(message, status = 'info'){
-  const statusEl = document.getElementById('inviteStatus');
-  if(!statusEl) return;
-  statusEl.textContent = message;
-  statusEl.setAttribute('data-status', status);
-}
-
-function showStartCard(){
-  document.getElementById('inviteCard').classList.add('hidden');
-  document.getElementById('startCard').classList.remove('hidden');
-}
-
-function hideStartCard(){
-  document.getElementById('inviteCard').classList.remove('hidden');
-  document.getElementById('startCard').classList.add('hidden');
-}
-
-function initInviteGate(){
-  inviteQueue = loadInviteQueue();
-  inviteValidated = localStorage.getItem(INVITE_VALID_KEY) === 'true';
-  const input = document.getElementById('inviteCodeInput');
-  if(input){
-    input.addEventListener('keydown', (event) => {
-      if(event.key === 'Enter'){
-        event.preventDefault();
-        validateInvite();
-      }
-    });
-  }
-  if(inviteValidated){
-    showStartCard();
-  } else {
-    hideStartCard();
-    updateInviteStatus('Add meg az invite kódodat a kezdéshez.', 'info');
-  }
-}
-
-function validateInvite(){
-  const input = document.getElementById('inviteCodeInput');
-  if(!input) return;
-  const code = normalizeInviteCode(input.value);
-  if(!code){
-    updateInviteStatus('Írj be egy meghívó kódot!', 'error');
-    inviteValidated = false;
-    localStorage.removeItem(INVITE_VALID_KEY);
-    hideStartCard();
-    return;
-  }
-  const index = inviteQueue.findIndex(item => normalizeInviteCode(item) === code);
-  if(index === -1){
-    updateInviteStatus('❌ Ez a meghívó kód nem érvényes.', 'error');
-    inviteValidated = false;
-    localStorage.removeItem(INVITE_VALID_KEY);
-    hideStartCard();
-    return;
-  }
-  const [matched] = inviteQueue.splice(index, 1);
-  inviteQueue.push(matched);
-  persistInviteQueue();
-  inviteValidated = true;
-  localStorage.setItem(INVITE_VALID_KEY, 'true');
-  input.value = '';
-  showStartCard();
-  track('invite_validated');
-}
-
-function startApp(){
-  if(!inviteValidated){
-    updateInviteStatus('Add meg az érvényes meghívó kódot a kezdéshez.', 'error');
-    hideStartCard();
-    return;
-  }
-  track('start_click');
-  goTo('profile');
-}
-
-// ============================================
 // NAVIGATION
 // ============================================
 
@@ -381,30 +578,24 @@ function toggleTheme(){
 }
 
 function goTo(screen) {
-  // képernyő elem lekérése
   const target = document.getElementById(`screen-${screen}`);
   if (!target) {
     console.error("❌ Screen not found:", screen);
     return;
   }
 
-  // képernyők váltása
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   target.classList.add('active');
 
-  // navbar frissítés
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
   const nb = document.getElementById(`nav-${screen}`);
   if (nb) nb.classList.add('active');
 
-  // navbar mindig látszik — nincs 'welcome' screen
   const nav = document.getElementById('main-nav');
-  if (nav) nav.classList.add('show');
+  if (nav && currentUser) nav.classList.add('show');
 
-  // analytics
   track('view_' + screen);
 
-  // extra funkciók
   if (screen === 'history') loadHistory();
   if (screen === 'stats') loadStats();
 }
@@ -663,7 +854,7 @@ function loadStats(){
 
 function initShareWidget(){
   const dismissed = sessionStorage.getItem(SHARE_WIDGET_KEY);
-  if(!dismissed && inviteValidated){
+  if(!dismissed && currentUser){
     setTimeout(() => {
       const widget = document.getElementById('shareWidget');
       if(widget && !sessionStorage.getItem(SHARE_WIDGET_KEY)){
@@ -725,7 +916,7 @@ async function handleShare(){
 }
 
 // ============================================
-// VERSION MANAGEMENT - JAVÍTOTT!!!
+// VERSION MANAGEMENT
 // ============================================
 
 function checkVersion(){
@@ -735,14 +926,10 @@ function checkVersion(){
     
     console.log('[VERSION] 🔍 Check:', {last: lastVersion, current: currentVersion});
     
-    // KRITIKUS: Ha NEM egyezik, AZONNAL FRISSÍTJÜK!
     if (lastVersion !== currentVersion) {
       console.log('[VERSION] 🆕 Új verzió:', currentVersion);
-      
-      // AZONNAL FRISSÍTJÜK A localStorage-T!
       localStorage.setItem(VERSION_KEY, currentVersion);
       
-      // Ha van régi verzió (nem első futás), mutassuk a banner-t
       if (lastVersion) {
         showUpdateBanner();
         track('new_version_detected', { from: lastVersion, to: currentVersion });
@@ -768,7 +955,6 @@ function showUpdateBanner(){
 function reloadApp(){
   console.log('[VERSION] 🔄 Teljes újratöltés...');
   
-  // KRITIKUS: Töröljük a cache-t!
   if ('caches' in window) {
     caches.keys().then(names => {
       names.forEach(name => {
@@ -778,7 +964,6 @@ function reloadApp(){
     });
   }
   
-  // Service Worker unregister
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.getRegistrations().then(registrations => {
       registrations.forEach(registration => {
@@ -790,7 +975,6 @@ function reloadApp(){
   
   track('version_updated', { version: APP_VERSION });
   
-  // HARD RELOAD
   setTimeout(() => {
     window.location.reload();
   }, 500);
@@ -799,7 +983,6 @@ function reloadApp(){
 function manualVersionCheck(){
   console.log('[VERSION] 🔄 Manuális ellenőrzés...');
   
-  // Unregister + register SW
   if ('serviceWorker' in navigator && registration) {
     registration.unregister().then(() => {
       console.log('[SW] Unregistered');
@@ -812,7 +995,6 @@ function manualVersionCheck(){
     });
   }
   
-  // Verzió check
   const lastVersion = localStorage.getItem(VERSION_KEY);
   const currentVersion = APP_VERSION;
   
@@ -824,7 +1006,7 @@ function manualVersionCheck(){
 }
 
 // ============================================
-// SERVICE WORKER INIT - JAVÍTOTT & TISZTÁZOTT
+// SERVICE WORKER INIT
 // ============================================
 
 let registration;
@@ -835,29 +1017,24 @@ function initServiceWorker(){
     return;
   }
   
-  // ✅ SW üzenetek fogadása - CSAK BANNER MEGJELENÍTÉS, NINCS AUTO-RELOAD
   navigator.serviceWorker.addEventListener('message', (event) => {
     console.log('[SW] Üzenet érkezett:', event.data);
     
     if (event.data && event.data.type === 'NEW_VERSION') {
       console.log('[SW] 🎉 Új verzió észlelve:', event.data.version);
-      // CSAK banner megjelenítés, user dönt a reload-ról!
       showUpdateBanner();
     }
   });
   
-  // ✅ SW regisztráció (EGYETLEN HELYEN!)
   navigator.serviceWorker.register('/sw.js', {
-    updateViaCache: 'none'  // KRITIKUS!
+    updateViaCache: 'none'
   })
     .then(reg => {
       registration = reg;
       console.log('✅ Service Worker regisztrálva:', reg.scope);
       
-      // Azonnali update check
       reg.update();
       
-      // Új verzió detektálása
       reg.addEventListener('updatefound', () => {
         const newWorker = reg.installing;
         console.log('🔄 Új SW települ...');
@@ -870,7 +1047,6 @@ function initServiceWorker(){
         });
       });
       
-      // Periodikus check (60 sec)
       setInterval(() => {
         console.log('🔄 Periodikus SW update check...');
         reg.update();
@@ -880,7 +1056,6 @@ function initServiceWorker(){
       console.error('❌ Service Worker regisztráció hiba:', err);
     });
   
-  // Controller változás detektálása
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     console.log('🔄 Service Worker controller frissült!');
   });
@@ -891,26 +1066,19 @@ function initServiceWorker(){
 // ============================================
 
 (function init(){
-  const d = loadData();
-  if(d.profile){
-    document.getElementById('name').value = d.profile.name || '';
-    document.getElementById('age').value = d.profile.age || '';
-    document.getElementById('city').value = d.profile.city || '';
-    document.getElementById('income').value = d.profile.income || '';
-    document.getElementById('hours').value = d.profile.hoursPerWeek || '';
-  }
-  
-  // Numerikus input védelem beállítása
+  // Numerikus input védelem
   setupNumericInputs();
   
+  // Supabase + Auth init
   initSupabase();
-  initInviteGate();
+  
+  // Share widget
   initShareWidget();
   
-  // KRITIKUS: Verzió ellenőrzés AZONNAL!
+  // Verzió ellenőrzés
   checkVersion();
   
-  // Service Worker init (EGYETLEN HELYEN!)
+  // Service Worker
   initServiceWorker();
   
   // Build badge
@@ -931,5 +1099,5 @@ function initServiceWorker(){
   }
   
   console.log(`🚀 Munkaóra PRO v${APP_VERSION} betöltve`);
-  console.log('👤 User ID:', getUserId());
+  console.log('🔐 Auth rendszer aktív');
 })();
