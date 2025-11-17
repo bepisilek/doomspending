@@ -976,3 +976,194 @@ nav button.active svg {
     bottom: calc(var(--space) + env(safe-area-inset-bottom));
   }
 }
+/* ============================================
+   v8.0 CSS KIEGÉSZÍTÉSEK - AUTH UI
+   ============================================ */
+
+/* Add this to your existing styles.css */
+
+/* Auth Card */
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+}
+
+/* Auth Tabs */
+.auth-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: var(--space);
+  border-bottom: 2px solid var(--glass-border);
+}
+
+.auth-tab {
+  flex: 1;
+  height: 44px;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--duration) var(--ease);
+  font-family: inherit;
+}
+
+.auth-tab:hover {
+  color: var(--text);
+  background: var(--bg-alt);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.auth-tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+/* Auth Forms */
+.auth-form {
+  animation: fadeIn var(--duration) var(--ease);
+}
+
+.auth-status {
+  min-height: 1.5em;
+  padding: 12px;
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-top: 12px;
+  text-align: center;
+  transition: all var(--duration) var(--ease);
+}
+
+.auth-status[data-status="success"] {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+  border: 1px solid var(--success);
+}
+
+.auth-status[data-status="error"] {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+  border: 1px solid var(--error);
+}
+
+.auth-status[data-status="info"] {
+  background: rgba(11, 102, 255, 0.1);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+.auth-status:empty {
+  display: none;
+}
+
+/* Checkbox Label */
+.checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: var(--bg-alt);
+  border-radius: var(--radius);
+  border: 1px solid var(--glass-border);
+  cursor: pointer;
+  transition: all var(--duration) var(--ease);
+  margin: 8px 0;
+}
+
+.checkbox-label:hover {
+  background: var(--glass);
+  border-color: var(--primary);
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin: 2px 0 0 0;
+  cursor: pointer;
+  flex-shrink: 0;
+  accent-color: var(--primary);
+}
+
+.checkbox-label span {
+  flex: 1;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.checkbox-label input[type="checkbox"]:checked + span {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Auth Info */
+.auth-info {
+  padding: 16px;
+  background: var(--bg-alt);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.auth-info strong {
+  color: var(--text);
+  font-weight: 700;
+  margin-right: 8px;
+}
+
+/* Header Actions (logout button container) */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Logout Button */
+.logout-btn {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 12px;
+  background: var(--bg-alt);
+  border: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--duration) var(--ease);
+  font-size: 1.25rem;
+  padding: 0;
+}
+
+.logout-btn:hover {
+  transform: scale(1.05);
+  border-color: var(--error);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.logout-btn:active {
+  transform: scale(0.98);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .auth-tabs {
+    gap: 4px;
+  }
+  
+  .auth-tab {
+    font-size: 0.85rem;
+    height: 40px;
+  }
+  
+  .checkbox-label {
+    padding: 12px;
+  }
+  
+  .checkbox-label span {
+    font-size: 0.8rem;
+  }
+}
