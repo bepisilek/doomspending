@@ -1,5 +1,5 @@
 // ============================================
-// MUNKAÓRA PRO v5.0 - JAVÍTOTT VERZIÓKEZELÉS
+// MUNKAÓRA PRO v7.0 - JAVÍTOTT VERZIÓKEZELÉS + RLS
 // ============================================
 
 // Google Analytics
@@ -737,7 +737,7 @@ function manualVersionCheck(){
 }
 
 // ============================================
-// SERVICE WORKER INIT - JAVÍTOTT
+// SERVICE WORKER INIT - JAVÍTOTT & TISZTÁZOTT
 // ============================================
 
 let registration;
@@ -748,28 +748,24 @@ function initServiceWorker(){
     return;
   }
   
-  // SW üzenetek fogadása
+  // ✅ SW üzenetek fogadása - CSAK BANNER MEGJELENÍTÉS, NINCS AUTO-RELOAD
   navigator.serviceWorker.addEventListener('message', (event) => {
-    console.log('[SW] Üzenet:', event.data);
+    console.log('[SW] Üzenet érkezett:', event.data);
     
     if (event.data && event.data.type === 'NEW_VERSION') {
-      console.log('[SW] 🎉 Új verzió:', event.data.version);
+      console.log('[SW] 🎉 Új verzió észlelve:', event.data.version);
+      // CSAK banner megjelenítés, user dönt a reload-ról!
       showUpdateBanner();
-    }
-    
-    if (event.data && event.data.action === 'RELOAD') {
-      console.log('[SW] 🔄 Reload request');
-      // NE töltse újra automatikusan, hadd döntse el a user!
     }
   });
   
-  // SW regisztráció
+  // ✅ SW regisztráció (EGYETLEN HELYEN!)
   navigator.serviceWorker.register('/sw.js', {
     updateViaCache: 'none'  // KRITIKUS!
   })
     .then(reg => {
       registration = reg;
-      console.log('✅ Service Worker regisztrálva');
+      console.log('✅ Service Worker regisztrálva:', reg.scope);
       
       // Azonnali update check
       reg.update();
@@ -794,12 +790,12 @@ function initServiceWorker(){
       }, 60 * 1000);
     })
     .catch(err => {
-      console.error('❌ Service Worker hiba:', err);
+      console.error('❌ Service Worker regisztráció hiba:', err);
     });
   
-  // Controller változás
+  // Controller változás detektálása
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    console.log('🔄 Service Worker frissült!');
+    console.log('🔄 Service Worker controller frissült!');
   });
 }
 
@@ -824,7 +820,7 @@ function initServiceWorker(){
   // KRITIKUS: Verzió ellenőrzés AZONNAL!
   checkVersion();
   
-  // Service Worker init
+  // Service Worker init (EGYETLEN HELYEN!)
   initServiceWorker();
   
   // Build badge
