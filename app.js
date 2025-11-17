@@ -143,6 +143,93 @@ const quotes = [
 // DATA MANAGEMENT
 // ============================================
 
+// Numerikus input védelem
+function setupNumericInputs(){
+  const numericInputs = document.querySelectorAll('input[data-numeric]');
+  
+  numericInputs.forEach(input => {
+    const allowFloat = input.dataset.numeric === 'float';
+    
+    // Keydown esemény - megelőzés
+    input.addEventListener('keydown', (e) => {
+      const key = e.key;
+      
+      // Engedd a navigációs billentyűket
+      if (
+        key === 'Backspace' || 
+        key === 'Delete' || 
+        key === 'Tab' || 
+        key === 'ArrowLeft' || 
+        key === 'ArrowRight' ||
+        key === 'Home' ||
+        key === 'End' ||
+        (e.ctrlKey && (key === 'a' || key === 'c' || key === 'v' || key === 'x'))
+      ) {
+        return; // Engedjük ezeket
+      }
+      
+      // Engedd a számokat
+      if (key >= '0' && key <= '9') {
+        return;
+      }
+      
+      // Engedd a pontot/vesszőt float esetén (csak ha még nincs a stringben)
+      if (allowFloat && (key === '.' || key === ',')) {
+        const currentValue = input.value;
+        if (!currentValue.includes('.') && !currentValue.includes(',')) {
+          return; // Első pont/vessző OK
+        }
+      }
+      
+      // Minden mást blokkoljunk
+      e.preventDefault();
+    });
+    
+    // Input esemény - tisztítás
+    input.addEventListener('input', (e) => {
+      let value = e.target.value;
+      
+      if (allowFloat) {
+        // Vessző → pont
+        value = value.replace(',', '.');
+        // Csak számok és egy pont
+        value = value.replace(/[^0-9.]/g, '');
+        // Maximum egy pont
+        const parts = value.split('.');
+        if (parts.length > 2) {
+          value = parts[0] + '.' + parts.slice(1).join('');
+        }
+      } else {
+        // Csak számok
+        value = value.replace(/[^0-9]/g, '');
+      }
+      
+      e.target.value = value;
+    });
+    
+    // Paste esemény - tisztítás
+    input.addEventListener('paste', (e) => {
+      e.preventDefault();
+      let pastedText = (e.clipboardData || window.clipboardData).getData('text');
+      
+      if (allowFloat) {
+        pastedText = pastedText.replace(',', '.');
+        pastedText = pastedText.replace(/[^0-9.]/g, '');
+        const parts = pastedText.split('.');
+        if (parts.length > 2) {
+          pastedText = parts[0] + '.' + parts.slice(1).join('');
+        }
+      } else {
+        pastedText = pastedText.replace(/[^0-9]/g, '');
+      }
+      
+      document.execCommand('insertText', false, pastedText);
+    });
+  });
+  
+  console.log(`✅ ${numericInputs.length} numerikus input védve`);
+}
+
 function loadData(){
   try{ return JSON.parse(localStorage.getItem(STORE_KEY)) || { profile:{}, history:[] }; }
   catch(e){ return { profile:{}, history:[] }; }
@@ -812,6 +899,9 @@ function initServiceWorker(){
     document.getElementById('income').value = d.profile.income || '';
     document.getElementById('hours').value = d.profile.hoursPerWeek || '';
   }
+  
+  // Numerikus input védelem beállítása
+  setupNumericInputs();
   
   initSupabase();
   initInviteGate();
