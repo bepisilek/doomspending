@@ -826,23 +826,31 @@ nav button.active svg {
   top: var(--safe-area-top);
   left: 50%;
   transform: translateX(-50%);
-  padding: 14px 24px;
+  width: min(calc(100% - 32px), 480px);
+  padding: 16px 24px;
   background: linear-gradient(135deg, var(--warning), #d97706);
   color: #ffffff;
-  border-radius: 0 0 var(--radius-lg) 0;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   box-shadow: var(--shadow-xl);
   z-index: 200;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
   font-size: 0.875rem;
   font-weight: 600;
-  animation: slideDown 0.4s var(--ease);
+  animation: slideDownBanner 0.5s var(--ease);
 }
 
-@keyframes slideDown {
-  from { transform: translateX(-50%) translateY(-100%); opacity: 0; }
-  to { transform: translateX(-50%) translateY(0); opacity: 1; }
+@keyframes slideDownBanner {
+  from { 
+    transform: translateX(-50%) translateY(-100%); 
+    opacity: 0;
+  }
+  to { 
+    transform: translateX(-50%) translateY(0); 
+    opacity: 1;
+  }
 }
 
 .update-btn {
@@ -852,6 +860,7 @@ nav button.active svg {
   background: rgba(255, 255, 255, 0.25) !important;
   border: 1px solid rgba(255, 255, 255, 0.4) !important;
   width: auto !important;
+  flex-shrink: 0;
 }
 
 #build-badge {
@@ -1187,5 +1196,17 @@ nav button.active svg {
   
   .checkbox-label span {
     font-size: 0.8rem;
+  }
+  
+  .update-banner {
+    width: calc(100% - 16px);
+    padding: 14px 20px;
+    font-size: 0.8rem;
+  }
+  
+  .update-btn {
+    height: 32px !important;
+    padding: 0 16px !important;
+    font-size: 0.75rem !important;
   }
 }
