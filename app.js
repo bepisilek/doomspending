@@ -1,5 +1,5 @@
 // ============================================
-// MUNKAÓRA PRO v8.0 - SUPABASE AUTH + MARKETING OPT-IN
+// MUNKAÓRA PRO v8.1 - SUPABASE AUTH + OPTIMALIZÁLT
 // ============================================
 
 // Google Analytics
@@ -285,8 +285,16 @@ function handleAuthSuccess() {
   // Load profile data
   loadProfileData();
   
-  // Go to profile screen
-  goTo('profile');
+  // Check if profile is complete
+  const data = loadData();
+  const hasProfile = data.profile && data.profile.income && data.profile.hoursPerWeek;
+  
+  // Go to calculator if profile exists, otherwise to profile
+  if (hasProfile) {
+    goTo('calculator');
+  } else {
+    goTo('profile');
+  }
   
   track('auth_success');
 }
@@ -334,12 +342,12 @@ async function saveMarketingConsent(userId, consent) {
 }
 
 // ============================================
-// ANALYTICS - CSAK HA VAN MARKETING CONSENT
+// ANALYTICS
 // ============================================
 
 async function sendProfileToSupabase(profileData) {
   if (!supabase || !currentUser || !hasMarketingConsent) {
-    console.log('⚠️ Analytics nem küldve (nincs consent vagy user)');
+    console.log('⚠️ Profil analytics nem küldve (nincs consent vagy user)');
     return;
   }
   
@@ -365,7 +373,7 @@ async function sendProfileToSupabase(profileData) {
 
 async function sendDecisionToSupabase(decisionData) {
   if (!supabase || !currentUser) {
-    console.log('⚠️ Analytics nem küldve (nincs user)');
+    console.log('⚠️ Döntés analytics nem küldve (nincs user)');
     return;
   }
   
@@ -528,7 +536,6 @@ function saveData(data){
 function loadProfileData(){
   const d = loadData();
   if(d.profile){
-    document.getElementById('name').value = d.profile.name || '';
     document.getElementById('age').value = d.profile.age || '';
     document.getElementById('city').value = d.profile.city || '';
     document.getElementById('income').value = d.profile.income || '';
@@ -606,7 +613,6 @@ function goTo(screen) {
 
 function saveProfile(){
   const data = loadData();
-  const name = document.getElementById('name').value.trim();
   const age = parseNumberInput(document.getElementById('age').value);
   const city = document.getElementById('city').value.trim();
   const income = parseNumberInput(document.getElementById('income').value);
@@ -617,7 +623,7 @@ function saveProfile(){
     return;
   }
 
-  data.profile = { name, age, city, income, hoursPerWeek };
+  data.profile = { age, city, income, hoursPerWeek };
   saveData(data);
   sendProfileToSupabase(data.profile);
   track('profile_saved');
