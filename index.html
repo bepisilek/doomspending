@@ -16,8 +16,15 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Tivlo" />
 
-  <!-- Icons -->
-  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+  <!-- Apple Touch Icons - Multiple Sizes + Cache Busting -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon-180.png?v=820" />
+  <link rel="apple-touch-icon" sizes="167x167" href="/icons/apple-touch-icon-167.png?v=820" />
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-touch-icon-152.png?v=820" />
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-touch-icon-120.png?v=820" />
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon-180.png?v=820" />
+  <link rel="apple-touch-icon-precomposed" href="/icons/apple-touch-icon-180.png?v=820" />
+
+  <!-- Standard Icons -->
   <link rel="icon" type="image/svg+xml" href="/icons/icon-192.svg" />
 
   <!-- Theme -->
@@ -25,11 +32,11 @@
   <meta name="description" content="Számold ki, mennyi munkaórádba kerül egy vásárlás!" />
 
   <!-- Manifest -->
-  <link rel="manifest" href="/manifest.json" />
+  <link rel="manifest" href="/manifest.json?v=820" />
 
   <!-- Styles -->
   <link rel="stylesheet" href="/styles.css" />
-
+  
   <!-- Version.js -->
   <script src="/version.js"></script>
 
@@ -133,7 +140,7 @@
         </div>
       </section>
 
-      <!-- 2. Profil -->
+      <!-- Többi section ugyanaz mint eddig... -->
       <section id="screen-profile" class="screen">
         <header class="screen-header">
           <div>
@@ -167,7 +174,6 @@
         </div>
       </section>
 
-      <!-- 3. Kalkulátor -->
       <section id="screen-calculator" class="screen">
         <header class="screen-header">
           <div>
@@ -210,7 +216,6 @@
         </div>
       </section>
 
-      <!-- 4. Előzmények -->
       <section id="screen-history" class="screen">
         <header class="screen-header">
           <div>
@@ -228,7 +233,6 @@
         </div>
       </section>
 
-      <!-- 5. Statisztika -->
       <section id="screen-stats" class="screen">
         <header class="screen-header">
           <div>
@@ -249,7 +253,6 @@
             <div class="quote-text" id="dailyQuote"></div>
           </div>
 
-          <!-- Progress + Stats -->
           <div class="stats-grid">
             <div class="progress-card">
               <div class="progress-ring" id="ratioCircle">
@@ -298,7 +301,6 @@
     </main>
   </div>
 
-  <!-- Navigation -->
   <nav id="main-nav">
     <button id="nav-calculator" onclick="goTo('calculator')">
       <svg viewBox="0 0 24 24">
@@ -336,7 +338,6 @@
     </button>
   </nav>
 
-  <!-- App Logic -->
   <script src="/app.js"></script>
 
 </body>
