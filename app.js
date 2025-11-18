@@ -1,5 +1,5 @@
 // ============================================
-// MUNKAÓRA PRO v8.1 - SUPABASE AUTH + OPTIMALIZÁLT
+// MUNKAÓRA PRO v8.4 - SUPABASE AUTH + OPTIMALIZÁLT
 // ============================================
 
 // Google Analytics
@@ -925,6 +925,8 @@ async function handleShare(){
 // VERSION MANAGEMENT
 // ============================================
 
+let bannerShown = false; // Új flag, hogy csak egyszer mutassuk
+
 function checkVersion(){
   try {
     const lastVersion = localStorage.getItem(VERSION_KEY);
@@ -932,18 +934,21 @@ function checkVersion(){
     
     console.log('[VERSION] 🔍 Check:', {last: lastVersion, current: currentVersion});
     
-    if (lastVersion !== currentVersion) {
-      console.log('[VERSION] 🆕 Új verzió:', currentVersion);
+    // Első futás - csak mentés, nincs banner
+    if (!lastVersion) {
       localStorage.setItem(VERSION_KEY, currentVersion);
-      
-      if (lastVersion) {
-        showUpdateBanner();
-        track('new_version_detected', { from: lastVersion, to: currentVersion });
-      } else {
-        console.log('[VERSION] ✅ Első futás, verzió mentve');
-      }
+      console.log('[VERSION] ✅ Első futás, verzió mentve');
+      return;
+    }
+    
+    // Ha ELTÉR a verzió, mentsük el és mutassuk a bannert
+    if (lastVersion !== currentVersion) {
+      console.log('[VERSION] 🆕 Új verzió észlelve:', currentVersion);
+      localStorage.setItem(VERSION_KEY, currentVersion);
+      showUpdateBanner();
+      track('new_version_detected', { from: lastVersion, to: currentVersion });
     } else {
-      console.log('[VERSION] ✅ Verzió aktuális');
+      console.log('[VERSION] ✅ Verzió aktuális, banner nem szükséges');
     }
   } catch (error) {
     console.error('[VERSION] ❌ Hiba:', error);
@@ -951,9 +956,16 @@ function checkVersion(){
 }
 
 function showUpdateBanner(){
+  // Ha már megjelent, ne mutassuk újra
+  if (bannerShown) {
+    console.log('[VERSION] ⚠️ Banner már volt megjelenítve ebben a sessionben');
+    return;
+  }
+  
   const banner = document.getElementById('update-banner');
-  if (banner) {
+  if (banner && banner.classList.contains('hidden')) {
     banner.classList.remove('hidden');
+    bannerShown = true; // Jelöljük, hogy megjelent
     console.log('[VERSION] 🎉 Banner megjelenítve');
   }
 }
@@ -961,6 +973,13 @@ function showUpdateBanner(){
 function reloadApp(){
   console.log('[VERSION] 🔄 Teljes újratöltés...');
   
+  // Banner elrejtése
+  const banner = document.getElementById('update-banner');
+  if (banner) {
+    banner.classList.add('hidden');
+  }
+  
+  // Cache törlés
   if ('caches' in window) {
     caches.keys().then(names => {
       names.forEach(name => {
@@ -970,6 +989,7 @@ function reloadApp(){
     });
   }
   
+  // SW unregister
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.getRegistrations().then(registrations => {
       registrations.forEach(registration => {
@@ -981,8 +1001,9 @@ function reloadApp(){
   
   track('version_updated', { version: APP_VERSION });
   
+  // Hard reload
   setTimeout(() => {
-    window.location.reload();
+    window.location.reload(true);
   }, 500);
 }
 
@@ -1023,12 +1044,24 @@ function initServiceWorker(){
     return;
   }
   
+  // SW üzenetek figyelése - JAVÍTVA
   navigator.serviceWorker.addEventListener('message', (event) => {
     console.log('[SW] Üzenet érkezett:', event.data);
     
     if (event.data && event.data.type === 'NEW_VERSION') {
-      console.log('[SW] 🎉 Új verzió észlelve:', event.data.version);
-      showUpdateBanner();
+      const swVersion = event.data.version;
+      const storedVersion = localStorage.getItem(VERSION_KEY);
+      
+      console.log('[SW] Verzió check:', {sw: swVersion, stored: storedVersion});
+      
+      // CSAK akkor mutassuk a bannert, ha a SW verzió ÚJ
+      if (swVersion !== storedVersion && !bannerShown) {
+        console.log('[SW] 🎉 Új verzió a SW-től:', swVersion);
+        localStorage.setItem(VERSION_KEY, swVersion);
+        showUpdateBanner();
+      } else {
+        console.log('[SW] ✅ Verzió már aktuális vagy banner már megjelent');
+      }
     }
   });
   
@@ -1039,8 +1072,10 @@ function initServiceWorker(){
       registration = reg;
       console.log('✅ Service Worker regisztrálva:', reg.scope);
       
+      // Azonnal ellenőrizzük
       reg.update();
       
+      // Update event figyelése
       reg.addEventListener('updatefound', () => {
         const newWorker = reg.installing;
         console.log('🔄 Új SW települ...');
@@ -1048,20 +1083,22 @@ function initServiceWorker(){
         newWorker.addEventListener('statechange', () => {
           if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
             console.log('🎉 Új verzió telepítve!');
-            showUpdateBanner();
+            // Ne hívjuk meg automatikusan a showUpdateBanner()-t, a SW üzenet fogja
           }
         });
       });
       
+      // Periodikus ellenőrzés (ritkábban, 5 percenként)
       setInterval(() => {
         console.log('🔄 Periodikus SW update check...');
         reg.update();
-      }, 60 * 1000);
+      }, 5 * 60 * 1000); // 5 perc
     })
     .catch(err => {
       console.error('❌ Service Worker regisztráció hiba:', err);
     });
   
+  // Controller change figyelése
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     console.log('🔄 Service Worker controller frissült!');
   });
