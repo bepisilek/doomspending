@@ -18,6 +18,20 @@ let supabase = null;
 let currentUser = null;
 let hasMarketingConsent = false;
 
+function ensureSupabaseReady(statusElement){
+  if (supabase) return true;
+
+  const fallbackMessage = 'Az azonosítási szolgáltatás jelenleg nem érhető el. Kérlek frissítsd az oldalt, majd próbáld újra.';
+  if (statusElement) {
+    updateAuthStatus(statusElement, `❌ ${fallbackMessage}`, 'error');
+  } else {
+    alert(fallbackMessage);
+  }
+
+  console.warn('Supabase kliens nem érhető el.');
+  return false;
+}
+
 function initSupabase() {
   try {
     if (window.supabase && window.supabase.createClient) {
@@ -38,6 +52,8 @@ function initSupabase() {
       
       // Check current session
       checkSession();
+    } else {
+      console.error('❌ Supabase könyvtár nem tölthető be. Ellenőrizd a CDN elérhetőségét.');
     }
   } catch (error) {
     console.error('❌ Supabase init hiba:', error);
@@ -45,6 +61,12 @@ function initSupabase() {
 }
 
 async function checkSession() {
+  if (!supabase) {
+    console.warn('⚠️ Supabase kliens nem elérhető session ellenőrzéshez.');
+    showAuthScreen();
+    return;
+  }
+
   try {
     const { data: { session }, error } = await supabase.auth.getSession();
     if (error) throw error;
@@ -65,7 +87,9 @@ async function checkSession() {
 }
 
 async function loadMarketingConsent() {
-  if (!currentUser) return false;
+  if (!currentUser || !supabase) {
+    return false;
+  }
   
   try {
     const { data, error } = await supabase
@@ -144,7 +168,11 @@ async function handleSignup() {
     updateAuthStatus(statusEl, '❌ A jelszavak nem egyeznek!', 'error');
     return;
   }
-  
+
+  if (!ensureSupabaseReady(statusEl)) {
+    return;
+  }
+
   updateAuthStatus(statusEl, '⏳ Regisztráció folyamatban...', 'info');
   
   try {
@@ -195,7 +223,11 @@ async function handleLogin() {
     updateAuthStatus(statusEl, '❌ Érvénytelen email cím formátum!', 'error');
     return;
   }
-  
+
+  if (!ensureSupabaseReady(statusEl)) {
+    return;
+  }
+
   updateAuthStatus(statusEl, '⏳ Bejelentkezés...', 'info');
   
   try {
@@ -226,6 +258,10 @@ async function handleLogin() {
 }
 
 async function handleLogout() {
+  if (!ensureSupabaseReady()) {
+    return;
+  }
+
   try {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
@@ -244,7 +280,8 @@ async function handleLogout() {
 
 async function handleForgotPassword() {
   const email = document.getElementById('loginEmail').value.trim();
-  
+  const statusEl = document.getElementById('loginStatus');
+
   if (!email) {
     alert('Add meg az email címedet az email mezőben!');
     return;
@@ -254,7 +291,11 @@ async function handleForgotPassword() {
     alert('Érvénytelen email cím formátum!');
     return;
   }
-  
+
+  if (!ensureSupabaseReady(statusEl)) {
+    return;
+  }
+
   try {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: window.location.origin
@@ -323,6 +364,10 @@ function updateAuthStatus(element, message, status = 'info') {
 }
 
 async function saveMarketingConsent(userId, consent) {
+  if (!supabase) {
+    return;
+  }
+
   try {
     const { error } = await supabase
       .from('marketing_consents')
@@ -350,14 +395,21 @@ async function sendProfileToSupabase(profileData) {
     console.log('⚠️ Profil analytics nem küldve (nincs consent vagy user)');
     return;
   }
-  
+
   try {
+    const safeProfile = {
+      age: toFiniteNumber(profileData?.age, null),
+      city: sanitizeTextInput(profileData?.city || '', { maxLength: MAX_CITY_LENGTH }) || null,
+      income: toFiniteNumber(profileData?.income, null),
+      hoursPerWeek: toFiniteNumber(profileData?.hoursPerWeek, null)
+    };
+
     const analyticsData = {
       user_id: currentUser.id,
-      age: profileData.age || null,
-      city: profileData.city || null,
-      income: profileData.income || null,
-      hours_per_week: profileData.hoursPerWeek || null,
+      age: safeProfile.age,
+      city: safeProfile.city,
+      income: safeProfile.income,
+      hours_per_week: safeProfile.hoursPerWeek,
       updated_at: new Date().toISOString()
     };
     
@@ -376,15 +428,25 @@ async function sendDecisionToSupabase(decisionData) {
     console.log('⚠️ Döntés analytics nem küldve (nincs user)');
     return;
   }
-  
+
   try {
+    if (!ALLOWED_DECISIONS.has(decisionData.decision)) {
+      console.warn('⚠️ Ismeretlen döntés típus, analytics küldés kihagyva.');
+      return;
+    }
+
+    const safeProduct = sanitizeTextInput(decisionData.product || '', { maxLength: MAX_PRODUCT_LENGTH }) || 'Ismeretlen tétel';
+    const safeCategory = sanitizeTextInput(decisionData.category || DEFAULT_CATEGORY, { allowBasicPunctuation: false, maxLength: 40 }) || DEFAULT_CATEGORY;
+    const safePrice = toFiniteNumber(decisionData.price, 0);
+    const safeHours = toFiniteNumber(decisionData.hours, 0);
+
     const analyticsData = {
       user_id: currentUser.id,
-      product: decisionData.product,
-      price: decisionData.price,
-      hours: decisionData.hours,
+      product: safeProduct,
+      price: safePrice,
+      hours: safeHours,
       decision: decisionData.decision,
-      category: decisionData.category || 'other',
+      category: safeCategory,
       created_at: new Date().toISOString()
     };
     
@@ -407,6 +469,13 @@ const STORE_KEY = 'munkaora_data';
 const SHARE_WIDGET_KEY = 'munkaora_share_widget_dismissed';
 const APP_URL = 'https://doomspending.vercel.app/';
 const SHARE_MESSAGE = 'Ez az app lefordítja az árakat időre. Nézd meg!';
+
+const ALLOWED_DECISIONS = new Set(['megsporolom', 'megveszem']);
+const DEFAULT_CATEGORY = 'other';
+const MAX_PRODUCT_LENGTH = 80;
+const MAX_CITY_LENGTH = 80;
+
+let memoryStore = createEmptyStore();
 
 let selectedCategory = 'other';
 let currentProduct = null;
@@ -440,6 +509,63 @@ const quotes = [
 // ============================================
 // DATA MANAGEMENT
 // ============================================
+
+function createEmptyStore(){
+  return { profile: {}, history: [] };
+}
+
+function cloneStore(data){
+  return JSON.parse(JSON.stringify(data || createEmptyStore()));
+}
+
+function toFiniteNumber(value, fallback = 0){
+  const num = Number(value);
+  return Number.isFinite(num) ? num : fallback;
+}
+
+function sanitizeTextInput(value, { maxLength = 120, allowBasicPunctuation = true } = {}){
+  if (value === undefined || value === null) return '';
+
+  let sanitized = String(value);
+  if (sanitized.normalize) {
+    sanitized = sanitized.normalize('NFKC');
+  }
+
+  sanitized = sanitized.replace(/[\u0000-\u001F\u007F]/g, '');
+  sanitized = sanitized.replace(/[<>]/g, '');
+  sanitized = sanitized.replace(/\s+/g, ' ').trim();
+
+  if (!allowBasicPunctuation) {
+    sanitized = sanitized.replace(/[^\p{L}\p{N}\s-]/gu, '');
+  }
+
+  if (maxLength > 0) {
+    sanitized = sanitized.slice(0, maxLength);
+  }
+
+  return sanitized;
+}
+
+function sanitizeHistoryEntry(entry = {}){
+  const normalizedEntry = entry && typeof entry === 'object' ? entry : {};
+  const safeDecision = ALLOWED_DECISIONS.has(normalizedEntry.decision) ? normalizedEntry.decision : 'megveszem';
+
+  return {
+    product: sanitizeTextInput(normalizedEntry.product || '', { maxLength: MAX_PRODUCT_LENGTH }),
+    price: toFiniteNumber(normalizedEntry.price, 0),
+    hours: toFiniteNumber(normalizedEntry.hours, 0),
+    decision: safeDecision,
+    category: sanitizeTextInput(normalizedEntry.category || DEFAULT_CATEGORY, { allowBasicPunctuation: false, maxLength: 40 }) || DEFAULT_CATEGORY,
+    ts: Number.isFinite(Number(normalizedEntry.ts)) ? Number(normalizedEntry.ts) : Date.now()
+  };
+}
+
+function getValidHistoryEntries(data){
+  if (!data || !Array.isArray(data.history)) {
+    return [];
+  }
+  return data.history.filter(item => item && typeof item === 'object' && ALLOWED_DECISIONS.has(item.decision));
+}
 
 // Numerikus input védelem
 function setupNumericInputs(){
@@ -525,12 +651,55 @@ function setupNumericInputs(){
 }
 
 function loadData(){
-  try{ return JSON.parse(localStorage.getItem(STORE_KEY)) || { profile:{}, history:[] }; }
-  catch(e){ return { profile:{}, history:[] }; }
+  try {
+    if (typeof localStorage === 'undefined') {
+      throw new Error('localStorage unavailable');
+    }
+
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) {
+      memoryStore = createEmptyStore();
+      return cloneStore(memoryStore);
+    }
+
+    const parsed = JSON.parse(raw);
+    const normalized = {
+      profile: typeof parsed?.profile === 'object' && parsed.profile !== null ? parsed.profile : {},
+      history: Array.isArray(parsed?.history) ? parsed.history.map(sanitizeHistoryEntry) : []
+    };
+
+    memoryStore = normalized;
+    return cloneStore(normalized);
+  } catch (error) {
+    if (error?.message !== 'localStorage unavailable') {
+      console.warn('⚠️ LocalStorage betöltési hiba, memória tárolóra esünk vissza.', error);
+    }
+
+    if (!memoryStore) {
+      memoryStore = createEmptyStore();
+    }
+
+    return cloneStore(memoryStore);
+  }
 }
 
-function saveData(data){ 
-  localStorage.setItem(STORE_KEY, JSON.stringify(data)); 
+function saveData(data){
+  const normalized = {
+    profile: typeof data?.profile === 'object' && data.profile !== null ? data.profile : {},
+    history: Array.isArray(data?.history) ? data.history.map(sanitizeHistoryEntry) : []
+  };
+
+  memoryStore = normalized;
+
+  try {
+    if (typeof localStorage === 'undefined') {
+      throw new Error('localStorage unavailable');
+    }
+
+    localStorage.setItem(STORE_KEY, JSON.stringify(normalized));
+  } catch (error) {
+    console.warn('⚠️ LocalStorage írási hiba, adatok csak memóriában elérhetőek.', error);
+  }
 }
 
 function loadProfileData(){
@@ -614,7 +783,7 @@ function goTo(screen) {
 function saveProfile(){
   const data = loadData();
   const age = parseNumberInput(document.getElementById('age').value);
-  const city = document.getElementById('city').value.trim();
+  const city = sanitizeTextInput(document.getElementById('city').value, { maxLength: MAX_CITY_LENGTH });
   const income = parseNumberInput(document.getElementById('income').value);
   const hoursPerWeek = parseNumberInput(document.getElementById('hours').value, true);
 
@@ -642,7 +811,7 @@ function calculate(){
     goTo('profile');
     return;
   }
-  const product = document.getElementById('product').value.trim();
+  const product = sanitizeTextInput(document.getElementById('product').value, { maxLength: MAX_PRODUCT_LENGTH });
   const price = parseNumberInput(document.getElementById('price').value);
   if(!product || !price){
     alert('Add meg a termék nevét és árát!');
@@ -698,14 +867,20 @@ function saveDecision(decision){
     alert('Előbb végezz el egy kalkulációt!');
     return;
   }
-  
+
+  if (!ALLOWED_DECISIONS.has(decision)) {
+    alert('Ismeretlen döntéstípus!');
+    return;
+  }
+
   const data = loadData();
+  const safeCategory = sanitizeTextInput(selectedCategory || DEFAULT_CATEGORY, { allowBasicPunctuation: false, maxLength: 40 }) || DEFAULT_CATEGORY;
   const decisionData = {
     product: currentProduct,
     price: currentPrice,
     hours: currentHours,
     decision,
-    category: selectedCategory,
+    category: safeCategory,
     ts: Date.now()
   };
   
@@ -731,30 +906,35 @@ function saveDecision(decision){
 
 function loadHistory(){
   const data = loadData();
+  const history = getValidHistoryEntries(data);
   const list = document.getElementById('history-list');
-  
-  if(!data.history.length){
+
+  if(!history.length){
     list.innerHTML = '<div class="card"><p>Még nincs előzmény. Készíts egy kalkulációt!</p></div>';
     return;
   }
-  
-  const sorted = [...data.history].reverse();
+
+  const sorted = [...history].reverse();
   list.innerHTML = sorted.map(item => {
     const icon = item.decision === 'megsporolom' ? '💚' : '💸';
     const cls = item.decision === 'megsporolom' ? 'saved' : 'spent';
-    const date = new Date(item.ts).toLocaleDateString('hu-HU');
+    const price = toFiniteNumber(item.price, 0);
+    const hours = toFiniteNumber(item.hours, 0);
+    const safeProduct = sanitizeTextInput(item.product || '', { maxLength: MAX_PRODUCT_LENGTH }) || 'Ismeretlen tétel';
+    const parsedDate = new Date(item.ts);
+    const date = Number.isNaN(parsedDate.getTime()) ? '' : parsedDate.toLocaleDateString('hu-HU');
     return `
       <div class="card history-item ${cls}">
         <div class="history-icon">${icon}</div>
         <div class="history-content">
-          <h3>${escapeHtml(item.product)}</h3>
-          <p>${item.price.toLocaleString('hu-HU')} Ft • ${item.hours} óra • ${date}</p>
+          <h3>${escapeHtml(safeProduct)}</h3>
+          <p>${price.toLocaleString('hu-HU')} Ft • ${hours} óra • ${date}</p>
         </div>
       </div>
     `;
   }).join('');
-  
-  track('history_loaded', { count: data.history.length });
+
+  track('history_loaded', { count: history.length });
 }
 
 // ============================================
@@ -762,8 +942,9 @@ function loadHistory(){
 // ============================================
 
 function calcStreak(data){
-  if(!data.history.length) return 0;
-  const sorted = [...data.history].sort((a,b)=> b.ts - a.ts);
+  const history = getValidHistoryEntries(data);
+  if(!history.length) return 0;
+  const sorted = [...history].sort((a,b)=> b.ts - a.ts);
   const today = new Date().toDateString();
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
@@ -788,10 +969,11 @@ function calcStreak(data){
 
 function loadStats(){
   const data = loadData();
-  
-  const saved = data.history.filter(i=> i.decision === 'megsporolom');
-  const spent = data.history.filter(i=> i.decision === 'megveszem');
-  const total = data.history.length;
+  const history = getValidHistoryEntries(data);
+
+  const saved = history.filter(i=> i.decision === 'megsporolom');
+  const spent = history.filter(i=> i.decision === 'megveszem');
+  const total = history.length;
   const ratio = total ? Math.round((saved.length / total) * 100) : 0;
   
   const ratioEl = document.getElementById('ratio');
@@ -803,8 +985,8 @@ function loadStats(){
   const ratioCircle = document.getElementById('ratioCircle');
   if(ratioCircle){ ratioCircle.style.setProperty('--progress', (ratio * 3.6) + 'deg'); }
   
-  const savedHours = saved.reduce((sum,i)=> sum + Number(i.hours), 0);
-  const spentHours = spent.reduce((sum,i)=> sum + Number(i.hours), 0);
+  const savedHours = saved.reduce((sum,i)=> sum + toFiniteNumber(i.hours, 0), 0);
+  const spentHours = spent.reduce((sum,i)=> sum + toFiniteNumber(i.hours, 0), 0);
   const streak = calcStreak(data);
   
   document.getElementById('savedHours').innerText = savedHours.toFixed(1);
@@ -823,7 +1005,7 @@ function loadStats(){
     const d = new Date(now);
     d.setDate(d.getDate() - i);
     const dayStr = d.toDateString();
-    const count = data.history.filter(item => new Date(item.ts).toDateString() === dayStr).length;
+    const count = history.filter(item => new Date(item.ts).toDateString() === dayStr).length;
     dayCounts.push(count);
   }
   
@@ -859,11 +1041,22 @@ function loadStats(){
 // ============================================
 
 function initShareWidget(){
-  const dismissed = sessionStorage.getItem(SHARE_WIDGET_KEY);
+  let dismissed = false;
+  try {
+    dismissed = sessionStorage.getItem(SHARE_WIDGET_KEY);
+  } catch (error) {
+    console.warn('⚠️ SessionStorage nem elérhető a megosztás widgethez.', error);
+  }
   if(!dismissed && currentUser){
     setTimeout(() => {
       const widget = document.getElementById('shareWidget');
-      if(widget && !sessionStorage.getItem(SHARE_WIDGET_KEY)){
+      let alreadyDismissed = false;
+      try {
+        alreadyDismissed = sessionStorage.getItem(SHARE_WIDGET_KEY);
+      } catch (error) {
+        console.warn('⚠️ SessionStorage nem elérhető a megosztás widgethez.', error);
+      }
+      if(widget && !alreadyDismissed){
         widget.classList.add('show');
         track('share_widget_shown');
       }
@@ -876,33 +1069,44 @@ function closeShareWidget(event){
   const widget = document.getElementById('shareWidget');
   if(widget){
     widget.classList.remove('show');
-    sessionStorage.setItem(SHARE_WIDGET_KEY, 'true');
+    try {
+      sessionStorage.setItem(SHARE_WIDGET_KEY, 'true');
+    } catch (error) {
+      console.warn('⚠️ SessionStorage nem elérhető a megosztás widget mentéséhez.', error);
+    }
     track('share_widget_dismissed');
   }
 }
 
 async function handleShare(){
   const shareText = `${SHARE_MESSAGE}\n\n${APP_URL}`;
-  
-  try {
-    await navigator.clipboard.writeText(shareText);
-    track('share_clipboard_success');
-    
-    const bubble = document.querySelector('.share-bubble');
-    const originalText = bubble.innerHTML;
-    bubble.innerHTML = `
-      <div class="share-icon">✅</div>
-      <div class="share-text">
-        Link másolva!
-        <small>Illeszd be bárhova</small>
-      </div>
-    `;
-    
-    setTimeout(() => {
-      bubble.innerHTML = originalText;
-    }, 2000);
-  } catch(err) {
-    console.error('Clipboard error:', err);
+
+  const bubble = document.querySelector('.share-bubble');
+
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(shareText);
+      track('share_clipboard_success');
+
+      if (bubble) {
+        const originalText = bubble.innerHTML;
+        bubble.innerHTML = `
+          <div class="share-icon">✅</div>
+          <div class="share-text">
+            Link másolva!
+            <small>Illeszd be bárhova</small>
+          </div>
+        `;
+
+        setTimeout(() => {
+          bubble.innerHTML = originalText;
+        }, 2000);
+      }
+    } catch(err) {
+      console.error('Clipboard error:', err);
+    }
+  } else {
+    console.warn('⚠️ Clipboard API nem támogatott ezen az eszközön.');
   }
 
   if(navigator.share){
