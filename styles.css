@@ -127,8 +127,8 @@ p {
   width: min(100%, 480px);
   min-height: 100dvh;
   margin: 0 auto;
-  /* KÉZELT PADDING: Fent fix hely a fejlécnek, lent a NAV sávnak */
-  padding: calc(70px + var(--safe-area-top)) var(--space) calc(90px + var(--safe-area-bottom));
+  /* FIX: Korrigált padding felül és alul, hogy helyet hagyjon a fixed headernek és a fixed navbar-nak */
+  padding: calc(90px + var(--safe-area-top)) var(--space) calc(100px + var(--safe-area-bottom));
   position: relative;
 }
 
@@ -186,9 +186,9 @@ p {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px var(--space-lg);
-  margin: 0 calc(-1 * var(--space));
-  position: fixed; /* Rögzítve a lap tetejére */
+  padding: 16px var(--space); /* FIX: Fixált padding, hogy illeszkedjen az app-shell belső paddingjéhez */
+  margin: 0;
+  position: fixed; 
   top: var(--safe-area-top);
   left: 50%;
   transform: translateX(-50%);
@@ -198,10 +198,10 @@ p {
   background: var(--glass);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--glass-border);
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.03); /* Enyhe árnyék, hogy kiemelkedjen */
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.03); 
 }
 
-/* Welcome Screen Header Fix */
+/* Welcome Screen Header Fix - Itt még relatív helyzetű a tartalom */
 #screen-welcome .screen-header {
   position: relative;
   top: auto;
@@ -210,11 +210,12 @@ p {
   box-shadow: none;
   border-bottom: none;
   margin-bottom: var(--space);
+  padding: 0;
 }
 
 /* Theme Toggle a headerben */
 .screen-header .theme-toggle {
-    margin-right: 0; /* Megszüntetjük a margót, mert a actions group kezeli */
+    margin-right: 0; 
 }
 
 /* Welcome Screen */
@@ -378,8 +379,8 @@ p {
   font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-secondary);
-  margin-bottom: -12px; /* Margó optimalizálás a mezőhöz */
-  padding-top: 4px; /* Kis térköz a címkék között */
+  margin-bottom: -12px; 
+  padding-top: 4px; 
 }
 
 input {
@@ -905,7 +906,7 @@ nav button.active {
 nav button.active svg {
   fill: #ffffff;
   stroke: #ffffff;
-  stroke-width: 2; /* Visszaállítjuk a vastagságot, ha ikonban van fill */
+  stroke-width: 2; 
 }
 
 
@@ -1342,10 +1343,11 @@ nav button.active svg {
   transition: transform var(--duration) var(--ease);
   display: flex;
   flex-direction: column;
-  padding: var(--space); /* Optimalizálva: csak oldalra és alulra kell térköz */
+  /* FIX: Az egész sidebár tartalma scrollable legyen, ha nem fér el */
+  padding: var(--space); 
   padding-top: calc(var(--space) + var(--safe-area-top)); 
   overflow-y: auto;
-  gap: 16px; /* Csökkentett gap */
+  gap: 16px; 
 }
 
 .sidebar-menu.open .sidebar-content {
@@ -1393,12 +1395,13 @@ nav button.active svg {
 }
 
 .sidebar-stack {
-  gap: 16px;
-  padding-bottom: 0; /* A tartalom belüli térközt a form stack kezeli */
+  gap: 12px; /* Még kisebb gap a sidebáron belüli stack-ben */
+  padding-bottom: 0; 
 }
 
 .sidebar-footer {
-  margin-top: auto;
+  /* FIX: Biztosítjuk, hogy a footer fix helyen legyen a görgethető tartalomban */
+  margin-top: 16px; 
   padding-top: var(--space);
 }
 
@@ -1422,13 +1425,13 @@ nav button.active svg {
   overflow: hidden;
   border: 1px solid var(--glass-border);
   box-shadow: var(--shadow);
-  background: var(--glass); /* Fix háttér a konzisztenciához */
+  background: var(--glass); 
 }
 
 .sidebar-summary {
-  list-style: none; /* Summary alap list point eltávolítása */
+  list-style: none; 
   cursor: pointer;
-  padding: 16px 20px; /* Csökkentett padding a helytakarékosságért */
+  padding: 16px 20px; 
   background: var(--glass);
   margin: 0;
   transition: background 0.2s var(--ease);
@@ -1471,7 +1474,7 @@ nav button.active svg {
 /* Tartalom stílusa a lenyitható részben */
 .sidebar-details-group .sidebar-stack {
   padding: 0 var(--space-lg) var(--space-lg);
-  gap: 12px; /* A kártyák közötti kisebb térköz */
+  gap: 12px; 
   background: var(--glass); 
 }
 
