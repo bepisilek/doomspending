@@ -126,11 +126,11 @@
         </div>
       </section>
 
-      <section id="screen-profile" class="screen">
+      <section id="screen-calculator" class="screen">
         <header class="screen-header">
           <div>
-            <span class="caption">PROFIL</span>
-            <h2>⚙️ Adataid</h2>
+            <span class="caption">KALKULÁTOR</span>
+            <h2>🧮 Számolj</h2>
           </div>
           <div class="header-actions">
             <div class="theme-toggle" onclick="toggleTheme()" title="Témák váltása">
@@ -138,37 +138,11 @@
                 <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
               </svg>
             </div>
-            <button class="logout-btn" onclick="handleLogout()" title="Kijelentkezés">🚪</button>
-          </div>
-        </header>
-        <div class="content-stack">
-          <div class="card">
-            <p class="auth-info">
-              <strong>Email:</strong> <span id="userEmail">-</span>
-            </p>
-          </div>
-          <div class="card">
-            <div class="form-stack">
-              <input id="age" placeholder="🎂 Életkor (opcionális)" type="text" inputmode="numeric" data-numeric="int" />
-              <input id="city" placeholder="📍 Település (opcionális)" />
-              <input id="income" placeholder="💰 Havi nettó jövedelem (Ft)" type="text" inputmode="numeric" data-numeric="int" />
-              <input id="hours" placeholder="⏰ Heti munkaóra" type="text" inputmode="decimal" data-numeric="float" />
-              <button onclick="saveProfile()">💾 Mentés és továbblépés</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="screen-calculator" class="screen">
-        <header class="screen-header">
-          <div>
-            <span class="caption">KALKULÁTOR</span>
-            <h2>🧮 Számolj</h2>
-          </div>
-          <div class="theme-toggle" onclick="toggleTheme()">
-            <svg viewBox="0 0 24 24">
-              <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
-            </svg>
+            <button class="menu-toggle-btn" onclick="toggleSidebarMenu()" title="Menü">
+              <svg viewBox="0 0 24 24">
+                <path d="M4 6h16M4 12h16m-7 6h7"/>
+              </svg>
+            </button>
           </div>
         </header>
 
@@ -207,11 +181,17 @@
             <span class="caption">TÖRTÉNET</span>
             <h2>📜 Előzmények</h2>
           </div>
-          <div class="theme-toggle" onclick="toggleTheme()">
-            <svg viewBox="0 0 24 24">
-              <path d="M12 6v6l4 2m6 0a10 
-10 0 1 1-20 0 10 10 0 0 1 20 0z" />
-            </svg>
+          <div class="header-actions">
+            <div class="theme-toggle" onclick="toggleTheme()" title="Témák váltása">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+              </svg>
+            </div>
+            <button class="menu-toggle-btn" onclick="toggleSidebarMenu()" title="Menü">
+              <svg viewBox="0 0 24 24">
+                <path d="M4 6h16M4 12h16m-7 6h7"/>
+              </svg>
+            </button>
           </div>
         </header>
         <div class="content-stack">
@@ -225,10 +205,17 @@
             <span class="caption">STATISZTIKA</span>
             <h2>📊 Teljesítmény</h2>
           </div>
-          <div class="theme-toggle" onclick="toggleTheme()">
-            <svg viewBox="0 0 24 24">
-              <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
-            </svg>
+          <div class="header-actions">
+            <div class="theme-toggle" onclick="toggleTheme()" title="Témák váltása">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+              </svg>
+            </div>
+            <button class="menu-toggle-btn" onclick="toggleSidebarMenu()" title="Menü">
+              <svg viewBox="0 0 24 24">
+                <path d="M4 6h16M4 12h16m-7 6h7"/>
+              </svg>
+            </button>
           </div>
         </header>
 
@@ -286,6 +273,63 @@
 
     </main>
   </div>
+  
+  <div id="sidebarMenu" class="sidebar-menu">
+    <div class="sidebar-backdrop" onclick="toggleSidebarMenu()"></div>
+    <div class="sidebar-content">
+      <header class="sidebar-header">
+        <div>
+          <span class="caption">PROFIL</span>
+          <h2>⚙️ Adataid</h2>
+        </div>
+        <button class="sidebar-close-btn" onclick="toggleSidebarMenu()" title="Bezárás">
+          <svg viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </header>
+      
+      <div id="sidebar-profile-content" class="content-stack sidebar-stack">
+        <div class="card">
+          <p class="auth-info">
+            <strong>Email:</strong> <span id="userEmail">-</span>
+          </p>
+        </div>
+        <div class="card">
+          <div class="form-stack">
+            <input id="age" placeholder="🎂 Életkor (opcionális)" type="text" inputmode="numeric" data-numeric="int" />
+            <input id="city" placeholder="📍 Település (opcionális)" />
+            <input id="income" placeholder="💰 Havi nettó jövedelem (Ft)" type="text" inputmode="numeric" data-numeric="int" />
+            <input id="hours" placeholder="⏰ Heti munkaóra" type="text" inputmode="decimal" data-numeric="float" />
+            <button onclick="saveProfile()">💾 Mentés</button>
+          </div>
+        </div>
+        
+        <div class="sidebar-footer">
+          <button class="logout-btn secondary-btn" onclick="handleLogout()">🚪 Kijelentkezés</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <section id="screen-onboarding" class="screen">
+    <div class="welcome-hero">
+      <div class="welcome-pill">👋 Szia!</div>
+
+      <h1>Számolj tudatosan</h1>
+
+      <p class="welcome-copy">Kérlek, add meg pénzügyi adataidat a kezdéshez. Ezek alapján számoljuk ki a munkaórákat.</p>
+
+      <div class="card auth-card">
+        <div class="form-stack">
+          <input id="onboardingAge" placeholder="🎂 Életkor (opcionális)" type="text" inputmode="numeric" data-numeric="int" />
+          <input id="onboardingCity" placeholder="📍 Település (opcionális)" />
+          <input id="onboardingIncome" placeholder="💰 Havi nettó jövedelem (Ft)" type="text" inputmode="numeric" data-numeric="int" />
+          <input id="onboardingHours" placeholder="⏰ Heti munkaóra" type="text" inputmode="decimal" data-numeric="float" />
+          <button onclick="saveOnboardingProfile()">🚀 Kezdés</button>
+        </div>
+      </div>
+      <p class="stat-text">Adataid biztonságban vannak. A részleteket a Profil menüben tudod módosítani.</p>
+    </div>
+  </section>
 
   <nav id="main-nav">
     <button id="nav-calculator" onclick="goTo('calculator')">
@@ -311,16 +355,6 @@
 0h4V4h-4v16zm6 0h4v-7h-4v7z" />
       </svg>
       Statisztika
-    </button>
-
-    <button id="nav-profile" onclick="goTo('profile')">
-      <svg viewBox="0 0 24 24">
-        <path d="M12 
-12a5 5 0 1 1 0-10 5 5 0 0 1 0 
-10zm7 
-10H5a7 7 0 0 1 14 0z" />
-      </svg>
-      Profil
     </button>
   </nav>
 
