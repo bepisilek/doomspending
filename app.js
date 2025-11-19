@@ -1346,6 +1346,8 @@ function initServiceWorker(){
   });
 }
 
+// ... (app.js vége)
+
 // ============================================
 // INITIALIZATION
 // ============================================
@@ -1360,7 +1362,7 @@ function initServiceWorker(){
   // Share widget
   initShareWidget();
   
-  // Verzió ellenőrzés (rögtön a betöltéskor)
+  // Verzió ellenőrzés
   checkVersion();
   
   // Service Worker
@@ -1368,7 +1370,7 @@ function initServiceWorker(){
   
   // Build badge
   const buildBadge = document.getElementById('build-badge');
-  if(buildBadge){
+  if(buildBadge && window.APP_VERSION){ // Hozzáadtam a window.APP_VERSION ellenőrzést
     buildBadge.innerHTML = `
       v${window.APP_VERSION} PWA
       <button
