@@ -1,5 +1,5 @@
 // ============================================
-// MUNKAÓRA PRO v10.1 - GOALS & ONBOARDING + LOGIN FIX
+// MUNKAÓRA PRO v10.1 - GOALS & ONBOARDING + LOGIN FIX + SIDEBAR ENHANCEMENTS
 // ============================================
 
 // Google Analytics
@@ -50,8 +50,6 @@ function initSupabase() {
         }
       });
       
-      // Check current session - CSAK a kezdeti bejelentkezés után ellenőrizzük a sessiont
-      // checkSession(); // Ezt áttesszük az init() blokk végére a stabilabb futási sorrendért
     } else {
       console.error('❌ Supabase könyvtár nem tölthető be. Ellenőrizd a CDN elérhetőségét.');
     }
@@ -98,7 +96,7 @@ async function loadMarketingConsent() {
       .eq('user_id', currentUser.id)
       .single();
     
-    if (error && error.code !== 'PGRST116') { // PGRST116 = not found
+    if (error && error.code !== 'PGRST116') {
       console.error('Marketing consent load error:', error);
       return false;
     }
@@ -136,7 +134,6 @@ function switchAuthTab(tab) {
 }
 
 function validateEmail(email) {
-  // Basic email validation
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return re.test(email);
 }
@@ -148,7 +145,6 @@ async function handleSignup() {
   const marketingConsent = document.getElementById('marketingConsent').checked;
   const statusEl = document.getElementById('signupStatus');
   
-  // Validation
   if (!email || !password) {
     updateAuthStatus(statusEl, '❌ Email és jelszó megadása kötelező!', 'error');
     return;
@@ -176,7 +172,6 @@ async function handleSignup() {
   updateAuthStatus(statusEl, '⏳ Regisztráció folyamatban...', 'info');
   
   try {
-    // Sign up with Supabase Auth
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -187,7 +182,6 @@ async function handleSignup() {
     
     if (error) throw error;
     
-    // Save marketing consent
     hasMarketingConsent = marketingConsent;
     if (data.user) {
       await saveMarketingConsent(data.user.id, marketingConsent);
@@ -196,7 +190,6 @@ async function handleSignup() {
     updateAuthStatus(statusEl, '✅ Regisztráció sikeres! Ellenőrizd az email fiókodat a megerősítéshez.', 'success');
     track('signup_success', { marketing_consent: marketingConsent });
     
-    // Clear form
     document.getElementById('signupEmail').value = '';
     document.getElementById('signupPassword').value = '';
     document.getElementById('signupPasswordConfirm').value = '';
@@ -231,7 +224,6 @@ async function handleLogin() {
   updateAuthStatus(statusEl, '⏳ Bejelentkezés...', 'info');
   
   try {
-    // FIX: Ez a rész a bejelentkezés logikája, ami a Bejelentkezés gombhoz van rendelve.
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
@@ -245,7 +237,6 @@ async function handleLogin() {
     updateAuthStatus(statusEl, '✅ Bejelentkezés sikeres!', 'success');
     track('login_success');
     
-    // Clear form
     document.getElementById('loginEmail').value = '';
     document.getElementById('loginPassword').value = '';
     
@@ -253,7 +244,6 @@ async function handleLogin() {
     
   } catch (error) {
     console.error('Login error:', error);
-    // Általános hibaüzenet, ha a Supabase nem ad vissza konkrét, felhasználóbarát hibaüzenetet
     const errorMessage = error.message.includes('Invalid login credentials') 
                         ? 'Hibás e-mail cím vagy jelszó.' 
                         : `Hiba: ${error.message}`;
@@ -268,7 +258,6 @@ async function handleLogout() {
     return;
   }
 
-  // Bezárjuk a sidebart, ha nyitva van
   const sidebar = document.getElementById('sidebarMenu');
   if (sidebar && sidebar.classList.contains('open')) {
       sidebar.classList.remove('open');
@@ -325,29 +314,23 @@ async function handleForgotPassword() {
 }
 
 function handleAuthSuccess() {
-  // Hide auth screen, show app
   const nav = document.getElementById('main-nav');
   if (nav) nav.classList.add('show');
   
-  // Update user email display in Sidebar Profile
   const userEmailEl = document.getElementById('userEmail');
   if (userEmailEl && currentUser) {
     userEmailEl.textContent = currentUser.email;
   }
   
-  // Load profile data into both profile forms
   loadProfileData('sidebar');
   loadProfileData('onboarding');
   
-  // Check if profile is complete
   const data = loadData();
   const hasProfile = data.profile && data.profile.income && data.profile.hoursPerWeek;
   
-  // Go to calculator if profile exists, otherwise to onboarding/profile (kényszerített)
   if (hasProfile && data.profile.income > 0 && data.profile.hoursPerWeek > 0) {
     goTo('calculator');
   } else {
-    // Kényszerített onboarding/profil kitöltés
     goTo('onboarding');
   }
   
@@ -357,11 +340,10 @@ function handleAuthSuccess() {
 function handleSignout() {
   showAuthScreen();
   
-  // Clear local data (optional - de a Supabase miatt bent hagyjuk)
   const data = loadData();
   data.profile = {};
   data.history = [];
-  data.goals = []; // Új: Goals törlése kijelentkezéskor
+  data.goals = [];
   saveData(data);
 }
 
@@ -460,7 +442,7 @@ async function sendDecisionToSupabase(decisionData) {
       price: safePrice,
       hours: safeHours,
       decision: decisionData.decision,
-      category: DEFAULT_CATEGORY, // Kategória manuális rögzítése kihagyva
+      category: DEFAULT_CATEGORY,
       created_at: new Date().toISOString()
     };
     
@@ -534,7 +516,6 @@ function cloneStore(data){
 
 function toFiniteNumber(value, fallback = 0){
   const num = Number(value);
-  // A NaN vagy Infinity (nulla osztás) eseteket is kezeli
   return Number.isFinite(num) ? num : fallback; 
 }
 
@@ -551,7 +532,6 @@ function sanitizeTextInput(value, { maxLength = 120, allowBasicPunctuation = tru
   sanitized = sanitized.replace(/\s+/g, ' ').trim();
 
   if (!allowBasicPunctuation) {
-    // Alapvető írásjelek kizárása (szó, vagy kategória)
     sanitized = sanitized.replace(/[^\p{L}\p{N}\s-]/gu, '');
   }
 
@@ -571,7 +551,7 @@ function sanitizeHistoryEntry(entry = {}){
     price: toFiniteNumber(normalizedEntry.price, 0),
     hours: toFiniteNumber(normalizedEntry.hours, 0),
     decision: safeDecision,
-    category: DEFAULT_CATEGORY, // Kategória manuális rögzítése kihagyva
+    category: DEFAULT_CATEGORY,
     ts: Number.isFinite(Number(normalizedEntry.ts)) ? Number(normalizedEntry.ts) : Date.now()
   };
 }
@@ -579,7 +559,7 @@ function sanitizeHistoryEntry(entry = {}){
 function sanitizeGoalEntry(entry = {}){
   const normalizedEntry = entry && typeof entry === 'object' ? entry : {};
   return {
-    id: normalizedEntry.id || crypto.randomUUID(), // Egyedi azonosító
+    id: normalizedEntry.id || crypto.randomUUID(),
     name: sanitizeTextInput(normalizedEntry.name || '', { maxLength: MAX_GOAL_NAME_LENGTH }),
     cost: toFiniteNumber(normalizedEntry.cost, 0),
     created: Number.isFinite(Number(normalizedEntry.created)) ? Number(normalizedEntry.created) : Date.now()
@@ -601,18 +581,15 @@ function getValidGoalEntries(data){
   return data.goals.map(sanitizeGoalEntry).filter(goal => goal.name && goal.cost > 0);
 }
 
-// Numerikus input védelem (PWA stabilitás kulcsa)
 function setupNumericInputs(){
   const numericInputs = document.querySelectorAll('input[data-numeric]');
   
   numericInputs.forEach(input => {
     const allowFloat = input.dataset.numeric === 'float';
     
-    // Keydown esemény - megelőzés
     input.addEventListener('keydown', (e) => {
       const key = e.key;
       
-      // Engedd a navigációs billentyűket
       if (
         key === 'Backspace' || 
         key === 'Delete' || 
@@ -622,30 +599,25 @@ function setupNumericInputs(){
         key === 'Home' ||
         key === 'End' ||
         (e.ctrlKey && (key === 'a' || key === 'c' || key === 'v' || key === 'x')) ||
-        (e.metaKey && (key === 'a' || key === 'c' || key === 'v' || key === 'x')) // Mac OS
+        (e.metaKey && (key === 'a' || key === 'c' || key === 'v' || key === 'x'))
       ) {
         return;
       }
       
-      // Engedd a számokat
       if (key >= '0' && key <= '9') {
         return;
       }
       
-      // Engedd a pontot/vesszőt float esetén
       if (allowFloat && (key === '.' || key === ',')) {
         const currentValue = input.value;
-        // Csak akkor engedjük, ha még nincs pont VAGY vessző
         if (!currentValue.includes('.') && !currentValue.includes(',')) {
           return;
         }
       }
       
-      // Minden mást blokkoljunk
       e.preventDefault();
     });
     
-    // Input esemény - tisztítás
     input.addEventListener('input', (e) => {
       let value = e.target.value;
       
@@ -653,7 +625,6 @@ function setupNumericInputs(){
         value = value.replace(',', '.');
         value = value.replace(/[^0-9.]/g, '');
         const parts = value.split('.');
-        // Csak az első pontot engedjük meg
         if (parts.length > 2) {
           value = parts[0] + '.' + parts.slice(1).join('');
         }
@@ -664,7 +635,6 @@ function setupNumericInputs(){
       e.target.value = value;
     });
     
-    // Paste esemény - tisztítás
     input.addEventListener('paste', (e) => {
       e.preventDefault();
       let pastedText = (e.clipboardData || window.clipboardData).getData('text');
@@ -703,7 +673,7 @@ function loadData(){
     const normalized = {
       profile: typeof parsed?.profile === 'object' && parsed.profile !== null ? parsed.profile : {},
       history: Array.isArray(parsed?.history) ? parsed.history.map(sanitizeHistoryEntry) : [],
-      goals: Array.isArray(parsed?.goals) ? parsed.goals.map(sanitizeGoalEntry) : [] // Új: Goals betöltése
+      goals: Array.isArray(parsed?.goals) ? parsed.goals.map(sanitizeGoalEntry) : []
     };
 
     memoryStore = normalized;
@@ -725,7 +695,7 @@ function saveData(data){
   const normalized = {
     profile: typeof data?.profile === 'object' && data.profile !== null ? data.profile : {},
     history: Array.isArray(data?.history) ? data.history.map(sanitizeHistoryEntry) : [],
-    goals: Array.isArray(data?.goals) ? data.goals.map(sanitizeGoalEntry) : [] // Új: Goals mentése
+    goals: Array.isArray(data?.goals) ? data.goals.map(sanitizeGoalEntry) : []
   };
 
   memoryStore = normalized;
@@ -745,7 +715,6 @@ function loadProfileData(location = 'sidebar'){
   const d = loadData();
   const p = d.profile || {};
   
-  // A sidebáron belül frissítjük a láthatatlan inputokat is
   const ageEl = document.getElementById('age');
   const cityEl = document.getElementById('city');
   const incomeEl = document.getElementById('income');
@@ -794,7 +763,7 @@ function parseNumberInput(value, allowFloat = false){
   if(!normalized) return 0;
 
   const parsed = allowFloat ? parseFloat(normalized) : parseInt(normalized, 10);
-  return toFiniteNumber(parsed, 0); // Biztonsági konverzió
+  return toFiniteNumber(parsed, 0);
 }
 
 // ============================================
@@ -808,20 +777,27 @@ function toggleTheme(){
   track('theme_toggle', {theme: current === 'dark' ? 'light' : 'dark'});
 }
 
+// ÚJ: Verzió frissítés a sidebar-ban
+function updateSidebarVersion(){
+  const versionEl = document.getElementById('sidebarVersion');
+  if (versionEl && window.APP_VERSION) {
+    versionEl.textContent = `v${window.APP_VERSION}`;
+  }
+}
+
 function toggleSidebarMenu(){
   const sidebar = document.getElementById('sidebarMenu');
   if (sidebar) {
     if (sidebar.classList.contains('open')) {
       sidebar.classList.remove('open');
-      document.body.style.overflow = ''; // Visszaállítjuk a scroll-t
+      document.body.style.overflow = '';
       track('menu_closed');
     } else {
-      loadProfileData('sidebar'); // Mindig friss adatokkal nyitjuk
+      loadProfileData('sidebar');
+      updateSidebarVersion(); // ÚJ: Verzió frissítés
       sidebar.classList.add('open');
-      // document.body.style.overflow = 'hidden'; 
       track('menu_opened');
       
-      // FIX: Ha a profil accordion nincs nyitva, nyissuk ki, amikor megnyitja a menüt.
       const profileDetails = document.getElementById('sidebarProfileDetails');
       if (profileDetails && !profileDetails.open) {
           profileDetails.open = true;
@@ -837,13 +813,11 @@ function goTo(screen) {
     return;
   }
   
-  // Sidebar bezárása navigációkor
   const sidebar = document.getElementById('sidebarMenu');
   if (sidebar && sidebar.classList.contains('open')) {
       toggleSidebarMenu();
   }
 
-  // FIX: Késleltetés a visual flicker minimalizálására
   setTimeout(() => {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     target.classList.add('active');
@@ -864,7 +838,7 @@ function goTo(screen) {
     if (screen === 'goals') loadGoals();
     if (screen === 'history') loadHistory();
     if (screen === 'stats') loadStats();
-  }, 50); // 50ms késleltetés a smoothabb átmenetért
+  }, 50);
 }
 
 // ============================================
@@ -872,7 +846,6 @@ function goTo(screen) {
 // ============================================
 
 function saveProfile(){
-  // Ez a funkció a SIDEBAR-ból fut
   const data = loadData();
   const age = parseNumberInput(document.getElementById('age').value);
   const city = sanitizeTextInput(document.getElementById('city').value, { maxLength: MAX_CITY_LENGTH });
@@ -895,7 +868,6 @@ function saveProfile(){
   track('profile_saved_sidebar');
   
   alert('✅ Profil sikeresen mentve!');
-  // Sikeres mentés után becsukjuk a profil accordiont
   const profileDetails = document.getElementById('sidebarProfileDetails');
   if (profileDetails) profileDetails.open = false;
   
@@ -904,7 +876,6 @@ function saveProfile(){
 }
 
 function saveOnboardingProfile(){
-  // Ez a funkció az ONBOARDING képernyőből fut
   const data = loadData();
   const age = parseNumberInput(document.getElementById('onboardingAge').value);
   const city = sanitizeTextInput(document.getElementById('onboardingCity').value, { maxLength: MAX_CITY_LENGTH });
@@ -926,10 +897,8 @@ function saveOnboardingProfile(){
   sendProfileToSupabase(data.profile);
   track('profile_saved_onboarding');
   
-  // Frissítjük a másik (sidebar) űrlapot is a friss adatokkal
   loadProfileData('sidebar'); 
   
-  // Átlépünk a kalkulátorra
   goTo('calculator');
 }
 
@@ -940,10 +909,9 @@ function saveOnboardingProfile(){
 function calculate(){
   const data = loadData();
   const p = data.profile;
-  // A profil validálása: Megfelelő-e a kényszerített onboarding után?
   if(!p.income || !p.hoursPerWeek || p.income <= 0 || p.hoursPerWeek <= 0){
     alert('Előbb add meg helyesen a profilod adataidat a kezdéshez!');
-    goTo('onboarding'); // Visszaküldjük a kényszerített kitöltésre
+    goTo('onboarding');
     return;
   }
   const product = sanitizeTextInput(document.getElementById('product').value, { maxLength: MAX_PRODUCT_LENGTH });
@@ -953,16 +921,14 @@ function calculate(){
     return;
   }
 
-  // Havi átlagos hetek száma: kb. 4.33, de a kód 4-et használ, ami a legegyszerűbb havi számítás (inkább hagyjuk a 4-et)
   const hourly = p.income / (p.hoursPerWeek * 4); 
-  if(!hourly || !isFinite(hourly)){ // isFinite kell a 0 osztás elkerülésére
+  if(!hourly || !isFinite(hourly)){
     alert('Előbb add meg helyesen a profil adataid!');
-    goTo('onboarding'); // Visszaküldjük a kényszerített kitöltésre
+    goTo('onboarding');
     return;
   }
 
   const hoursValue = price / hourly;
-  // Kerekítés: Egy tizedesjegyre
   const roundedHours = Math.round(hoursValue * 10) / 10; 
 
   const comparisons = [
@@ -1020,7 +986,6 @@ function saveDecision(decision){
     ts: Date.now()
   };
   
-  // A legújabb kerül a tömb végére
   data.history.push(decisionData);
   saveData(data);
   sendDecisionToSupabase(decisionData);
@@ -1036,7 +1001,6 @@ function saveDecision(decision){
   alert(decision === 'megsporolom' ? '💪 Szép munka!' : '🛒 Vásárlás rögzítve!');
   track('decision_saved', { decision });
   
-  // Frissítjük a statisztikát, ha a user a kalkulátor képernyőn van
   if(document.getElementById('nav-stats').classList.contains('active')) {
       loadStats();
   }
@@ -1071,7 +1035,6 @@ function addGoal(){
   saveData(data);
   loadGoals();
   
-  // Clear form
   document.getElementById('goalName').value = '';
   document.getElementById('goalCost').value = '';
   
@@ -1090,7 +1053,7 @@ function removeGoal(goalId){
   if (data.goals.length < initialLength) {
       saveData(data);
       loadGoals();
-      loadStats(); // Frissítjük a statisztikát is
+      loadStats();
       track('goal_removed');
   }
 }
@@ -1115,7 +1078,6 @@ function loadGoals(){
     const progressHUF = Math.min(goal.cost, totalSavedHUF);
     const progressPercent = Math.min(100, Math.round((progressHUF / goal.cost) * 100));
     
-    // Órában kifejezve (segítség a felhasználónak)
     const hoursNeeded = Math.round((goal.cost / hourlyRate) * 10) / 10;
     const hoursProgress = Math.min(hoursNeeded, totalSavedHours);
 
@@ -1166,7 +1128,7 @@ function getSavedHours(data){
 function getHourlyRate(profile){
     const income = toFiniteNumber(profile.income, 0);
     const hours = toFiniteNumber(profile.hoursPerWeek, 0);
-    if (income <= 0 || hours <= 0) return 1; // Elkerüljük a nulla osztást
+    if (income <= 0 || hours <= 0) return 1;
     return income / (hours * 4);
 }
 
@@ -1177,7 +1139,6 @@ function getHourlyRate(profile){
 
 function loadHistory(){
   const data = loadData();
-  // Validáció, hogy csak megfelelő formátumú elemek kerüljenek feldolgozásra
   const history = getValidHistoryEntries(data); 
   const list = document.getElementById('history-list');
 
@@ -1186,7 +1147,6 @@ function loadHistory(){
     return;
   }
 
-  // Fordított sorrend a legújabb elöl
   const sorted = [...history].sort((a,b)=> b.ts - a.ts); 
   list.innerHTML = sorted.map(item => {
     const icon = item.decision === 'megsporolom' ? '💚' : '💸';
@@ -1225,37 +1185,30 @@ function calcStreak(data){
   const history = getValidHistoryEntries(data);
   if(!history.length) return 0;
   
-  // Csak az adott napon történt döntések, időbélyeggel
   const dates = new Set(history.map(item => new Date(item.ts).toDateString()));
   
   let streak = 0;
   let checkDate = new Date();
   
-  // 365 napos ellenőrzés elegendő (max egy éves sorozat)
   for(let i = 0; i < 365; i++){
     const dateStr = checkDate.toDateString();
     
-    // Ellenőrizzük, hogy volt-e bejegyzés ezen a napon
     if(dates.has(dateStr)){
       streak++;
-      // Visszalépés a következő napra
       checkDate.setDate(checkDate.getDate() - 1); 
     } else {
-      // Ha ma nem volt bejegyzés, de korábban igen, akkor a sorozat 0, ha ma is volt, akkor a sorozat a bejegyzések száma.
       const latestEntryDateStr = new Date(Math.max(...history.map(h => h.ts))).toDateString();
       const todayStr = new Date().toDateString();
       
       if (latestEntryDateStr === todayStr && streak > 0) {
-        // Ma van bejegyzés, de korábban megszakadt a sorozat
         return streak; 
       }
       
-      // Ha a legutóbbi bejegyzés tegnap vagy korábban volt, a sorozat megszakad
       if (latestEntryDateStr !== todayStr && streak > 0) {
         return streak;
       }
       
-      return 0; // Régen volt utoljára, vagy sosem volt
+      return 0;
     }
   }
   
@@ -1275,7 +1228,7 @@ function loadStats(){
   const ratioEl = document.getElementById('ratio');
   ratioEl.innerText = ratio + '%';
   ratioEl.classList.remove('pulse'); 
-  void ratioEl.offsetWidth; // Re-trigger reflow
+  void ratioEl.offsetWidth;
   ratioEl.classList.add('pulse');
   
   const ratioCircle = document.getElementById('ratioCircle');
@@ -1290,7 +1243,6 @@ function loadStats(){
   document.getElementById('totalDecisions').innerText = total;
   document.getElementById('streak').innerText = streak;
   
-  // --- Goals Progress Display ---
   const goalsCard = document.getElementById('goalsProgressCard');
   const goalsContent = document.getElementById('goalsProgressContent');
   goalsContent.innerHTML = '';
@@ -1326,9 +1278,7 @@ function loadStats(){
   } else {
     goalsCard.classList.add('hidden');
   }
-  // --- Goals Progress Display End ---
   
-  // Random idézet
   document.getElementById('dailyQuote').innerText = quotes[Math.floor(Math.random()*quotes.length)];
   
   const weeklyChart = document.getElementById('weeklyChart');
@@ -1337,7 +1287,6 @@ function loadStats(){
   const now = new Date();
   const dayCounts = [];
   
-  // Utolsó 7 nap
   for(let i=6;i>=0;i--){
     const d = new Date(now);
     d.setDate(d.getDate() - i);
@@ -1350,7 +1299,6 @@ function loadStats(){
   dayCounts.forEach((count, idx) => {
     const bar = document.createElement('div');
     bar.className = 'chart-bar';
-    // Min. magasság 16px CSS-ben, itt a magasságot a max-hoz viszonyítjuk
     bar.style.height = `${(count / maxCount) * 100}%`; 
     bar.innerHTML = `<div class="chart-label">${days[idx]}</div>`;
     bar.title = `${count} döntés`;
@@ -1382,12 +1330,10 @@ function loadStats(){
 function initShareWidget(){
   let dismissed = false;
   try {
-    // SessionStorage - csak az adott böngésző munkamenetre
     dismissed = sessionStorage.getItem(SHARE_WIDGET_KEY);
   } catch (error) {
     console.warn('⚠️ SessionStorage nem elérhető a megosztás widgethez.', error);
   }
-  // Csak bejelentkezett felhasználóknak (currentUser)
   if(!dismissed && currentUser){ 
     setTimeout(() => {
       const widget = document.getElementById('shareWidget');
@@ -1395,7 +1341,6 @@ function initShareWidget(){
       try {
         alreadyDismissed = sessionStorage.getItem(SHARE_WIDGET_KEY);
       } catch (error) {
-        // Nincs teendő
       }
       if(widget && !alreadyDismissed){
         widget.classList.add('show');
@@ -1406,7 +1351,6 @@ function initShareWidget(){
 }
 
 function closeShareWidget(event){
-  // Megakadályozza a buborékolást a handleShare-re
   if(event) event.stopPropagation(); 
   
   const widget = document.getElementById('shareWidget');
@@ -1426,7 +1370,6 @@ async function handleShare(){
 
   const bubble = document.querySelector('.share-bubble');
 
-  // Natív megosztás - ha van
   if(navigator.share){
     try {
       await navigator.share({
@@ -1435,18 +1378,15 @@ async function handleShare(){
         url: APP_URL
       });
       track('share_native_success');
-      closeShareWidget(); // Sikeres natív megosztás után elrejtjük
+      closeShareWidget();
       return;
     } catch(err) {
       if(err.name !== 'AbortError'){
         console.error('Share error (native):', err);
       }
-      // Ha a natív megosztás nem sikerült vagy megszakította a felhasználó, 
-      // akkor próbáljuk a vágólapot (ami alább van)
     }
   }
   
-  // Vágólapra másolás fallback - ha a natív nem ment, vagy nem támogatott
   if (navigator.clipboard?.writeText) {
     try {
       await navigator.clipboard.writeText(shareText);
@@ -1454,7 +1394,6 @@ async function handleShare(){
 
       if (bubble) {
         const originalText = bubble.innerHTML;
-        // Animáció/visszajelzés
         bubble.innerHTML = `
           <div class="share-icon">✅</div>
           <div class="share-text">
@@ -1465,7 +1404,7 @@ async function handleShare(){
 
         setTimeout(() => {
           bubble.innerHTML = originalText;
-          closeShareWidget(); // Másolás után is elrejtjük
+          closeShareWidget();
         }, 2000);
       }
     } catch(err) {
@@ -1473,7 +1412,6 @@ async function handleShare(){
       alert('❌ Nem sikerült a linket a vágólapra másolni!');
     }
   } else {
-    // Utolsó fallback - alerttel
     prompt("A megosztáshoz másold ki ezt a linket:", shareText);
     track('share_prompt_fallback');
   }
@@ -1497,20 +1435,16 @@ function checkVersion(){
       return;
     }
 
-    // Első futás
     if (!lastVersion) {
       localStorage.setItem(VERSION_KEY, currentVersion);
       console.log('[VERSION] ✅ Első futás, verzió mentve');
       return;
     }
     
-    // Új verzió észlelése
     if (lastVersion !== currentVersion) {
       console.log('[VERSION] 🆕 Új verzió észlelve:', currentVersion);
       localStorage.setItem(VERSION_KEY, currentVersion);
       
-      // Megjelenítjük a bannert, ha az új kódot látjuk, 
-      // de a felhasználó még nem frissítette a sessiont.
       if (!bannerShown) {
          showUpdateBanner(); 
       }
@@ -1524,7 +1458,6 @@ function checkVersion(){
 }
 
 function showUpdateBanner(){
-  // Ha már megjelent, ne mutassuk újra
   if (bannerShown) {
     console.log('[VERSION] ⚠️ Banner már volt megjelenítve ebben a sessionben');
     return;
@@ -1533,7 +1466,7 @@ function showUpdateBanner(){
   const banner = document.getElementById('update-banner');
   if (banner && banner.classList.contains('hidden')) {
     banner.classList.remove('hidden');
-    bannerShown = true; // Jelöljük, hogy megjelent
+    bannerShown = true;
     console.log('[VERSION] 🎉 Banner megjelenítve');
   }
 }
@@ -1541,12 +1474,10 @@ function showUpdateBanner(){
 function reloadApp(){
   console.log('[VERSION] 🔄 Teljes újratöltés...');
   
-  // Service Worker-nek elküldjük a skipWaiting parancsot, 
   if (registration && registration.waiting) {
     registration.waiting.postMessage({ type: 'SKIP_WAITING' });
   }
 
-  // Hard reload
   track('version_updated', { version: window.APP_VERSION });
   
   setTimeout(() => {
@@ -1557,7 +1488,6 @@ function reloadApp(){
 function manualVersionCheck(){
   console.log('[VERSION] 🔄 Manuális ellenőrzés...');
   
-  // Új SW update kényszerítése
   if (registration) {
     registration.update();
   }
@@ -1586,20 +1516,17 @@ function initServiceWorker(){
     return;
   }
   
-  // SW üzenetek figyelése - ha az ACTIVATE esemény megtörténik
   navigator.serviceWorker.addEventListener('message', (event) => {
     console.log('[SW] Üzenet érkezett:', event.data);
     
     if (event.data && event.data.type === 'NEW_VERSION') {
       const swVersion = event.data.version;
-      const currentAppVersion = window.APP_VERSION; // A jelenleg futó verzió
+      const currentAppVersion = window.APP_VERSION;
       
       console.log('[SW] Verzió check:', {sw: swVersion, currentApp: currentAppVersion});
       
-      // CSAK akkor mutassuk a bannert, ha az SW frissebb, mint a JELENLEG FUTÓ kliens verzió
       if (swVersion !== currentAppVersion && !bannerShown) { 
         console.log('[SW] 🎉 Új verzió a SW-től:', swVersion);
-        // Itt beírjuk a localStorage-ba, bár a checkVersion is megtehette
         localStorage.setItem(VERSION_KEY, swVersion); 
         showUpdateBanner(); 
       } else {
@@ -1608,15 +1535,13 @@ function initServiceWorker(){
     }
   });
   
-  // Regisztráció
   navigator.serviceWorker.register('/sw.js', {
-    updateViaCache: 'none' // Mindig kérjen hálózati ellenőrzést
+    updateViaCache: 'none'
   })
     .then(reg => {
       registration = reg;
       console.log('✅ Service Worker regisztrálva:', reg.scope);
       
-      // Update event figyelése (telepítés, waiting állapot)
       reg.addEventListener('updatefound', () => {
         const newWorker = reg.installing;
         console.log('🔄 Új SW települ...');
@@ -1624,12 +1549,10 @@ function initServiceWorker(){
         newWorker.addEventListener('statechange', () => {
           if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
             console.log('🎉 Új verzió telepítve (várakozik)!');
-            // A SW üzenet fogja megjeleníteni a bannert, ha sikeres az ACTIVATE
           }
         });
       });
       
-      // Periodikus ellenőrzés (5 percenként)
       setInterval(() => {
         console.log('🔄 Periodikus SW update check...');
         reg.update();
@@ -1639,7 +1562,6 @@ function initServiceWorker(){
       console.error('❌ Service Worker regisztráció hiba:', err);
     });
   
-  // Controller change figyelése - ekkor az SW már aktív
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     console.log('🔄 Service Worker controller frissült!');
   });
@@ -1650,25 +1572,18 @@ function initServiceWorker(){
 // ============================================
 
 (function init(){
-  // Numerikus input védelem
   setupNumericInputs();
   
-  // Supabase + Auth init
   initSupabase();
   
-  // Share widget
   initShareWidget();
   
-  // Verzió ellenőrzés (rögtön a betöltéskor)
   checkVersion();
   
-  // Service Worker
   initServiceWorker();
   
-  // Session ellenőrzés
   checkSession();
 
-  // Build badge - JAVÍTVA: window.APP_VERSION használata
   const buildBadge = document.getElementById('build-badge');
   if(buildBadge && window.APP_VERSION){
     buildBadge.innerHTML = `
