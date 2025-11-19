@@ -1,5 +1,5 @@
 // ============================================
-// MUNKAÓRA PRO v8.7 - SUPABASE AUTH + OPTIMALIZÁLT PWA
+// MUNKAÓRA PRO v9.0 - SUPABASE AUTH + OPTIMALIZÁLT PWA
 // ============================================
 
 // Google Analytics
@@ -985,22 +985,23 @@ function calcStreak(data){
       // Visszalépés a következő napra
       checkDate.setDate(checkDate.getDate() - 1); 
     } else {
-      // Ha ma volt, de tegnap nem, akkor 0. Ha ma nem volt, de tegnap igen, akkor is 0.
-      if (i === 0) {
-        // Ma nem volt bejegyzés, sorozat megszakadt.
-        const latestEntryDateStr = new Date(Math.max(...history.map(h => h.ts))).toDateString();
-        // Ha a legutóbbi bejegyzés tegnap volt, akkor a sorozat 0 (nincs mai)
-        if (latestEntryDateStr === new Date(new Date().setDate(new Date().getDate() - 1)).toDateString()) {
-             return 0; // Tegnap volt, ma nincs.
-        }
-        // Ha a legutóbbi bejegyzés régebben volt mint tegnap, akkor is 0.
+      // Ha ma nem volt bejegyzés, de korábban igen, akkor a sorozat 0, ha ma is volt, akkor a sorozat a bejegyzések száma.
+      const latestEntryDateStr = new Date(Math.max(...history.map(h => h.ts))).toDateString();
+      const todayStr = new Date().toDateString();
+      const yesterdayStr = new Date(new Date().setDate(new Date().getDate() - 1)).toDateString();
+      
+      if (latestEntryDateStr === todayStr) {
+        // Ma van bejegyzés, de korábban megszakadt a sorozat
+        return streak; 
+      }
+      if (latestEntryDateStr === yesterdayStr) {
+        // Tegnap volt bejegyzés, ma nincs.
         return 0;
       }
-      break;
+      return 0; // Régen volt utoljára
     }
   }
   
-  // Ez egy robusztusabb implementációja a daily streak-nek
   return streak;
 }
 
@@ -1211,7 +1212,12 @@ function checkVersion(){
     if (lastVersion !== currentVersion) {
       console.log('[VERSION] 🆕 Új verzió észlelve:', currentVersion);
       localStorage.setItem(VERSION_KEY, currentVersion);
-      showUpdateBanner(); // Itt is megjeleníthetjük, ha a lap frissült
+      
+      // Megjelenítjük a bannert, ha az új kódot látjuk, 
+      // de a felhasználó még nem frissítette a sessiont.
+      if (!bannerShown) {
+         showUpdateBanner(); 
+      }
       track('new_version_detected', { from: lastVersion, to: currentVersion });
     } else {
       console.log('[VERSION] ✅ Verzió aktuális, banner nem szükséges');
@@ -1240,15 +1246,13 @@ function reloadApp(){
   console.log('[VERSION] 🔄 Teljes újratöltés...');
   
   // Service Worker-nek elküldjük a skipWaiting parancsot, 
-  // hogy azonnal átvegye a vezérlést (ha installing állapotban van)
   if (registration && registration.waiting) {
     registration.waiting.postMessage({ type: 'SKIP_WAITING' });
   }
 
-  // A teljes frissítési folyamat érdekében, egy gyors hard reload
+  // Hard reload
   track('version_updated', { version: window.APP_VERSION });
   
-  // Hard reload
   setTimeout(() => {
     window.location.reload(true);
   }, 500);
@@ -1292,16 +1296,16 @@ function initServiceWorker(){
     
     if (event.data && event.data.type === 'NEW_VERSION') {
       const swVersion = event.data.version;
-      const storedVersion = localStorage.getItem(VERSION_KEY);
+      const currentAppVersion = window.APP_VERSION; // A jelenleg futó verzió
       
-      console.log('[SW] Verzió check:', {sw: swVersion, stored: storedVersion});
+      console.log('[SW] Verzió check:', {sw: swVersion, currentApp: currentAppVersion});
       
-      // CSAK akkor mutassuk a bannert, ha a SW verzió ÚJ
-      if (swVersion !== storedVersion && !bannerShown) {
+      // CSAK akkor mutassuk a bannert, ha az SW frissebb, mint a JELENLEG FUTÓ kliens verzió
+      if (swVersion !== currentAppVersion && !bannerShown) { 
         console.log('[SW] 🎉 Új verzió a SW-től:', swVersion);
-        localStorage.setItem(VERSION_KEY, swVersion);
-        showUpdateBanner();
-        // A window.APP_VERSION még a régi, de a localStorage már friss
+        // Itt beírjuk a localStorage-ba, bár a checkVersion is megtehette
+        localStorage.setItem(VERSION_KEY, swVersion); 
+        showUpdateBanner(); 
       } else {
         console.log('[SW] ✅ Verzió már aktuális vagy banner már megjelent');
       }
@@ -1342,11 +1346,8 @@ function initServiceWorker(){
   // Controller change figyelése - ekkor az SW már aktív
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     console.log('🔄 Service Worker controller frissült!');
-    // A logikát a SW ACTIVATE üzenete kezeli, itt nincs teendő
   });
 }
-
-// ... (app.js vége)
 
 // ============================================
 // INITIALIZATION
@@ -1362,15 +1363,15 @@ function initServiceWorker(){
   // Share widget
   initShareWidget();
   
-  // Verzió ellenőrzés
+  // Verzió ellenőrzés (rögtön a betöltéskor)
   checkVersion();
   
   // Service Worker
   initServiceWorker();
   
-  // Build badge
+  // Build badge - JAVÍTVA: window.APP_VERSION használata
   const buildBadge = document.getElementById('build-badge');
-  if(buildBadge && window.APP_VERSION){ // Hozzáadtam a window.APP_VERSION ellenőrzést
+  if(buildBadge && window.APP_VERSION){
     buildBadge.innerHTML = `
       v${window.APP_VERSION} PWA
       <button
