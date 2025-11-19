@@ -262,6 +262,12 @@ async function handleLogout() {
     return;
   }
 
+  // Bezárjuk a sidebart, ha nyitva van
+  const sidebar = document.getElementById('sidebarMenu');
+  if (sidebar && sidebar.classList.contains('open')) {
+      sidebar.classList.remove('open');
+  }
+
   try {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
@@ -317,24 +323,26 @@ function handleAuthSuccess() {
   const nav = document.getElementById('main-nav');
   if (nav) nav.classList.add('show');
   
-  // Update user email display
+  // Update user email display in Sidebar Profile
   const userEmailEl = document.getElementById('userEmail');
   if (userEmailEl && currentUser) {
     userEmailEl.textContent = currentUser.email;
   }
   
-  // Load profile data
-  loadProfileData();
+  // Load profile data into both profile forms
+  loadProfileData('sidebar');
+  loadProfileData('onboarding');
   
   // Check if profile is complete
   const data = loadData();
   const hasProfile = data.profile && data.profile.income && data.profile.hoursPerWeek;
   
-  // Go to calculator if profile exists, otherwise to profile
-  if (hasProfile) {
+  // Go to calculator if profile exists, otherwise to onboarding/profile (kényszerített)
+  if (hasProfile && data.profile.income > 0 && data.profile.hoursPerWeek > 0) {
     goTo('calculator');
   } else {
-    goTo('profile');
+    // Kényszerített onboarding/profil kitöltés
+    goTo('onboarding');
   }
   
   track('auth_success');
@@ -707,13 +715,20 @@ function saveData(data){
   }
 }
 
-function loadProfileData(){
+function loadProfileData(location = 'sidebar'){
   const d = loadData();
-  if(d.profile){
-    document.getElementById('age').value = d.profile.age || '';
-    document.getElementById('city').value = d.profile.city || '';
-    document.getElementById('income').value = d.profile.income || '';
-    document.getElementById('hours').value = d.profile.hoursPerWeek || '';
+  const p = d.profile || {};
+  
+  if (location === 'sidebar') {
+    document.getElementById('age').value = p.age || '';
+    document.getElementById('city').value = p.city || '';
+    document.getElementById('income').value = p.income || '';
+    document.getElementById('hours').value = p.hoursPerWeek || '';
+  } else if (location === 'onboarding') {
+    document.getElementById('onboardingAge').value = p.age || '';
+    document.getElementById('onboardingCity').value = p.city || '';
+    document.getElementById('onboardingIncome').value = p.income || '';
+    document.getElementById('onboardingHours').value = p.hoursPerWeek || '';
   }
 }
 
@@ -758,24 +773,49 @@ function toggleTheme(){
   track('theme_toggle', {theme: current === 'dark' ? 'light' : 'dark'});
 }
 
+function toggleSidebarMenu(){
+  const sidebar = document.getElementById('sidebarMenu');
+  if (sidebar) {
+    if (sidebar.classList.contains('open')) {
+      sidebar.classList.remove('open');
+      document.body.style.overflow = ''; // Visszaállítjuk a scroll-t
+      track('menu_closed');
+    } else {
+      loadProfileData('sidebar'); // Mindig friss adatokkal nyitjuk
+      sidebar.classList.add('open');
+      document.body.style.overflow = 'hidden'; // Megakadályozzuk a háttér scroll-t
+      track('menu_opened');
+    }
+  }
+}
+
 function goTo(screen) {
   const target = document.getElementById(`screen-${screen}`);
   if (!target) {
     console.error("❌ Screen not found:", screen);
     return;
   }
+  
+  // Sidebar bezárása navigációkor
+  const sidebar = document.getElementById('sidebarMenu');
+  if (sidebar && sidebar.classList.contains('open')) {
+      toggleSidebarMenu();
+  }
 
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   target.classList.add('active');
 
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  // A welcome és onboarding screen esetén nincs nav-bar gomb
   const nb = document.getElementById(`nav-${screen}`);
   if (nb) nb.classList.add('active');
 
   const nav = document.getElementById('main-nav');
-  // Navigáció csak bejelentkezett felhasználóknak látszik
-  if (nav && currentUser) nav.classList.add('show');
-  else if (nav) nav.classList.remove('show'); 
+  const showNav = currentUser && screen !== 'welcome' && screen !== 'onboarding';
+  if (nav) {
+    if (showNav) nav.classList.add('show');
+    else nav.classList.remove('show');
+  } 
 
   track('view_' + screen);
 
@@ -784,10 +824,11 @@ function goTo(screen) {
 }
 
 // ============================================
-// PROFILE
+// PROFILE & ONBOARDING
 // ============================================
 
 function saveProfile(){
+  // Ez a funkció a SIDEBAR-ból fut
   const data = loadData();
   const age = parseNumberInput(document.getElementById('age').value);
   const city = sanitizeTextInput(document.getElementById('city').value, { maxLength: MAX_CITY_LENGTH });
@@ -807,7 +848,42 @@ function saveProfile(){
   data.profile = { age, city, income, hoursPerWeek };
   saveData(data);
   sendProfileToSupabase(data.profile);
-  track('profile_saved');
+  track('profile_saved_sidebar');
+  
+  alert('✅ Profil sikeresen mentve!');
+  toggleSidebarMenu();
+  
+  // Frissítjük a másik (onboarding) űrlapot is a friss adatokkal (szükségtelen is lehet, de biztonságosabb)
+  loadProfileData('onboarding'); 
+}
+
+function saveOnboardingProfile(){
+  // Ez a funkció az ONBOARDING képernyőből fut
+  const data = loadData();
+  const age = parseNumberInput(document.getElementById('onboardingAge').value);
+  const city = sanitizeTextInput(document.getElementById('onboardingCity').value, { maxLength: MAX_CITY_LENGTH });
+  const income = parseNumberInput(document.getElementById('onboardingIncome').value);
+  const hoursPerWeek = parseNumberInput(document.getElementById('onboardingHours').value, true);
+
+  if(!income || !hoursPerWeek){
+    alert('Kérlek, add meg a havi nettó jövedelmedet és a heti munkaóráid számát a továbblépéshez!');
+    return;
+  }
+  
+  if(income <= 0 || hoursPerWeek <= 0){
+    alert('A jövedelemnek és a munkaóráknak pozitív számnak kell lennie!');
+    return;
+  }
+
+  data.profile = { age, city, income, hoursPerWeek };
+  saveData(data);
+  sendProfileToSupabase(data.profile);
+  track('profile_saved_onboarding');
+  
+  // Frissítjük a másik (sidebar) űrlapot is a friss adatokkal
+  loadProfileData('sidebar'); 
+  
+  // Átlépünk a kalkulátorra
   goTo('calculator');
 }
 
@@ -818,9 +894,10 @@ function saveProfile(){
 function calculate(){
   const data = loadData();
   const p = data.profile;
+  // A profil validálása: Megfelelő-e a kényszerített onboarding után?
   if(!p.income || !p.hoursPerWeek || p.income <= 0 || p.hoursPerWeek <= 0){
-    alert('Előbb add meg helyesen a profilod adataid!');
-    goTo('profile');
+    alert('Előbb add meg helyesen a profilod adataidat a kezdéshez!');
+    goTo('onboarding'); // Visszaküldjük a kényszerített kitöltésre
     return;
   }
   const product = sanitizeTextInput(document.getElementById('product').value, { maxLength: MAX_PRODUCT_LENGTH });
@@ -834,7 +911,7 @@ function calculate(){
   const hourly = p.income / (p.hoursPerWeek * 4); 
   if(!hourly || !isFinite(hourly)){ // isFinite kell a 0 osztás elkerülésére
     alert('Előbb add meg helyesen a profil adataid!');
-    goTo('profile');
+    goTo('onboarding'); // Visszaküldjük a kényszerített kitöltésre
     return;
   }
 
@@ -990,14 +1067,16 @@ function calcStreak(data){
       const todayStr = new Date().toDateString();
       const yesterdayStr = new Date(new Date().setDate(new Date().getDate() - 1)).toDateString();
       
-      if (latestEntryDateStr === todayStr) {
+      if (latestEntryDateStr === todayStr && streak > 0) {
         // Ma van bejegyzés, de korábban megszakadt a sorozat
         return streak; 
       }
-      if (latestEntryDateStr === yesterdayStr) {
-        // Tegnap volt bejegyzés, ma nincs.
-        return 0;
+      if (latestEntryDateStr === todayStr) {
+        // Ma van bejegyzés, és a ciklus elején vagyunk.
+        // Ez azt jelenti, hogy a sorozat a mai nappal kezdődik/ folytatódik
+        return streak + 1;
       }
+      
       return 0; // Régen volt utoljára
     }
   }
