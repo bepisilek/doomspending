@@ -921,8 +921,8 @@ nav button.active svg {
 /* FIX: Update banner a header ALATT helyezkedik el */
 .update-banner {
   position: fixed;
-  /* A header után jön (header + safe area + kis margó) */
-  top: calc(var(--safe-area-top) + 62px);
+  /* A header után jön (header + safe area + megfelelő margó) */
+  top: calc(var(--safe-area-top) + 76px);
   left: 50%;
   transform: translateX(-50%);
   width: min(calc(100% - 32px), 480px);
