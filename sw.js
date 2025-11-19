@@ -14,10 +14,13 @@ const URLS = [
   '/app.js',
   '/version.js',
   '/manifest.json',
+  // Az index.html-ben lévő cache busting verziószámot is frissíteni kell a build során!
+  // Itt a precache listában maradhatnak a sima nevek, ha a fetch kezeli a cache bustinges linkeket
   '/icons/icon-192.svg',
   '/icons/icon-512.svg',
   '/icons/icon-512-maskable.svg',
   '/icons/apple-touch-icon.png'
+  // Fontos: Az apple-touch-icon-180.png?v=870, manifest.json?v=870 is fetch-elhető, de nem precache-elt
 ];
 
 // INSTALL - Új cache létrehozása
@@ -27,6 +30,7 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       console.log('[SW] Precaching files...');
+      // Ezt meg kell erősíteni. Ha valamelyik fájl hiányzik, a teljes precache sikertelen.
       return cache.addAll(URLS);
     }).then(() => {
       console.log('[SW] Install complete, skipping waiting...');
@@ -58,6 +62,7 @@ self.addEventListener('activate', event => {
         })
       ).then(() => {
         // CSAK akkor küldjünk üzenetet, ha töröltünk régi cache-t (tehát új verzió van)
+        // A kliensnek tudnia kell, hogy van egy *új* verzió, ami aktív
         if (hasOldCaches) {
           console.log('[SW] Új verzió aktiválva, értesítés küldése...');
           return notifyClients();
@@ -104,6 +109,8 @@ self.addEventListener('fetch', event => {
   }
 
   // HTML, JS, CSS - network first (mindig friss verzió)
+  // Fontos: Mivel a precache nem verziószámmal történt, a frissítésre a network-first a legjobb stratégia.
+  // Ez biztosítja, hogy a felhasználó mindig a legfrissebb JS/CSS-t kapja.
   if (
     request.destination === 'document' ||
     request.url.endsWith('.html') ||
@@ -113,6 +120,7 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       fetch(request)
         .then(response => {
+          // Ha OK, frissítsük a cache-t a legújabb verzióval (ez a Network First)
           if (response && response.status === 200) {
             const responseClone = response.clone();
             caches.open(CACHE_NAME).then(cache => {
@@ -129,7 +137,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Minden más: cache first (gyorsabb betöltés)
+  // Minden más (ikonok, fontok): cache first, miközben frissítjük a cache-t (Cache First, then Network)
   event.respondWith(
     caches.match(request).then(cached => {
       if (cached) {
@@ -169,7 +177,7 @@ self.addEventListener('message', event => {
   // Skip waiting parancs
   if (event.data && event.data.type === 'SKIP_WAITING') {
     console.log('[SW] Skip waiting parancs fogadva');
-    self.skipWa iting();
+    self.skipWaiting();
   }
 });
 
