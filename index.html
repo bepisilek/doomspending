@@ -323,33 +323,58 @@
     <div class="sidebar-content">
       <header class="sidebar-header">
         <div>
-          <span class="caption">PROFIL</span>
-          <h2>⚙️ Adataid</h2>
+          <span class="caption">BEÁLLÍTÁSOK</span>
+          <h2>⚙️ Menü</h2>
         </div>
         <button class="sidebar-close-btn" onclick="toggleSidebarMenu()" title="Bezárás">
           <svg viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </header>
       
-      <div id="sidebar-profile-content" class="content-stack sidebar-stack">
-        <div class="card">
-          <p class="auth-info">
-            <strong>Email:</strong> <span id="userEmail">-</span>
-          </p>
-        </div>
-        <div class="card">
-          <div class="form-stack">
-            <input id="age" placeholder="🎂 Életkor (opcionális)" type="text" inputmode="numeric" data-numeric="int" />
-            <input id="city" placeholder="📍 Település (opcionális)" />
-            <input id="income" placeholder="💰 Havi nettó jövedelem (Ft)" type="text" inputmode="numeric" data-numeric="int" />
-            <input id="hours" placeholder="⏰ Heti munkaóra" type="text" inputmode="decimal" data-numeric="float" />
-            <button onclick="saveProfile()">💾 Mentés</button>
+      <details id="sidebarProfileDetails" class="sidebar-details-group" open>
+        <summary class="card sidebar-summary">
+          <h3>👤 Profil Adatok (Kattints a szerkesztéshez)</h3>
+        </summary>
+        
+        <div id="sidebar-profile-content" class="content-stack sidebar-stack">
+          <div class="card">
+            <p class="auth-info">
+              <strong>Email:</strong> <span id="userEmail">-</span>
+            </p>
+          </div>
+          <div class="card">
+            <div class="form-stack">
+              <label class="input-label" for="age">Életkor (Opcionális)</label>
+              <input id="age" placeholder="🎂 Életkor (pl. 30)" type="text" inputmode="numeric" data-numeric="int" />
+              
+              <label class="input-label" for="city">Település (Opcionális)</label>
+              <input id="city" placeholder="📍 Település (pl. Budapest)" />
+              
+              <label class="input-label" for="income">Havi nettó jövedelem (Ft)</label>
+              <input id="income" placeholder="💰 Havi nettó jövedelem (Ft)" type="text" inputmode="numeric" data-numeric="int" />
+              
+              <label class="input-label" for="hours">Heti munkaóra</label>
+              <input id="hours" placeholder="⏰ Heti munkaóra" type="text" inputmode="decimal" data-numeric="float" />
+              
+              <button onclick="saveProfile()">💾 Mentés</button>
+            </div>
           </div>
         </div>
-        
-        <div class="sidebar-footer">
-          <button class="logout-btn secondary-btn" onclick="handleLogout()">🚪 Kijelentkezés</button>
+      </details>
+      
+      <details class="sidebar-details-group">
+        <summary class="card sidebar-summary">
+          <h3>ℹ️ Információ</h3>
+        </summary>
+        <div class="content-stack sidebar-stack">
+          <div class="card">
+            <p>Adataid biztonságban vannak. A Tivlo nem tárol jelszavakat. A jövedelmi adatokat anonim módon használjuk statisztikákhoz, ha ehhez hozzájárultál.</p>
+          </div>
         </div>
+      </details>
+        
+      <div class="sidebar-footer">
+        <button class="logout-btn secondary-btn" onclick="handleLogout()">🚪 Kijelentkezés</button>
       </div>
     </div>
   </div>
@@ -364,10 +389,18 @@
 
       <div class="card auth-card">
         <div class="form-stack">
-          <input id="onboardingAge" placeholder="🎂 Életkor (opcionális)" type="text" inputmode="numeric" data-numeric="int" />
-          <input id="onboardingCity" placeholder="📍 Település (opcionális)" />
+          <label class="input-label" for="onboardingAge">Életkor (Opcionális)</label>
+          <input id="onboardingAge" placeholder="🎂 Életkor (pl. 30)" type="text" inputmode="numeric" data-numeric="int" />
+          
+          <label class="input-label" for="onboardingCity">Település (Opcionális)</label>
+          <input id="onboardingCity" placeholder="📍 Település (pl. Budapest)" />
+          
+          <label class="input-label" for="onboardingIncome">Havi nettó jövedelem (Ft)</label>
           <input id="onboardingIncome" placeholder="💰 Havi nettó jövedelem (Ft)" type="text" inputmode="numeric" data-numeric="int" />
+          
+          <label class="input-label" for="onboardingHours">Heti munkaóra</label>
           <input id="onboardingHours" placeholder="⏰ Heti munkaóra" type="text" inputmode="decimal" data-numeric="float" />
+          
           <button onclick="saveOnboardingProfile()">🚀 Kezdés</button>
         </div>
       </div>
