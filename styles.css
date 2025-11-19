@@ -375,6 +375,13 @@ p {
 .invite-status[data-status="info"] { color: var(--primary); }
 
 /* Form Controls */
+.input-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: -10px;
+}
+
 input {
   width: 100%;
   height: 52px;
@@ -1400,6 +1407,67 @@ nav button.active svg {
   background: rgba(239, 68, 68, 0.1);
   color: var(--error);
   border-color: var(--error);
+}
+
+/* ÚJ: Sidebar Accordion/Details stílusok */
+.sidebar-details-group {
+  margin-bottom: 8px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow);
+}
+
+.sidebar-summary {
+  list-style: none; /* Summary alap list point eltávolítása */
+  cursor: pointer;
+  padding: 18px 20px;
+  background: var(--glass);
+  margin: 0;
+  transition: background 0.2s var(--ease);
+}
+
+.sidebar-summary:hover {
+  background: var(--bg-alt);
+}
+
+/* A nyíl eltávolítása/testreszabása */
+.sidebar-summary::-webkit-details-marker {
+  display: none;
+}
+.sidebar-summary:before {
+  content: '▶';
+  display: inline-block;
+  font-size: 0.8rem;
+  margin-right: 10px;
+  transition: transform 0.2s var(--ease);
+  color: var(--primary);
+}
+
+.sidebar-details-group[open] .sidebar-summary:before {
+  transform: rotate(90deg);
+}
+
+.sidebar-details-group[open] .sidebar-summary {
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.sidebar-details-group:not([open]) .sidebar-summary {
+  border-radius: var(--radius-lg);
+}
+
+.sidebar-details-group .sidebar-stack {
+  padding: 0 var(--space-lg) var(--space-lg);
+  /* Megakadályozzuk a duplán beágyazott card style-t */
+  background: var(--glass); 
+}
+
+.sidebar-details-group .sidebar-stack .card {
+  box-shadow: none;
+  border: none;
+  padding: 0;
+  background: transparent;
 }
 
 
