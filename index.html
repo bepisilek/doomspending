@@ -7,46 +7,36 @@
   <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
   <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()" />
 
-  <!-- Cache Control -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
 
   <title>Tivlo</title>
 
-  <!-- iOS PWA -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Tivlo" />
 
-  <!-- Apple Touch Icons - Multiple Sizes + Cache Busting -->
-  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon-180.png?v=820" />
-  <link rel="apple-touch-icon" sizes="167x167" href="/icons/apple-touch-icon-167.png?v=820" />
-  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-touch-icon-152.png?v=820" />
-  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-touch-icon-120.png?v=820" />
-  <link rel="apple-touch-icon" href="/icons/apple-touch-icon-180.png?v=820" />
-  <link rel="apple-touch-icon-precomposed" href="/icons/apple-touch-icon-180.png?v=820" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon-180.png?v=870" /> 
+  <link rel="apple-touch-icon" sizes="167x167" href="/icons/apple-touch-icon-167.png?v=870" />
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-touch-icon-152.png?v=870" />
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-touch-icon-120.png?v=870" />
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon-180.png?v=870" />
+  <link rel="apple-touch-icon-precomposed" href="/icons/apple-touch-icon-180.png?v=870" />
 
-  <!-- Standard Icons -->
   <link rel="icon" type="image/svg+xml" href="/icons/icon-192.svg" />
 
-  <!-- Theme -->
   <meta name="theme-color" content="#0b66ff" />
   <meta name="description" content="Számold ki, mennyi munkaórádba kerül egy vásárlás!" />
 
-  <!-- Manifest -->
-  <link rel="manifest" href="/manifest.json?v=820" />
+  <link rel="manifest" href="/manifest.json?v=870" /> 
 
-  <!-- Styles -->
   <link rel="stylesheet" href="/styles.css" />
   
-  <!-- Version.js -->
   <script src="/version.js"></script>
 
-  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
 
-  <!-- Google tag -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-G8BZPSFGGG"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -57,16 +47,13 @@
 </head>
 
 <body>
-  <!-- Build Badge (verzió megjelenítés) -->
   <div id="build-badge"></div>
 
-  <!-- Update Banner -->
   <div id="update-banner" class="update-banner hidden">
     <span>🎉 Új verzió elérhető!</span>
     <button onclick="reloadApp()" class="update-btn">Frissítés most</button>
   </div>
 
-  <!-- Share Widget -->
   <div id="shareWidget" class="share-widget">
     <div class="share-bubble" onclick="handleShare()">
       <button class="share-close" onclick="closeShareWidget(event)" aria-label="Bezárás">×</button>
@@ -81,7 +68,6 @@
   <div class="app-shell">
     <main class="screen-stack">
 
-      <!-- 1. Welcome + Auth -->
       <section id="screen-welcome" class="screen active">
         <div class="welcome-hero">
           <div class="welcome-pill">💰 Tivlo</div>
@@ -102,14 +88,12 @@
 
           <p class="welcome-copy">Váltsd át az árakat munkaórákra és hozz<br>tudatos pénzügyi döntéseket!</p>
 
-          <!-- AUTH CARD -->
           <div id="authCard" class="card auth-card">
             <div id="authTabs" class="auth-tabs">
               <button id="tabSignup" class="auth-tab active" onclick="switchAuthTab('signup')">Regisztráció</button>
               <button id="tabLogin" class="auth-tab" onclick="switchAuthTab('login')">Bejelentkezés</button>
             </div>
 
-            <!-- SIGNUP FORM -->
             <div id="signupForm" class="auth-form">
               <div class="form-stack">
                 <input id="signupEmail" type="email" placeholder="📧 Email cím" autocomplete="email" />
@@ -126,7 +110,6 @@
               </div>
             </div>
 
-            <!-- LOGIN FORM -->
             <div id="loginForm" class="auth-form hidden">
               <div class="form-stack">
                 <input id="loginEmail" type="email" placeholder="📧 Email cím" autocomplete="email" />
@@ -143,7 +126,6 @@
         </div>
       </section>
 
-      <!-- Többi section ugyanaz mint eddig... -->
       <section id="screen-profile" class="screen">
         <header class="screen-header">
           <div>
@@ -227,7 +209,8 @@
           </div>
           <div class="theme-toggle" onclick="toggleTheme()">
             <svg viewBox="0 0 24 24">
-              <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+              <path d="M12 6v6l4 2m6 0a10 
+10 0 1 1-20 0 10 10 0 0 1 20 0z" />
             </svg>
           </div>
         </header>
