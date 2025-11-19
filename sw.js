@@ -20,7 +20,6 @@ const URLS = [
   '/icons/apple-touch-icon.png'
 ];
 
-// INSTALL - Új cache létrehozása
 self.addEventListener('install', event => {
   console.log(`[SW] Installing v${VERSION}`);
 
@@ -35,13 +34,11 @@ self.addEventListener('install', event => {
   );
 });
 
-// ACTIVATE - Régi cache-ek törlése + control átvétele
 self.addEventListener('activate', event => {
   console.log(`[SW] Activating v${VERSION}`);
 
   event.waitUntil(
     caches.keys().then(keys => {
-      // Ellenőrizzük, hogy valóban van-e régi cache
       const oldCaches = keys.filter(key => key !== CACHE_NAME);
       const hasOldCaches = oldCaches.length > 0;
       
@@ -57,7 +54,6 @@ self.addEventListener('activate', event => {
           return caches.delete(key);
         })
       ).then(() => {
-        // CSAK akkor küldjünk üzenetet, ha töröltünk régi cache-t (tehát új verzió van)
         if (hasOldCaches) {
           console.log('[SW] Új verzió aktiválva, értesítés küldése...');
           return notifyClients();
@@ -69,7 +65,6 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Üzenet küldése minden tabnak
 async function notifyClients() {
   const clients = await self.clients.matchAll({ 
     type: 'window',
@@ -91,19 +86,16 @@ async function notifyClients() {
   }
 }
 
-// FETCH stratégia
 self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Külső API-kat nem cache-elünk
   if (url.hostname.includes('supabase') ||
       url.hostname.includes('google') ||
       url.hostname.includes('gtag')) {
     return;
   }
 
-  // HTML, JS, CSS - network first (mindig friss verzió)
   if (
     request.destination === 'document' ||
     request.url.endsWith('.html') ||
@@ -122,18 +114,15 @@ self.addEventListener('fetch', event => {
           return response;
         })
         .catch(() => {
-          // Ha offline vagyunk, cache-ből szolgáljuk
           return caches.match(request);
         })
     );
     return;
   }
 
-  // Minden más: cache first (gyorsabb betöltés)
   event.respondWith(
     caches.match(request).then(cached => {
       if (cached) {
-        // Cache-ből szolgáljuk, de háttérben frissítjük
         fetch(request).then(response => {
           if (response && response.status === 200) {
             caches.open(CACHE_NAME).then(cache => {
@@ -141,12 +130,10 @@ self.addEventListener('fetch', event => {
             });
           }
         }).catch(() => {
-          // Offline, nincs probléma
         });
         return cached;
       }
 
-      // Nincs cache-ben, le kell tölteni
       return fetch(request).then(response => {
         if (response && response.status === 200) {
           const responseClone = response.clone();
@@ -160,13 +147,11 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// Verzió lekérdezés (ha a kliens kérdezi)
 self.addEventListener('message', event => {
   if (event.data && event.data.type === 'GET_VERSION') {
     event.ports[0].postMessage({ version: VERSION });
   }
   
-  // Skip waiting parancs
   if (event.data && event.data.type === 'SKIP_WAITING') {
     console.log('[SW] Skip waiting parancs fogadva');
     self.skipWaiting();
