@@ -331,9 +331,28 @@
         </button>
       </header>
       
+      <!-- ÚJ: Verzió info -->
+      <div class="version-info">
+        <span>🎯 Verzió:</span>
+        <strong id="sidebarVersion">v12.0.0</strong>
+      </div>
+      
+      <!-- ÚJ: Action buttons -->
+      <div class="sidebar-btn-group">
+        <a href="mailto:" class="sidebar-action-btn" onclick="track('contact_email_clicked')">
+          <span>📧</span>
+          <span>Írj nekünk</span>
+        </a>
+        
+        <a href="/Doomspending_Projekt_Adatkezele_si_ta_je_koztato_.pdf" target="_blank" class="sidebar-action-btn" onclick="track('privacy_policy_clicked')">
+          <span>📄</span>
+          <span>Adatkezelési tájékoztató</span>
+        </a>
+      </div>
+      
       <details id="sidebarProfileDetails" class="sidebar-details-group" open>
         <summary class="card sidebar-summary">
-          <h3>👤 Profil Adatok (Kattints a szerkesztéshez)</h3>
+          <h3>👤 Profil Adatok</h3>
         </summary>
         
         <div id="sidebar-profile-content" class="content-stack sidebar-stack">
