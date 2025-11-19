@@ -1,5 +1,5 @@
 // ============================================
-// MUNKAÓRA PRO v9.0 - SUPABASE AUTH + OPTIMALIZÁLT PWA
+// MUNKAÓRA PRO v10.0 - GOALS & ONBOARDING
 // ============================================
 
 // Google Analytics
@@ -355,6 +355,7 @@ function handleSignout() {
   const data = loadData();
   data.profile = {};
   data.history = [];
+  data.goals = []; // Új: Goals törlése kijelentkezéskor
   saveData(data);
 }
 
@@ -444,7 +445,6 @@ async function sendDecisionToSupabase(decisionData) {
     }
 
     const safeProduct = sanitizeTextInput(decisionData.product || '', { maxLength: MAX_PRODUCT_LENGTH }) || 'Ismeretlen tétel';
-    const safeCategory = sanitizeTextInput(decisionData.category || DEFAULT_CATEGORY, { allowBasicPunctuation: false, maxLength: 40 }) || DEFAULT_CATEGORY;
     const safePrice = toFiniteNumber(decisionData.price, 0);
     const safeHours = toFiniteNumber(decisionData.hours, 0);
 
@@ -454,7 +454,7 @@ async function sendDecisionToSupabase(decisionData) {
       price: safePrice,
       hours: safeHours,
       decision: decisionData.decision,
-      category: safeCategory,
+      category: DEFAULT_CATEGORY, // Kategória manuális rögzítése kihagyva
       created_at: new Date().toISOString()
     };
     
@@ -482,10 +482,10 @@ const ALLOWED_DECISIONS = new Set(['megsporolom', 'megveszem']);
 const DEFAULT_CATEGORY = 'other';
 const MAX_PRODUCT_LENGTH = 80;
 const MAX_CITY_LENGTH = 80;
+const MAX_GOAL_NAME_LENGTH = 40;
 
 let memoryStore = createEmptyStore();
 
-let selectedCategory = 'other';
 let currentProduct = null;
 let currentPrice = 0;
 let currentHours = 0;
@@ -519,7 +519,7 @@ const quotes = [
 // ============================================
 
 function createEmptyStore(){
-  return { profile: {}, history: [] };
+  return { profile: {}, history: [], goals: [] };
 }
 
 function cloneStore(data){
@@ -565,16 +565,34 @@ function sanitizeHistoryEntry(entry = {}){
     price: toFiniteNumber(normalizedEntry.price, 0),
     hours: toFiniteNumber(normalizedEntry.hours, 0),
     decision: safeDecision,
-    category: sanitizeTextInput(normalizedEntry.category || DEFAULT_CATEGORY, { allowBasicPunctuation: false, maxLength: 40 }) || DEFAULT_CATEGORY,
+    category: DEFAULT_CATEGORY, // Kategória manuális rögzítése kihagyva
     ts: Number.isFinite(Number(normalizedEntry.ts)) ? Number(normalizedEntry.ts) : Date.now()
   };
 }
+
+function sanitizeGoalEntry(entry = {}){
+  const normalizedEntry = entry && typeof entry === 'object' ? entry : {};
+  return {
+    id: normalizedEntry.id || crypto.randomUUID(), // Egyedi azonosító
+    name: sanitizeTextInput(normalizedEntry.name || '', { maxLength: MAX_GOAL_NAME_LENGTH }),
+    cost: toFiniteNumber(normalizedEntry.cost, 0),
+    created: Number.isFinite(Number(normalizedEntry.created)) ? Number(normalizedEntry.created) : Date.now()
+  };
+}
+
 
 function getValidHistoryEntries(data){
   if (!data || !Array.isArray(data.history)) {
     return [];
   }
   return data.history.filter(item => item && typeof item === 'object' && ALLOWED_DECISIONS.has(item.decision));
+}
+
+function getValidGoalEntries(data){
+  if (!data || !Array.isArray(data.goals)) {
+    return [];
+  }
+  return data.goals.map(sanitizeGoalEntry).filter(goal => goal.name && goal.cost > 0);
 }
 
 // Numerikus input védelem (PWA stabilitás kulcsa)
@@ -678,7 +696,8 @@ function loadData(){
     const parsed = JSON.parse(raw);
     const normalized = {
       profile: typeof parsed?.profile === 'object' && parsed.profile !== null ? parsed.profile : {},
-      history: Array.isArray(parsed?.history) ? parsed.history.map(sanitizeHistoryEntry) : []
+      history: Array.isArray(parsed?.history) ? parsed.history.map(sanitizeHistoryEntry) : [],
+      goals: Array.isArray(parsed?.goals) ? parsed.goals.map(sanitizeGoalEntry) : [] // Új: Goals betöltése
     };
 
     memoryStore = normalized;
@@ -699,7 +718,8 @@ function loadData(){
 function saveData(data){
   const normalized = {
     profile: typeof data?.profile === 'object' && data.profile !== null ? data.profile : {},
-    history: Array.isArray(data?.history) ? data.history.map(sanitizeHistoryEntry) : []
+    history: Array.isArray(data?.history) ? data.history.map(sanitizeHistoryEntry) : [],
+    goals: Array.isArray(data?.goals) ? data.goals.map(sanitizeGoalEntry) : [] // Új: Goals mentése
   };
 
   memoryStore = normalized;
@@ -819,6 +839,7 @@ function goTo(screen) {
 
   track('view_' + screen);
 
+  if (screen === 'goals') loadGoals();
   if (screen === 'history') loadHistory();
   if (screen === 'stats') loadStats();
 }
@@ -853,8 +874,9 @@ function saveProfile(){
   alert('✅ Profil sikeresen mentve!');
   toggleSidebarMenu();
   
-  // Frissítjük a másik (onboarding) űrlapot is a friss adatokkal (szükségtelen is lehet, de biztonságosabb)
+  // Frissítjük a másik (onboarding) űrlapot is a friss adatokkal
   loadProfileData('onboarding'); 
+  loadStats(); // Frissítjük a statisztikát is a friss jövedelem/óra adatokkal
 }
 
 function saveOnboardingProfile(){
@@ -965,13 +987,12 @@ function saveDecision(decision){
   }
 
   const data = loadData();
-  const safeCategory = sanitizeTextInput(selectedCategory || DEFAULT_CATEGORY, { allowBasicPunctuation: false, maxLength: 40 }) || DEFAULT_CATEGORY;
   const decisionData = {
     product: currentProduct,
     price: currentPrice,
     hours: currentHours,
     decision,
-    category: safeCategory,
+    category: DEFAULT_CATEGORY, 
     ts: Date.now()
   };
   
@@ -990,7 +1011,141 @@ function saveDecision(decision){
   
   alert(decision === 'megsporolom' ? '💪 Szép munka!' : '🛒 Vásárlás rögzítve!');
   track('decision_saved', { decision });
+  
+  // Frissítjük a statisztikát, ha a user a kalkulátor képernyőn van
+  if(document.getElementById('nav-stats').classList.contains('active')) {
+      loadStats();
+  }
 }
+
+// ============================================
+// GOALS
+// ============================================
+
+function addGoal(){
+  const data = loadData();
+  const name = sanitizeTextInput(document.getElementById('goalName').value, { maxLength: MAX_GOAL_NAME_LENGTH });
+  const cost = parseNumberInput(document.getElementById('goalCost').value);
+
+  if(!name || !cost || cost <= 0){
+    alert('Kérlek adj meg egy nevet és egy pozitív költséget a célhoz!');
+    return;
+  }
+  
+  if (data.goals.length >= 5) {
+      alert('Maximum 5 aktív cél lehet. Kérlek fejezz be vagy törölj egy régebbit!');
+      return;
+  }
+
+  const newGoal = sanitizeGoalEntry({
+      name,
+      cost,
+      created: Date.now()
+  });
+  
+  data.goals.push(newGoal);
+  saveData(data);
+  loadGoals();
+  
+  // Clear form
+  document.getElementById('goalName').value = '';
+  document.getElementById('goalCost').value = '';
+  
+  track('goal_added', { cost });
+}
+
+function removeGoal(goalId){
+  if(!confirm('Biztosan törölni szeretnéd ezt a célt?')){
+    return;
+  }
+  
+  const data = loadData();
+  const initialLength = data.goals.length;
+  data.goals = data.goals.filter(goal => goal.id !== goalId);
+  
+  if (data.goals.length < initialLength) {
+      saveData(data);
+      loadGoals();
+      loadStats(); // Frissítjük a statisztikát is
+      track('goal_removed');
+  }
+}
+
+function loadGoals(){
+  const data = loadData();
+  const goals = getValidGoalEntries(data);
+  const list = document.getElementById('goalsList');
+  const totalSavedHUF = getSavedHUF(data);
+  const totalSavedHours = getSavedHours(data);
+  const hourlyRate = getHourlyRate(data.profile);
+  
+  document.getElementById('activeGoalsCount').innerText = goals.length;
+  list.innerHTML = '';
+
+  if(!goals.length){
+    list.innerHTML = '<p class="goal-empty-state">Nincs még aktív célod. Spórolj valamiért!</p>';
+    return;
+  }
+
+  goals.forEach(goal => {
+    const progressHUF = Math.min(goal.cost, totalSavedHUF);
+    const progressPercent = Math.min(100, Math.round((progressHUF / goal.cost) * 100));
+    
+    // Órában kifejezve (segítség a felhasználónak)
+    const hoursNeeded = Math.round((goal.cost / hourlyRate) * 10) / 10;
+    const hoursProgress = Math.min(hoursNeeded, totalSavedHours);
+
+    const isComplete = progressPercent >= 100;
+    
+    list.innerHTML += `
+      <div class="goal-item ${isComplete ? 'goal-complete' : ''}">
+        <div class="goal-title">
+          <span>${escapeHtml(goal.name)} ${isComplete ? ' (🎉 KÉSZ!)' : ''}</span>
+        </div>
+        
+        <div class="goal-progress-bar" style="--goal-progress: ${progressPercent}%">
+          <div class="goal-progress-fill"></div>
+        </div>
+        
+        <div class="goal-details">
+          <span>${progressPercent}% kész</span>
+          <span>${progressHUF.toLocaleString('hu-HU')} Ft / ${goal.cost.toLocaleString('hu-HU')} Ft</span>
+        </div>
+        
+        <div class="goal-details">
+          <span></span>
+          <span>kb. ${hoursProgress.toFixed(1)} óra / ${hoursNeeded.toFixed(1)} óra</span>
+        </div>
+        
+        <div class="goal-actions">
+          <button class="goal-remove-btn" onclick="removeGoal('${goal.id}')" title="Törlés">🗑️</button>
+        </div>
+      </div>
+    `;
+  });
+  
+  track('goals_loaded', { count: goals.length });
+}
+
+function getSavedHUF(data){
+    return getValidHistoryEntries(data)
+        .filter(i => i.decision === 'megsporolom')
+        .reduce((sum, i) => sum + toFiniteNumber(i.price, 0), 0);
+}
+
+function getSavedHours(data){
+    return getValidHistoryEntries(data)
+        .filter(i => i.decision === 'megsporolom')
+        .reduce((sum, i) => sum + toFiniteNumber(i.hours, 0), 0);
+}
+
+function getHourlyRate(profile){
+    const income = toFiniteNumber(profile.income, 0);
+    const hours = toFiniteNumber(profile.hoursPerWeek, 0);
+    if (income <= 0 || hours <= 0) return 1; // Elkerüljük a nulla osztást
+    return income / (hours * 4);
+}
+
 
 // ============================================
 // HISTORY
@@ -1065,19 +1220,18 @@ function calcStreak(data){
       // Ha ma nem volt bejegyzés, de korábban igen, akkor a sorozat 0, ha ma is volt, akkor a sorozat a bejegyzések száma.
       const latestEntryDateStr = new Date(Math.max(...history.map(h => h.ts))).toDateString();
       const todayStr = new Date().toDateString();
-      const yesterdayStr = new Date(new Date().setDate(new Date().getDate() - 1)).toDateString();
       
       if (latestEntryDateStr === todayStr && streak > 0) {
         // Ma van bejegyzés, de korábban megszakadt a sorozat
         return streak; 
       }
-      if (latestEntryDateStr === todayStr) {
-        // Ma van bejegyzés, és a ciklus elején vagyunk.
-        // Ez azt jelenti, hogy a sorozat a mai nappal kezdődik/ folytatódik
-        return streak + 1;
+      
+      // Ha a legutóbbi bejegyzés tegnap vagy korábban volt, a sorozat megszakad
+      if (latestEntryDateStr !== todayStr && streak > 0) {
+        return streak;
       }
       
-      return 0; // Régen volt utoljára
+      return 0; // Régen volt utoljára, vagy sosem volt
     }
   }
   
@@ -1087,6 +1241,7 @@ function calcStreak(data){
 function loadStats(){
   const data = loadData();
   const history = getValidHistoryEntries(data);
+  const goals = getValidGoalEntries(data);
 
   const saved = history.filter(i=> i.decision === 'megsporolom');
   const spent = history.filter(i=> i.decision === 'megveszem');
@@ -1102,7 +1257,7 @@ function loadStats(){
   const ratioCircle = document.getElementById('ratioCircle');
   if(ratioCircle){ ratioCircle.style.setProperty('--progress', (ratio * 3.6) + 'deg'); }
   
-  const savedHours = saved.reduce((sum,i)=> sum + toFiniteNumber(i.hours, 0), 0);
+  const savedHours = getSavedHours(data);
   const spentHours = spent.reduce((sum,i)=> sum + toFiniteNumber(i.hours, 0), 0);
   const streak = calcStreak(data);
   
@@ -1110,6 +1265,44 @@ function loadStats(){
   document.getElementById('spentHours').innerText = spentHours.toFixed(1);
   document.getElementById('totalDecisions').innerText = total;
   document.getElementById('streak').innerText = streak;
+  
+  // --- Goals Progress Display ---
+  const goalsCard = document.getElementById('goalsProgressCard');
+  const goalsContent = document.getElementById('goalsProgressContent');
+  goalsContent.innerHTML = '';
+  
+  if (goals.length > 0) {
+    goalsCard.classList.remove('hidden');
+    const totalSavedHUF = getSavedHUF(data);
+
+    goals.forEach(goal => {
+      const progressHUF = Math.min(goal.cost, totalSavedHUF);
+      const progressPercent = Math.min(100, Math.round((progressHUF / goal.cost) * 100));
+      const remaining = Math.max(0, goal.cost - totalSavedHUF);
+      const isComplete = progressPercent >= 100;
+
+      goalsContent.innerHTML += `
+        <div class="goal-item ${isComplete ? 'goal-complete' : ''}" style="margin-bottom: 16px;">
+          <div class="goal-title">
+            <span>${escapeHtml(goal.name)}</span>
+            <span style="font-size: 0.85rem; color: ${isComplete ? 'var(--success)' : 'var(--text)'}; font-weight: 700;">
+              ${progressPercent}%
+            </span>
+          </div>
+          <div class="goal-progress-bar" style="--goal-progress: ${progressPercent}%">
+            <div class="goal-progress-fill"></div>
+          </div>
+          <div class="goal-details" style="margin-top: 4px;">
+            <span>Összes spórolt: ${totalSavedHUF.toLocaleString('hu-HU')} Ft</span>
+            <span>Hiányzik: ${remaining.toLocaleString('hu-HU')} Ft</span>
+          </div>
+        </div>
+      `;
+    });
+  } else {
+    goalsCard.classList.add('hidden');
+  }
+  // --- Goals Progress Display End ---
   
   // Random idézet
   document.getElementById('dailyQuote').innerText = quotes[Math.floor(Math.random()*quotes.length)];
