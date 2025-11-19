@@ -339,12 +339,6 @@ function handleAuthSuccess() {
 
 function handleSignout() {
   showAuthScreen();
-  
-  const data = loadData();
-  data.profile = {};
-  data.history = [];
-  data.goals = [];
-  saveData(data);
 }
 
 function showAuthScreen() {
@@ -472,7 +466,7 @@ const MAX_PRODUCT_LENGTH = 80;
 const MAX_CITY_LENGTH = 80;
 const MAX_GOAL_NAME_LENGTH = 40;
 
-let memoryStore = createEmptyStore();
+let memoryStore = {};
 
 let currentProduct = null;
 let currentPrice = 0;
@@ -512,6 +506,17 @@ function createEmptyStore(){
 
 function cloneStore(data){
   return JSON.parse(JSON.stringify(data || createEmptyStore()));
+}
+
+function getStoreKeyForUser(userId){
+  if (!userId || typeof userId !== 'string') {
+    return STORE_KEY;
+  }
+  return `${STORE_KEY}_${userId}`;
+}
+
+function getActiveStoreKey(){
+  return getStoreKeyForUser(currentUser?.id);
 }
 
 function toFiniteNumber(value, fallback = 0){
@@ -658,15 +663,28 @@ function setupNumericInputs(){
 }
 
 function loadData(){
+  const storeKey = getActiveStoreKey();
+  const isUserSpecific = storeKey !== STORE_KEY;
+
   try {
     if (typeof localStorage === 'undefined') {
       throw new Error('localStorage unavailable');
     }
 
-    const raw = localStorage.getItem(STORE_KEY);
+    let raw = localStorage.getItem(storeKey);
+
+    if (!raw && isUserSpecific) {
+      const fallbackRaw = localStorage.getItem(STORE_KEY);
+      if (fallbackRaw) {
+        console.log('ℹ️ Felhasználóhoz kötött adat kulcs inicializálása.');
+        raw = fallbackRaw;
+        localStorage.setItem(storeKey, fallbackRaw);
+      }
+    }
+
     if (!raw) {
-      memoryStore = createEmptyStore();
-      return cloneStore(memoryStore);
+      memoryStore[storeKey] = createEmptyStore();
+      return cloneStore(memoryStore[storeKey]);
     }
 
     const parsed = JSON.parse(raw);
@@ -676,36 +694,37 @@ function loadData(){
       goals: Array.isArray(parsed?.goals) ? parsed.goals.map(sanitizeGoalEntry) : []
     };
 
-    memoryStore = normalized;
+    memoryStore[storeKey] = normalized;
     return cloneStore(normalized);
   } catch (error) {
     if (error?.message !== 'localStorage unavailable') {
       console.warn('⚠️ LocalStorage betöltési hiba, memória tárolóra esünk vissza.', error);
     }
 
-    if (!memoryStore) {
-      memoryStore = createEmptyStore();
+    if (!memoryStore[storeKey]) {
+      memoryStore[storeKey] = createEmptyStore();
     }
 
-    return cloneStore(memoryStore);
+    return cloneStore(memoryStore[storeKey]);
   }
 }
 
 function saveData(data){
+  const storeKey = getActiveStoreKey();
   const normalized = {
     profile: typeof data?.profile === 'object' && data.profile !== null ? data.profile : {},
     history: Array.isArray(data?.history) ? data.history.map(sanitizeHistoryEntry) : [],
     goals: Array.isArray(data?.goals) ? data.goals.map(sanitizeGoalEntry) : []
   };
 
-  memoryStore = normalized;
+  memoryStore[storeKey] = normalized;
 
   try {
     if (typeof localStorage === 'undefined') {
       throw new Error('localStorage unavailable');
     }
 
-    localStorage.setItem(STORE_KEY, JSON.stringify(normalized));
+    localStorage.setItem(storeKey, JSON.stringify(normalized));
   } catch (error) {
     console.warn('⚠️ LocalStorage írási hiba, adatok csak memóriában elérhetőek.', error);
   }
