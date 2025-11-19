@@ -127,7 +127,7 @@ p {
   width: min(100%, 480px);
   min-height: 100dvh;
   margin: 0 auto;
-  /* FIX: Korrigált padding felül és alul, hogy helyet hagyjon a fixed headernek és a fixed navbar-nak */
+  /* FIX: Korrigált padding, stabil helyet hagy a fixed headernek (kb. 90px) és a fixed navbarnak (kb. 100px) */
   padding: calc(90px + var(--safe-area-top)) var(--space) calc(100px + var(--safe-area-bottom));
   position: relative;
 }
@@ -186,7 +186,7 @@ p {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px var(--space); /* FIX: Fixált padding, hogy illeszkedjen az app-shell belső paddingjéhez */
+  padding: 16px var(--space); 
   margin: 0;
   position: fixed; 
   top: var(--safe-area-top);
@@ -1343,10 +1343,12 @@ nav button.active svg {
   transition: transform var(--duration) var(--ease);
   display: flex;
   flex-direction: column;
-  /* FIX: Az egész sidebár tartalma scrollable legyen, ha nem fér el */
+  
   padding: var(--space); 
   padding-top: calc(var(--space) + var(--safe-area-top)); 
-  overflow-y: auto;
+  
+  /* FIX: A külső görgetés engedélyezése a scrollbar megjelenítéséhez */
+  overflow-y: auto; 
   gap: 16px; 
 }
 
@@ -1395,14 +1397,15 @@ nav button.active svg {
 }
 
 .sidebar-stack {
-  gap: 12px; /* Még kisebb gap a sidebáron belüli stack-ben */
+  gap: 12px; 
   padding-bottom: 0; 
 }
 
 .sidebar-footer {
-  /* FIX: Biztosítjuk, hogy a footer fix helyen legyen a görgethető tartalomban */
+  /* FIX: Visszaállítjuk a normál helyzetbe és hozzáadunk egy kis paddingot a görgetés végén */
   margin-top: 16px; 
-  padding-top: var(--space);
+  padding-bottom: calc(var(--space) + var(--safe-area-bottom));
+  flex-shrink: 0; /* Ne zsugorodjon össze görgetéskor */
 }
 
 .sidebar-footer .logout-btn {
