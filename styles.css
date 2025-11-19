@@ -127,7 +127,8 @@ p {
   width: min(100%, 480px);
   min-height: 100dvh;
   margin: 0 auto;
-  padding: calc(var(--space) + var(--safe-area-top)) var(--space) calc(80px + var(--safe-area-bottom));
+  /* KÉZELT PADDING: Fent fix hely a fejlécnek, lent a NAV sávnak */
+  padding: calc(70px + var(--safe-area-top)) var(--space) calc(90px + var(--safe-area-bottom));
   position: relative;
 }
 
@@ -185,38 +186,35 @@ p {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space) var(--space-lg);
-  margin: 0 calc(-1 * var(--space)) var(--space);
+  padding: 16px var(--space-lg);
+  margin: 0 calc(-1 * var(--space));
+  position: fixed; /* Rögzítve a lap tetejére */
+  top: var(--safe-area-top);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100%, 480px);
+  z-index: 500;
+  
   background: var(--glass);
   backdrop-filter: blur(20px);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--shadow);
+  border-bottom: 1px solid var(--glass-border);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.03); /* Enyhe árnyék, hogy kiemelkedjen */
 }
 
-.theme-toggle {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: var(--bg-alt);
-  border: 1px solid var(--glass-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all var(--duration) var(--ease);
+/* Welcome Screen Header Fix */
+#screen-welcome .screen-header {
+  position: relative;
+  top: auto;
+  transform: none;
+  width: 100%;
+  box-shadow: none;
+  border-bottom: none;
+  margin-bottom: var(--space);
 }
 
-.theme-toggle:hover {
-  transform: scale(1.05);
-  border-color: var(--primary);
-}
-
-.theme-toggle svg {
-  width: 22px;
-  height: 22px;
-  fill: var(--primary);
-  stroke: none;
+/* Theme Toggle a headerben */
+.screen-header .theme-toggle {
+    margin-right: 0; /* Megszüntetjük a margót, mert a actions group kezeli */
 }
 
 /* Welcome Screen */
@@ -376,10 +374,12 @@ p {
 
 /* Form Controls */
 .input-label {
+  display: block;
   font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-secondary);
-  margin-bottom: -10px;
+  margin-bottom: -12px; /* Margó optimalizálás a mezőhöz */
+  padding-top: 4px; /* Kis térköz a címkék között */
 }
 
 input {
@@ -1342,9 +1342,10 @@ nav button.active svg {
   transition: transform var(--duration) var(--ease);
   display: flex;
   flex-direction: column;
-  padding: var(--space) var(--space) var(--space-xl);
+  padding: var(--space); /* Optimalizálva: csak oldalra és alulra kell térköz */
+  padding-top: calc(var(--space) + var(--safe-area-top)); 
   overflow-y: auto;
-  gap: var(--space);
+  gap: 16px; /* Csökkentett gap */
 }
 
 .sidebar-menu.open .sidebar-content {
@@ -1355,7 +1356,12 @@ nav button.active svg {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-lg) 0;
+  padding: 0;
+  margin-bottom: 16px;
+}
+
+.sidebar-header h2 {
+    font-size: 1.2rem;
 }
 
 .sidebar-close-btn {
@@ -1388,7 +1394,7 @@ nav button.active svg {
 
 .sidebar-stack {
   gap: 16px;
-  padding-bottom: var(--space);
+  padding-bottom: 0; /* A tartalom belüli térközt a form stack kezeli */
 }
 
 .sidebar-footer {
@@ -1416,15 +1422,20 @@ nav button.active svg {
   overflow: hidden;
   border: 1px solid var(--glass-border);
   box-shadow: var(--shadow);
+  background: var(--glass); /* Fix háttér a konzisztenciához */
 }
 
 .sidebar-summary {
   list-style: none; /* Summary alap list point eltávolítása */
   cursor: pointer;
-  padding: 18px 20px;
+  padding: 16px 20px; /* Csökkentett padding a helytakarékosságért */
   background: var(--glass);
   margin: 0;
   transition: background 0.2s var(--ease);
+}
+
+.sidebar-summary h3 {
+    margin: 0;
 }
 
 .sidebar-summary:hover {
@@ -1457,9 +1468,10 @@ nav button.active svg {
   border-radius: var(--radius-lg);
 }
 
+/* Tartalom stílusa a lenyitható részben */
 .sidebar-details-group .sidebar-stack {
   padding: 0 var(--space-lg) var(--space-lg);
-  /* Megakadályozzuk a duplán beágyazott card style-t */
+  gap: 12px; /* A kártyák közötti kisebb térköz */
   background: var(--glass); 
 }
 
@@ -1469,7 +1481,6 @@ nav button.active svg {
   padding: 0;
   background: transparent;
 }
-
 
 /* Responsive */
 @media (max-width: 480px) {
